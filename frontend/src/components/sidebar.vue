@@ -19,9 +19,11 @@ export default {
   data() {
     return {
       menuItems: [
-        { title: '待审批合同', path: '/' },
-        { title: '合同会签', path: '/countersign' },
-        { title: '合同定稿', path: '/finalize' },
+
+        { title: '起草合同', path: '/DraftContractList' },
+        { title: '合同会签', path: '/CoSignContractList' },
+        { title: '合同定稿', path: '/FinalizeContractList' },
+        { title: '待审批合同', path: '/approveList' },
         { title: '已完成合同', path: '/completed' },
         { title: '合同统计', path: '/statistics' }
       ]
