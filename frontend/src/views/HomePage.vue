@@ -46,7 +46,7 @@ const features = [
   { label: '起草合同', route: '/DraftContractList', roles: ['operator'], icon: '📝' },
   { label: '会签合同', route: '/CoSignContractList', roles: ['operator'], icon: '🤝' },
   { label: '定稿合同', route: '/FinalizeContractList', roles: ['operator'], icon: '📑' },
-  { label: '分配合同', route: '/admin', roles: ['admin'], icon: '🗂️' },
+  { label: '分配合同', route: 'PendingContractList', roles: ['operator'], icon: '🗂️' },
   { label: '合同查询', route: '/query', roles: ['admin'], icon: '🔍' },
   { label: '用户管理', route: '/user-management', roles: ['admin'], icon: '👥' },
   { label: '审批合同', route: '/approveList',roles:['admin'],icon:'🔍'}
