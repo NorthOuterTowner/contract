@@ -57,6 +57,28 @@ const db = {
         });
       });
     },
+
+  //查询待分配合同列表
+      getPendingContracts: () => {
+      const sql = "SELECT * FROM Contract WHERE Status = '待起草'";
+      return db.async.all(sql, []);
+    },
+    // 查询合同基本信息
+    getContractInfo: (contractId) => {
+      const sql = "SELECT * FROM Contract WHERE ContractID = ?";
+      return db.async.all(sql, [contractId]);
+    },
+    // 查询用户列表信息
+    getUserList: () => {
+      const sql = "SELECT UserID, UserName FROM Users"; // 假设存在 Users 表
+      return db.async.all(sql, []);
+    }, 
+
+    // 保存合同分配信息
+    saveContractAssignment: (contractId, signerId, approverId, executorId) => {
+      const sql = "INSERT INTO ContractAssignment (ContractID, SignerID, ApproverID, ExecutorID) VALUES (?,?,?,?)";
+      return db.async.run(sql, [contractId, signerId, approverId, executorId]);
+    }
   },
 };
 

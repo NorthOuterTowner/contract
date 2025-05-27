@@ -64,3 +64,14 @@ CREATE TABLE ContractExecution (
     PRIMARY KEY (ExecutionID),
     FOREIGN KEY (ContractID) REFERENCES Contract(ContractID) ON DELETE CASCADE
 );
+
+CREATE TABLE ContractAssignment (
+    AssignmentID INT NOT NULL AUTO_INCREMENT,
+    ContractID VARCHAR(10) NOT NULL,
+    SignerID VARCHAR(100) NOT NULL,
+    ApproverID VARCHAR(100) NOT NULL,
+    ExecutorID VARCHAR(100) NOT NULL,
+    AssignmentDate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (AssignmentID),
+    FOREIGN KEY (ContractID) REFERENCES Contract(ContractID) ON DELETE CASCADE
+);
