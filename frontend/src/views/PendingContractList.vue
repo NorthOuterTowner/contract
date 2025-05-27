@@ -1,110 +1,116 @@
 <template>
-  <div class="contract-assignment">
-    <div v-if="loading" class="loading">加载中...</div>
-    <div v-else>
-      <div class="back-link">
-        <router-link to="/PendingContractList">← 返回列表</router-link>
+  <div class="flex">
+    <Sidebar />
+    <div class="contract-list">
+      <h2>待分配合同</h2>
+      <div class="search-container">
+        <input
+          type="text"
+          v-model="searchQuery"
+          placeholder="输入合同名称搜索"
+        />
+        <button @click="searchContracts">搜索</button>
       </div>
-      <h2>分配合同</h2>
-      <div class="contract-details">
-        <h3>合同详情</h3>
-        <div class="detail-item">
-          <label>合同编号:</label>
-          <span>{{ contractInfo.ContractID }}</span>
+      <div v-if="loading" class="loading">加载中...</div>
+      <div v-else>
+        <table class="contract-table">
+          <thead>
+            <tr>
+              <th>合同名称</th>
+              <th>起草时间</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="contract in paginatedContracts" :key="contract.ContractID">
+              <td>{{ contract.Title }}</td>
+              <td>{{ formatDate(contract.CreationDate) }}</td>
+              <td>
+                <button @click="allocateContract(contract.ContractID)">分配</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div v-if="paginatedContracts.length === 0" class="no-data">暂无待分配合同</div>
+        <div v-if="totalPages > 1" class="pagination">
+          <button @click="prevPage" :disabled="currentPage === 1">上一页</button>
+          <span>{{ currentPage }} / {{ totalPages }}</span>
+          <button @click="nextPage" :disabled="currentPage === totalPages">下一页</button>
         </div>
-        <div class="detail-item">
-          <label>合同名称:</label>
-          <span>{{ contractInfo.Title }}</span>
-        </div>
-      </div>
-      <div class="assignment-form">
-        <h3>分配信息</h3>
-        <form @submit.prevent="submitAssignment">
-          <div class="form-group">
-            <label for="signer">会签人员:</label>
-            <select id="signer" v-model="signerId">
-              <option v-for="user in userList" :key="user.UserID" :value="user.UserID">{{ user.UserName }}</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="approver">审批人员:</label>
-            <select id="approver" v-model="approverId">
-              <option v-for="user in userList" :key="user.UserID" :value="user.UserID">{{ user.UserName }}</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="executor">签订人员:</label>
-            <select id="executor" v-model="executorId">
-              <option v-for="user in userList" :key="user.UserID" :value="user.UserID">{{ user.UserName }}</option>
-            </select>
-          </div>
-          <div class="form-actions">
-            <button type="submit" :disabled="submitting">
-              {{ submitting ? '提交中...' : '提交' }}
-            </button>
-          </div>
-        </form>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import Sidebar from '../components/sidebar.vue';
 export default {
+  components: {
+    Sidebar
+  },
   data() {
     return {
-      contractInfo: {},
-      userList: [],
-      signerId: '',
-      approverId: '',
-      executorId: '',
+      contracts: [],
       loading: true,
-      submitting: false
+      searchQuery: '',
+      currentPage: 1,
+      itemsPerPage: 10
     };
   },
+  computed: {
+    paginatedContracts() {
+      const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+      const endIndex = startIndex + this.itemsPerPage;
+      return this.contracts.slice(startIndex, endIndex);
+    },
+    totalPages() {
+      return Math.ceil(this.contracts.length / this.itemsPerPage);
+    }
+  },
   created() {
-    this.fetchAssignmentInfo();
+    this.fetchPendingContracts();
   },
   methods: {
-    async fetchAssignmentInfo() {
-      const contractId = this.$route.params.contractId;
+    async fetchPendingContracts() {
       try {
-        const response = await fetch(`/api/contract-assignment/${contractId}`);
-        const data = await response.json();
-        this.contractInfo = data.contractInfo;
-        this.userList = data.userList;
+        // 这里应该是API调用，模拟数据
+        this.contracts = [
+          {
+            ContractID: 'HT20230001',
+            Title: '年度服务器采购合同',
+            CreationDate: '2023-05-15'
+          },
+          {
+            ContractID: 'HT20230002',
+            Title: '办公室租赁合同',
+            CreationDate: '2023-05-18'
+          }
+        ];
         this.loading = false;
       } catch (error) {
-        console.error('获取合同分配信息失败:', error);
+        console.error('获取待分配合同列表失败:', error);
         this.loading = false;
       }
     },
-    async submitAssignment() {
-      if (!this.signerId || !this.approverId || !this.executorId) {
-        alert('会签、审批、签订人员需全部指定');
-        return;
+    searchContracts() {
+      // 这里应该根据搜索查询过滤合同列表
+      this.currentPage = 1;
+      this.fetchPendingContracts();
+    },
+    allocateContract(contractId) {
+      this.$router.push(`/allocate/${contractId}`);
+    },
+    formatDate(dateString) {
+      return new Date(dateString).toLocaleDateString();
+    },
+    prevPage() {
+      if (this.currentPage > 1) {
+        this.currentPage--;
       }
-      this.submitting = true;
-      try {
-        const response = await fetch('/api/contract-assignment', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            contractId: this.contractInfo.ContractID,
-            signerId: this.signerId,
-            approverId: this.approverId,
-            executorId: this.executorId
-          })
-        });
-        const data = await response.json();
-        alert(data.message);
-        this.$router.push('/PendingContractList');
-      } catch (error) {
-        console.error('提交合同分配信息失败:', error);
-        alert('提交失败，请重试');
-        this.submitting = false;
+    },
+    nextPage() {
+      if (this.currentPage < this.totalPages) {
+        this.currentPage++;
       }
     }
   }
@@ -112,70 +118,87 @@ export default {
 </script>
 
 <style scoped>
-.contract-assignment {
+.contract-list {
   margin-top: 20px;
+  margin-left: 200px; /* 给 sidebar 腾出空间 */
+  padding: 20px;
 }
 
-.back-link {
+.search-container {
   margin-bottom: 20px;
 }
 
-.contract-details {
-  background-color: #f9f9f9;
-  padding: 15px;
-  border-radius: 4px;
-  margin-bottom: 20px;
-}
-
-.detail-item {
-  margin-bottom: 10px;
-}
-
-.detail-item label {
-  font-weight: bold;
-  min-width: 100px;
-  display: inline-block;
-}
-
-.assignment-form {
-  background-color: #f9f9f9;
-  padding: 15px;
-  border-radius: 4px;
-  margin-bottom: 20px;
-}
-
-.form-group {
-  margin-bottom: 15px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: bold;
-}
-
-select {
-  width: 100%;
-  padding: 8px;
+.search-container input {
+  padding: 6px 12px;
   border: 1px solid #ddd;
   border-radius: 4px;
+  margin-right: 10px;
 }
 
-.form-actions {
-  margin-top: 15px;
-}
-
-.form-actions button {
+.search-container button {
   background-color: #4CAF50;
   color: white;
   border: none;
-  padding: 8px 16px;
+  padding: 6px 12px;
   border-radius: 4px;
   cursor: pointer;
 }
 
-.form-actions button:disabled {
-  background-color: #cccccc;
-  cursor: not-allowed;
+.search-container button:hover {
+  background-color: #45a049;
+}
+
+.contract-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+.contract-table th,
+.contract-table td {
+  border: 1px solid #ddd;
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.contract-table th {
+  background-color: #f2f2f2;
+}
+
+.contract-table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.contract-table tr:hover {
+  background-color: #f1f1f1;
+}
+
+button {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #45a049;
+}
+
+.loading,
+.no-data {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+}
+
+.pagination {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.pagination button {
+  margin: 0 10px;
 }
 </style>
