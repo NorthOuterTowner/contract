@@ -32,18 +32,20 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
-const role = ref(localStorage.getItem('role') || 'guest')
+const role = ref(localStorage.getItem('role') || 'operator') //默认为guest，测试临时修改
+
+
 
 const roleName = computed(() => {
   if (role.value === 'admin') return '合同管理员'
   if (role.value === 'operator') return '合同操作员'
-  return '访客'
+  return '游客'
 })
 
 const features = [
-  { label: '起草合同', route: '/operator', roles: ['operator'], icon: '📝' },
-  { label: '会签合同', route: '/countersign', roles: ['operator'], icon: '🤝' },
-  { label: '定稿合同', route: '/finalize', roles: ['operator'], icon: '📑' },
+  { label: '起草合同', route: '/DraftContractList', roles: ['operator'], icon: '📝' },
+  { label: '会签合同', route: '/CoSignContractList', roles: ['operator'], icon: '🤝' },
+  { label: '定稿合同', route: '/FinalizeContractList', roles: ['operator'], icon: '📑' },
   { label: '分配合同', route: '/admin', roles: ['admin'], icon: '🗂️' },
   { label: '合同查询', route: '/query', roles: ['admin'], icon: '🔍' },
   { label: '用户管理', route: '/user-management', roles: ['admin'], icon: '👥' },
