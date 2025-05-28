@@ -11,7 +11,7 @@ router.get("/",async(req,res)=>{
 
 router.get("/list",async(req,res)=>{
     let {err,rows} = await db.async.all("SELECT * FROM `contract` WHERE `status`='待审批'",[]);
-    if(err == null && rows.length > 0){
+    if(err == null && rows.length >= 0){
         res.send({
             code:200,
             rows
@@ -67,12 +67,37 @@ router.post("/determine",(req,res)=>{
     }else{
         db.async.run("INSERT INTO `contractapproval` (ContractID,Approver,ApprovalDecision,ApprovalDate,ApprovalComments) VALUES (?,?,?,?,?)",
             [info.contractId,info.approver,'审批不通过',currentDate,info.comment]);
+        db.async.run("UPDATE `contract` set `Status`='未通过' WHERE `ContractID` = ?",[info.contractId]);
     }
     res.send({
         code:200,
         msg:"approve success"
     });
-})
+});
+
+router.get("/search",async(req,res)=>{
+    const keyWord = req.query.keyWord;
+    const searchTerm = `%${keyWord}%`
+    let {err,rows} = await db.async.all("SELECT * FROM `contract` WHERE `status`='待审批' AND (`Title` LIKE ? OR `Content` LIKE ?)",[searchTerm,searchTerm]);
+    if (err) {
+        res.send({
+            code: 500,
+            msg: "数据库查询失败",
+            error: err
+        });
+    } else if (rows.length === 0) {
+        res.send({
+            code: 404,
+            msg: "无对应合同"
+        });
+    } else {
+        res.send({
+            code: 200,
+            rows,
+            length:rows.length
+        });
+    }
+});
 
 
 module.exports = router;

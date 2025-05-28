@@ -3,6 +3,14 @@
   <Sidebar />
   <div class="contract-list">
     <h2>待审批合同列表</h2>
+    <div class="search-container">
+        <input
+          type="text"
+          v-model="searchQuery"
+          placeholder="输入合同名称搜索"
+        />
+        <button @click="searchContracts">搜索</button>
+      </div>
     <div v-if="loading" class="loading">加载中...</div>
     <div v-else>
       <table class="contract-table">
@@ -41,7 +49,8 @@ export default {
   data() {
     return {
       contracts: [],
-      loading: true
+      loading: true,
+      searchQuery:''
     }
   },
   created() {
@@ -50,12 +59,9 @@ export default {
   methods: {
     async fetchPendingContracts() {
       try {
-        // 这里应该是API调用，模拟数据
         const res = await axios.get("/approve/list"); 
-        console.log(res);
         this.contracts = res.data.rows;
         this.contracts.approver = res.data.rowsApprover;
-        console.log(this.contracts);
         this.loading = false;
       } catch (error) {
         console.error('获取合同列表失败:', error);
@@ -63,13 +69,36 @@ export default {
       }
     },
     viewContract(contractId) {
-      // const res = await axios.get("/approve/detail?id=${contractId}");
       this.$router.push(
         {path:`/approve/content`,query:{id:contractId}}
       );
     },
     formatDate(dateString) {
       return new Date(dateString).toLocaleDateString();
+    },
+    async searchContracts(){
+      try {
+        const res = await axios.get("/approve/search",{
+          params:{
+            keyWord:this.searchQuery
+          }
+        }); 
+        console.log(res);
+        if(res.data.code==200){
+          if(res.data.msg=="无对应合同"){
+            this.contracts.length = 0;
+            this.loading = false;
+          }else{
+            this.contracts = res.data.rows;
+            this.contracts.length = res.data.length;
+            this.loading = false;
+          }
+        }
+
+      } catch (error) {
+        console.error('获取合同列表失败:', error);
+        this.loading = false;
+      }
     }
   }
 }
@@ -81,7 +110,7 @@ export default {
 }
 .contract-list {
   margin-top: 20px;
-  margin-left: 200px; /* 给 sidebar 腾出空间 */
+  margin-left: 200px; /* Siderbar position */
   padding: 20px;
 }
 
@@ -126,5 +155,29 @@ button:hover {
   text-align: center;
   padding: 20px;
   color: #666;
+}
+
+.search-container {
+  margin-bottom: 20px;
+}
+
+.search-container input {
+  padding: 6px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-right: 10px;
+}
+
+.search-container button {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.search-container button:hover {
+  background-color: #45a049;
 }
 </style>
