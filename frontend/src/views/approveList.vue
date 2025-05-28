@@ -1,6 +1,5 @@
 <template>
   <div class="flex">
-  <Test />
   <Sidebar />
   <div class="contract-list">
     <h2>待审批合同列表</h2>
@@ -11,19 +10,17 @@
           <tr>
             <th>合同编号</th>
             <th>合同名称</th>
-            <th>申请人</th>
-            <th>申请日期</th>
+            <th>修改日期</th>
             <th>操作</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="contract in contracts" :key="contract.id">
-            <td>{{ contract.contractNumber }}</td>
-            <td>{{ contract.contractName }}</td>
-            <td>{{ contract.applicant }}</td>
-            <td>{{ formatDate(contract.applyDate) }}</td>
+            <td>{{ contract.ContractID }}</td>
+            <td>{{ contract.Title }}</td>
+            <td>{{ formatDate(contract.LastModifiedDate) }}</td>
             <td>
-              <button @click="viewContract(contract.id)">查看并审批</button>
+              <button @click="viewContract(contract.ContractID)">查看并审批</button>
             </td>
           </tr>
         </tbody>
@@ -35,6 +32,7 @@
 </template>
 
 <script>
+import axios from 'axios';
 import Sidebar from '../components/sidebar.vue';
 export default {
   components:{
@@ -53,22 +51,11 @@ export default {
     async fetchPendingContracts() {
       try {
         // 这里应该是API调用，模拟数据
-        this.contracts = [
-          {
-            id: 1,
-            contractNumber: 'HT20230001',
-            contractName: '年度服务器采购合同',
-            applicant: '张三',
-            applyDate: '2023-05-15'
-          },
-          {
-            id: 2,
-            contractNumber: 'HT20230002',
-            contractName: '办公室租赁合同',
-            applicant: '李四',
-            applyDate: '2023-05-18'
-          }
-        ];
+        const res = await axios.get("/approve/list"); 
+        console.log(res);
+        this.contracts = res.data.rows;
+        this.contracts.approver = res.data.rowsApprover;
+        console.log(this.contracts);
         this.loading = false;
       } catch (error) {
         console.error('获取合同列表失败:', error);
@@ -76,7 +63,10 @@ export default {
       }
     },
     viewContract(contractId) {
-      this.$router.push(`/approve/${contractId}`);
+      // const res = await axios.get("/approve/detail?id=${contractId}");
+      this.$router.push(
+        {path:`/approve/content`,query:{id:contractId}}
+      );
     },
     formatDate(dateString) {
       return new Date(dateString).toLocaleDateString();

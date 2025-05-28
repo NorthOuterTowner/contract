@@ -9,6 +9,7 @@ import CoSignContract from '../views/CoSignContract.vue';
 import CoSignContractList from '../views/CoSignContractList.vue';
 import FinalizeContract from '../views/FinalizeContract.vue';
 import FinalizeContractList from '../views/FinalizeContractList.vue';
+import content from '../views/content.vue';
 
 import PendingContractList from '../views/PendingContractList.vue';
 import AssignContract from '../views/AssignContract.vue';
@@ -26,6 +27,7 @@ let routes= [
     { path: "/FinalizeContractList", component: FinalizeContractList },
     { path: '/PendingContractList',component: PendingContractList },
     { path: '/allocate/:contractId',component: AssignContract },
+    { path:"/approve/content",component:content },
 ]
 
 const router = createRouter({
