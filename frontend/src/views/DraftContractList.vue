@@ -6,6 +6,20 @@
         <h2>已起草合同列表</h2>
         <button class="new-contract-button" @click="goToDraftContract">起草新合同</button>
       </div>
+      
+      <!-- 新增的搜索栏 -->
+      <div class="search-bar">
+        <input 
+          type="text" 
+          v-model="searchQuery" 
+          placeholder="输入合同名称、编号或申请人搜索..." 
+          @keyup.enter="searchContracts"
+        />
+        <button @click="searchContracts" class="search-button">
+          <span class="search-icon">🔍</span>
+        </button>
+      </div>
+      
       <div v-if="loading" class="loading">加载中...</div>
       <div v-else>
         <table class="contract-table">
@@ -19,7 +33,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="contract in contracts" :key="contract.id">
+            <tr v-for="contract in filteredContracts" :key="contract.id">
               <td>{{ contract.contractNumber }}</td>
               <td>{{ contract.contractName }}</td>
               <td>{{ contract.applicant }}</td>
@@ -30,7 +44,9 @@
             </tr>
           </tbody>
         </table>
-        <div v-if="contracts.length === 0" class="no-data">暂无待审批合同</div>
+        <div v-if="filteredContracts.length === 0" class="no-data">
+          {{ searchQuery ? '没有找到匹配的合同' : '暂无待审批合同' }}
+        </div>
       </div>
     </div>
   </div>
@@ -45,8 +61,21 @@ export default {
   data() {
     return {
       contracts: [],
-      loading: true
+      loading: true,
+      searchQuery: '' // 新增搜索查询字段
     };
+  },
+  computed: {
+    // 新增计算属性用于过滤合同
+    filteredContracts() {
+      if (!this.searchQuery) return this.contracts;
+      const query = this.searchQuery.toLowerCase();
+      return this.contracts.filter(contract => 
+        contract.contractNumber.toLowerCase().includes(query) || 
+        contract.contractName.toLowerCase().includes(query) ||
+        contract.applicant.toLowerCase().includes(query)
+      );
+    }
   },
   created() {
     this.fetchPendingContracts();
@@ -85,6 +114,11 @@ export default {
     },
     goToDraftContract() {
       this.$router.push('/DraftContract');
+    },
+    // 新增搜索方法
+    searchContracts() {
+      // 搜索逻辑已经在计算属性中实现
+      // 这里只是为了响应搜索按钮点击
     }
   }
 };
@@ -102,6 +136,45 @@ export default {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 15px;
+}
+
+/* 新增的搜索栏样式 */
+.search-bar {
+  display: flex;
+  margin-bottom: 20px;
+}
+
+.search-bar input {
+  flex: 1;
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px 0 0 4px;
+  font-size: 14px;
+  outline: none;
+}
+
+.search-bar input:focus {
+  border-color: #4CAF50;
+}
+
+.search-button {
+  padding: 0 15px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 0 4px 4px 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.search-button:hover {
+  background-color: #45a049;
+}
+
+.search-icon {
+  font-size: 16px;
 }
 
 .new-contract-button {
