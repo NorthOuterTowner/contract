@@ -9,6 +9,7 @@ import CoSignContract from '../views/CoSignContract.vue';
 import CoSignContractList from '../views/CoSignContractList.vue';
 import FinalizeContract from '../views/FinalizeContract.vue';
 import FinalizeContractList from '../views/FinalizeContractList.vue';
+import content from '../views/content.vue';
 
 let routes= [
     {path: '/', redirect: '/HomePage'},
@@ -20,7 +21,8 @@ let routes= [
     { path: "/CoSignContract", component: CoSignContract },
     { path: "/CoSignContractList", component: CoSignContractList },
     { path: "/FinalizeContract", component: FinalizeContract },
-    { path: "/FinalizeContractList", component: FinalizeContractList }
+    { path: "/FinalizeContractList", component: FinalizeContractList },
+    {path:"/approve/content",component:content}
 ]
 
 const router = createRouter({
