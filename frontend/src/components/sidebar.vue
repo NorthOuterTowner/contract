@@ -25,7 +25,8 @@ export default {
         { title: '合同定稿', path: '/FinalizeContractList' },
         { title: '待审批合同', path: '/approveList' },
         { title: '已完成合同', path: '/completed' },
-        { title: '合同统计', path: '/statistics' }
+        { title: '合同统计', path: '/statistics' },
+        { title: '分配合同', path: '/PendingContractList' }
       ]
     }
   },
