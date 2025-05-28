@@ -11,6 +11,9 @@ import FinalizeContract from '../views/FinalizeContract.vue';
 import FinalizeContractList from '../views/FinalizeContractList.vue';
 import content from '../views/content.vue';
 
+import PendingContractList from '../views/PendingContractList.vue';
+import AssignContract from '../views/AssignContract.vue';
+
 let routes= [
     {path: '/', redirect: '/HomePage'},
     {path:'/HomePage',component :HomePage},
@@ -22,7 +25,9 @@ let routes= [
     { path: "/CoSignContractList", component: CoSignContractList },
     { path: "/FinalizeContract", component: FinalizeContract },
     { path: "/FinalizeContractList", component: FinalizeContractList },
-    {path:"/approve/content",component:content}
+    { path: '/PendingContractList',component: PendingContractList },
+    { path: '/allocate/:contractId',component: AssignContract },
+    { path:"/approve/content",component:content },
 ]
 
 const router = createRouter({
