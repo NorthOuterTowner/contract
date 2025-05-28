@@ -27,7 +27,7 @@ CREATE TABLE `contract` (
   `Title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `Description` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `Content` longtext COLLATE utf8mb4_unicode_ci,
-  `Status` enum('待起草','会签处理中','待定稿','待审批','待签署','已签署') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '待起草',
+  `Status` enum('待起草','会签处理中','待定稿','待审批','待签署','已签署','未通过') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '待起草',
   `CreationDate` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `LastModifiedDate` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`ContractID`)
