@@ -69,7 +69,7 @@
         </form>
       </div>
       
-      <div v-if="approvalHistory.length > 0" class="approval-history">
+      <div v-if="approvalHistory.length >= 0" class="approval-history">
         <h3>审批历史</h3>
         <ul>
           <li v-for="(item, index) in approvalHistory" :key="index">

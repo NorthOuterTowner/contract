@@ -39,9 +39,14 @@
 <script>
 import axios from 'axios';
 import Sidebar from '../components/sidebar.vue';
-
+import { inject } from 'vue';
 export default {
   name: 'Content',
+  inject: ['message'],
+  setup(){
+    const message = inject("message");
+    return {message};
+  },
   components: {
     Sidebar
   },
@@ -88,16 +93,18 @@ export default {
       }
 
       try {
-        const res = await axios.post('/approve/submit', {
-          id: this.contract.ContractID,
-          status: this.form.status,
+        const res = await axios.post('/approve/determine', {
+          contractId: this.contract.ContractID,
+          approve: this.form.status === '通过',
+          approver: 'userA',
           comment: this.form.comment
         });
 
         if (res.data.code === 200) {
-          alert("审批提交成功！");
+          this.message.info("审批提交成功");
+          this.resetForm();
         } else {
-          alert("提交失败：" + res.data.msg);
+          this.message.error("审批提交失败");
         }
       } catch (error) {
         console.error("提交审批失败:", error);
