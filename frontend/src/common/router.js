@@ -14,11 +14,20 @@ import content from '../views/content.vue';
 import PendingContractList from '../views/PendingContractList.vue';
 import AssignContract from '../views/AssignContract.vue';
 
+import SystemManagement from '../views/SystemManagement.vue';
+
+import UserManagement from '../views/UserManagement.vue';
+import AddUser from '../views/AddUser.vue';
+import ModifyUser from '../views/ModifyUser.vue';
+
+import RoleManagement from '../views/RoleManagement.vue';
+import AddRole from '../views/AddRole.vue';
+
 let routes= [
-    {path: '/', redirect: '/HomePage'},
-    {path:'/HomePage',component :HomePage},
-    {path:"/approveList",component:approveList},
-    {path:'/approval',component:approval},
+    { path: '/', redirect: '/HomePage'},
+    { path: '/HomePage', component :HomePage},
+    { path: "/approveList", component:approveList },
+    { path: '/approval', component:approval },
     { path: "/DraftContract", component: DraftContract },
     { path: "/DraftContractList", component: DraftContractList },
     { path: "/CoSignContract", component: CoSignContract },
@@ -27,7 +36,13 @@ let routes= [
     { path: "/FinalizeContractList", component: FinalizeContractList },
     { path: '/PendingContractList',component: PendingContractList },
     { path: '/allocate/:contractId',component: AssignContract },
-    { path:"/approve/content",component:content },
+    { path: "/approve/content",component:content },
+    { path: '/system', component: SystemManagement },
+    { path: '/system/user', component: UserManagement },
+    { path: '/system/user/add', component: AddUser },
+    { path: '/system/user/modify/:=userId', component: ModifyUser },
+    { path: '/system/role', component: RoleManagement },
+    { path: '/system/role/add', component: AddRole },
 ]
 
 const router = createRouter({
