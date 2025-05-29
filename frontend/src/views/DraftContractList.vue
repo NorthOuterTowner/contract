@@ -3,7 +3,7 @@
     <Sidebar />
     <div class="contract-list">
       <div class="header">
-        <h2>已起草合同列表</h2>
+        <h2>未完成起草合同列表</h2>
         <button class="new-contract-button" @click="goToDraftContract">起草新合同</button>
       </div>
       
@@ -39,7 +39,7 @@
               <td>{{ contract.applicant }}</td>
               <td>{{ formatDate(contract.applyDate) }}</td>
               <td>
-                <button @click="viewContract(contract.id)">查看</button>
+                <button @click="viewContract(contract.id)">编辑</button>
               </td>
             </tr>
           </tbody>
@@ -107,7 +107,7 @@ export default {
       }
     },
     viewContract(contractId) {
-      this.$router.push(`/approve/${contractId}`);
+      this.$router.push(`/DraftContract/${contractId}`);
     },
     formatDate(dateString) {
       return new Date(dateString).toLocaleDateString();
