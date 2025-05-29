@@ -2,7 +2,8 @@
 ## 使用说明
 
 ### 1.使用数据库
-本系统使用MySQL作为数据库，确保已安装MySQL并创建了名为`contract`的数据库。将`SQL/contract.sql`文件中的内容导入到数据库中。使用 mysql 命令将 SQL 文件导入到本地 MySQL 服务器，即可在本地使用该数据库。
+本系统使用MySQL作为数据库，确保已安装MySQL并创建了名为`contract`的数据库。将`SQL/contract.sql`文件中的内容导入到数据库中。  
+使用 mysql 命令将 SQL 文件导入到本地 MySQL 服务器，即可在本地使用该数据库。
 ```bash
 mysql -u [username] -p [database_name] < [database_name.sql]
 ```
