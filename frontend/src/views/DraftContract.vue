@@ -3,17 +3,13 @@
     <div v-if="loading" class="loading">加载中...</div>
     <div v-else>
       <div class="back-link">
-        <router-link to="/CoSignContractList">← 返回合同列表</router-link>
+        <router-link to="/DraftContractList">← 返回合同列表</router-link>
       </div>
       
-      <h2>合同会签</h2>
+      <h2>起草合同</h2>
       
       <div class="contract-info" v-if="contract.contractID">
         <h3>合同基本信息</h3>
-        <div class="info-item">
-          <label>合同名称:</label>
-          <span>{{ contract.title }}</span>
-        </div>
         <div class="info-item">
           <label>合同编号:</label>
           <span>{{ contract.contractID }}</span>
@@ -29,20 +25,27 @@
       </div>
       
       <div class="draft-form">
-        <h3>会签内容</h3>
+        <h3>起草内容</h3>
         <form @submit.prevent="submitDraft">
           <div class="form-group">
-            
+            <label for="draftTitle">草案标题:</label>
+            <input 
+              type="text" 
+              id="draftTitle" 
+              v-model="draft.draftTitle" 
+              required
+              placeholder="请输入草案标题"
+            />
             <span class="error" v-if="errors.draftTitle">{{ errors.draftTitle }}</span>
           </div>
           
           <div class="form-group">
-            <label for="description">会签修改意见摘要:</label>
+            <label for="description">合同摘要:</label>
             <textarea 
               id="description" 
               v-model="contract.description" 
               required
-              placeholder="请简要描述合同修改意见(200字以内)"
+              placeholder="请输入合同简要描述(200字以内)"
               maxlength="200"
               rows="2"
             ></textarea>
@@ -50,7 +53,7 @@
           </div>
           
           <div class="form-group">
-            <label for="draftContent">完整合同内容:</label>
+            <label for="draftContent">合同内容:</label>
             <textarea 
               id="draftContent" 
               v-model="draft.draftContent" 
@@ -67,7 +70,6 @@
                 ref="fileInput"
                 style="display: none"
                 @change="handleFileUpload"
-                accept=".pdf,.docx,.txt"
               />
               <button 
                 type="button" 
@@ -78,7 +80,6 @@
               </button>
               <span v-if="uploading" class="upload-status">文件上传中...</span>
               <span v-if="fileName" class="file-name">{{ fileName }}</span>
-              <span v-if="fileError" class="error">{{ fileError }}</span>
             </div>
           </div>
           
@@ -99,8 +100,6 @@
 <script>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { PDFDocument } from 'pdf-lib';
-import * as docx from 'docx';
 
 export default {
   setup() {
@@ -112,7 +111,6 @@ export default {
     const submitting = ref(false);
     const uploading = ref(false);
     const fileName = ref('');
-    const fileError = ref('');
     
     const contract = ref({
       contractID: '',
@@ -138,71 +136,41 @@ export default {
       fileInput.value.click();
     };
     
-    const handleFileUpload = async (event) => {
+    const handleFileUpload = (event) => {
       const file = event.target.files[0];
       if (!file) return;
       
       fileName.value = file.name;
       uploading.value = true;
-      fileError.value = '';
       
-      try {
-        if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
-          await handlePdfFile(file);
-        } else if (
-          file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || 
-          file.name.endsWith('.docx')
-        ) {
-          await handleDocxFile(file);
-        } else {
-          await handleTextFile(file);
+      const reader = new FileReader();
+      
+      reader.onload = (e) => {
+        try {
+          const content = e.target.result;
+          draft.value.draftContent = content;
+          uploading.value = false;
+        } catch (error) {
+          console.error('文件读取错误:', error);
+          uploading.value = false;
+          alert('文件读取失败，请重试');
         }
-      } catch (error) {
-        console.error('文件处理错误:', error);
-        fileError.value = '文件处理失败: ' + error.message;
-      } finally {
+      };
+      
+      reader.onerror = () => {
         uploading.value = false;
-      }
-    };
-    
-    const handleTextFile = (file) => {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          draft.value.draftContent = e.target.result;
-          resolve();
-        };
-        reader.onerror = () => reject(new Error('文本文件读取失败'));
-        reader.readAsText(file);
-      });
-    };
-    
-    const handlePdfFile = async (file) => {
-      try {
-        const arrayBuffer = await file.arrayBuffer();
-        const pdfDoc = await PDFDocument.load(arrayBuffer);
-        let fullText = '';
-        
-        // 提取PDF文本内容
-        const pages = pdfDoc.getPages();
-        for (const page of pages) {
-          const text = await page.getText();
-          fullText += text + '\n\n';
+        alert('文件读取错误，请选择其他文件');
+      };
+      
+      // 支持大文件读取
+      if (file.size > 1024 * 1024 * 10) { // 大于10MB的文件使用不同读取方式
+        reader.readAsText(file); // 对于超大文本文件
+      } else {
+        if (file.type.includes('text') || file.name.endsWith('.txt') || file.name.endsWith('.doc') || file.name.endsWith('.docx')) {
+          reader.readAsText(file);
+        } else {
+          reader.readAsDataURL(file); // 对于非文本文件
         }
-        
-        draft.value.draftContent = fullText;
-      } catch (error) {
-        throw new Error('PDF解析失败: ' + error.message);
-      }
-    };
-    
-    const handleDocxFile = async (file) => {
-      try {
-        const arrayBuffer = await file.arrayBuffer();
-        const text = await docx.extractRawText(arrayBuffer);
-        draft.value.draftContent = text;
-      } catch (error) {
-        throw new Error('Word文档解析失败: ' + error.message);
       }
     };
     
@@ -309,7 +277,6 @@ export default {
       submitting,
       uploading,
       fileName,
-      fileError,
       contract,
       draft,
       errors,
@@ -418,7 +385,6 @@ textarea {
   display: flex;
   align-items: center;
   gap: 10px;
-  flex-wrap: wrap;
 }
 
 .upload-btn {
@@ -443,10 +409,6 @@ textarea {
 .file-name {
   color: #606266;
   font-size: 13px;
-  max-width: 200px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .form-actions {
