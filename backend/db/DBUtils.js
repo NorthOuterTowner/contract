@@ -58,7 +58,7 @@ const db = {
       });
     },
 
-  //查询待分配合同列表
+    // 查询待分配合同列表
     getPendingContracts: () => {
       const sql = "SELECT * FROM Contract WHERE Status = '待起草'";
       return db.async.all(sql, []);
@@ -70,7 +70,7 @@ const db = {
     },
     // 查询用户列表信息
     getUserList: () => {
-      const sql = "SELECT UserID, UserName FROM Users"; // 假设存在 Users 表
+      const sql = "SELECT user_id, username FROM Users"; // 假设存在 Users 表
       return db.async.all(sql, []);
     }, 
 
@@ -80,15 +80,15 @@ const db = {
       return db.async.run(sql, [contractId, signerId, approverId, executorId]);
     },
 
-    //添加用户
-    addUser: (userName, password) => {
-      const sql = "INSERT INTO users (user_name, password) VALUES (?,?)";
-      return db.async.run(sql, [userName, password]);
+    // 添加用户
+    addUser: (userId, userName, password) => {
+      const sql = "INSERT INTO users (user_id, username, password_hash) VALUES (?,?,?)";
+      return db.async.run(sql, [userId, userName, password]);
     },
 
     // 查询用户
     getUser: (query) => {
-      const sql = "SELECT * FROM users WHERE user_name = ? OR user_id = ?";
+      const sql = "SELECT * FROM users WHERE username = ? OR user_id = ?";
       return db.async.all(sql, [query, query]);
     },
 
@@ -97,14 +97,14 @@ const db = {
       let sql = "UPDATE users SET ";
       const params = [];
       if (userName) {
-        sql += "user_name = ?";
+        sql += "username = ?";
         params.push(userName);
         if (password) {
-          sql += ", password = ?";
+          sql += ", password_hash = ?";
           params.push(password);
         }
       } else if (password) {
-        sql += "password = ?";
+        sql += "password_hash = ?";
         params.push(password);
       }
       sql += " WHERE user_id = ?";
@@ -116,6 +116,12 @@ const db = {
     deleteUser: (userId) => {
       const sql = "DELETE FROM users WHERE user_id = ?";
       return db.async.run(sql, [userId]);
+    },
+
+    // 获取下一个可用的用户 ID
+    getNextUserId: () => {
+      const sql = "SELECT IFNULL(MAX(user_id), 0) + 1 as nextId FROM users";
+      return db.async.all(sql, []);
     }
   },
 };

@@ -199,10 +199,7 @@ const resetForm = () => {
 }
 
 .page-title {
-  color: #007bff;
-  font-size: 24px;
   margin-bottom: 20px;
-  text-align: center;
   border-bottom: 2px solid #e0f2ff;
   padding-bottom: 10px;
 }

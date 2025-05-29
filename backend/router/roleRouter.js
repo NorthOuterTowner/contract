@@ -13,9 +13,9 @@ router.post("/add", async (req, res) => {
       "INSERT INTO Roles (RoleName, RoleDescription) VALUES (?, ?)",
       [roleName, roleDescription]
     );
-    
+
     const roleId = result.result.insertId;
-    
+
     // 插入权限关联
     if (permissions && permissions.length > 0) {
       const values = permissions.map(pid => [roleId, pid]);
@@ -24,7 +24,7 @@ router.post("/add", async (req, res) => {
         [values]
       );
     }
-    
+
     res.json({ message: "角色添加成功" });
   } catch (error) {
     console.error(error);
@@ -35,27 +35,18 @@ router.post("/add", async (req, res) => {
 // 查询角色
 router.get("/query", async (req, res) => {
   const { roleName } = req.query;
-  
+
   try {
     let sql = "SELECT * FROM Roles";
     const params = [];
-    
+
     if (roleName) {
       sql += " WHERE RoleName LIKE ?";
       params.push(`%${roleName}%`);
     }
-    
+
     const roles = await db.async.all(sql, params);
-    
-    // 查询每个角色的权限
-    for (const role of roles.rows) {
-      const permissions = await db.async.all(
-        "SELECT * FROM Functions WHERE FunctionID IN (SELECT FunctionID FROM RolePermissions WHERE RoleID = ?)",
-        [role.RoleID]
-      );
-      role.permissions = permissions.rows;
-    }
-    
+
     res.json(roles.rows);
   } catch (error) {
     console.error(error);
@@ -72,7 +63,7 @@ router.put("/update", async (req, res) => {
     // 更新角色信息
     let sql = "UPDATE Roles SET ";
     const params = [];
-    
+
     if (roleName) {
       sql += "RoleName = ?";
       params.push(roleName);
@@ -84,18 +75,18 @@ router.put("/update", async (req, res) => {
       sql += "RoleDescription = ?";
       params.push(roleDescription);
     }
-    
+
     sql += " WHERE RoleID = ?";
     params.push(roleId);
-    
+
     await db.async.run(sql, params);
-    
+
     // 先删除原有权限关联
     await db.async.run(
       "DELETE FROM RolePermissions WHERE RoleID = ?",
       [roleId]
     );
-    
+
     // 插入新的权限关联
     if (permissions && permissions.length > 0) {
       const values = permissions.map(pid => [roleId, pid]);
@@ -104,7 +95,7 @@ router.put("/update", async (req, res) => {
         [values]
       );
     }
-    
+
     res.json({ message: "角色更新成功" });
   } catch (error) {
     console.error(error);
@@ -123,13 +114,13 @@ router.delete("/delete", async (req, res) => {
       "DELETE FROM RolePermissions WHERE RoleID = ?",
       [roleId]
     );
-    
+
     // 删除角色
     await db.async.run(
       "DELETE FROM Roles WHERE RoleID = ?",
       [roleId]
     );
-    
+
     res.json({ message: "角色删除成功" });
   } catch (error) {
     console.error(error);
