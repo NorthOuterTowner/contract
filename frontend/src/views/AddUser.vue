@@ -2,6 +2,10 @@
   <div>
     <h2>添加用户</h2>
     <div class="form-item">
+      <label>用户 ID：</label>
+      <input v-model="userId" readonly /> <!-- 显示 ID 并设置为只读 -->
+    </div>
+    <div class="form-item">
       <label>用户名：</label>
       <input v-model="userName" placeholder="请输入用户名" />
     </div>
@@ -25,9 +29,22 @@ import axios from 'axios';
 const router = useRouter();
 const message = inject('message');
 
+const userId = ref('');
 const userName = ref('');
 const password = ref('');
 const confirmPassword = ref('');
+
+// 在组件挂载时获取下一个可用的 ID
+const getNextUserId = async () => {
+  try {
+    const response = await axios.get('/user/getNextId');
+    userId.value = response.data.nextId;
+  } catch (error) {
+    message.error('获取用户 ID 失败');
+  }
+};
+
+getNextUserId();
 
 const addUser = async () => {
   // 表单验证
@@ -44,6 +61,7 @@ const addUser = async () => {
   try {
     // 提交请求
     await axios.post('/user/add', {
+      userId: userId.value,
       userName: userName.value,
       password: password.value
     });

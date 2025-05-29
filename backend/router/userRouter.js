@@ -2,18 +2,34 @@ const express = require("express");
 const router = express.Router();
 const { db } = require("../db/DBUtils");
 
+// 获取下一个可用的用户 ID
+router.get('/getNextId', async (req, res) => {
+  try {
+    const result = await db.async.getNextUserId();
+    res.json({ nextId: result.rows[0].nextId });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 // 新增用户
 router.post('/add', async (req, res) => {
-  const { userName, password } = req.body;
-  if (!userName || !password) {
-    return res.status(400).json({ error: '用户名和密码为必填项' });
+  const { userId, userName, password } = req.body;
+  if (!userId || !userName || !password) {
+    return res.status(400).json({ error: '用户 ID、用户名和密码为必填项' });
   }
   try {
-    const existingUser = await db.async.getUser(userName);
+    // 检查 ID 和用户名是否重复
+    const existingUser = await db.async.getUser(userId);
     if (existingUser.rows.length > 0) {
+      return res.status(400).json({ error: '用户 ID 已存在' });
+    }
+    const existingUserName = await db.async.getUser(userName);
+    if (existingUserName.rows.length > 0) {
       return res.status(400).json({ error: '用户名已存在' });
     }
-    await db.async.addUser(userName, password);
+    await db.async.addUser(userId, userName, password);
     res.json({ message: '用户添加成功' });
   } catch (error) {
     console.error(error);
