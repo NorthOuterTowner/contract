@@ -1,253 +1,496 @@
 <template>
-  <div class="contract-cosign">
+  <div class="contract-draft">
     <div v-if="loading" class="loading">加载中...</div>
     <div v-else>
       <div class="back-link">
-        <router-link to="/CoSignContractList">← 返回列表</router-link>
+        <router-link to="/CoSignContractList">← 返回合同列表</router-link>
       </div>
       
-      <h2>会签合同</h2>
+      <h2>合同会签</h2>
       
-      <div class="contract-details">
-        <h3>合同详情</h3>
-        <div class="detail-item">
-          <label>合同编号:</label>
-          <span>{{ contract.contractNumber }}</span>
-        </div>
-        <div class="detail-item">
+      <div class="contract-info" v-if="contract.contractID">
+        <h3>合同基本信息</h3>
+        <div class="info-item">
           <label>合同名称:</label>
-          <span>{{ contract.contractName }}</span>
+          <span>{{ contract.title }}</span>
         </div>
-        <div class="detail-item">
-          <label>申请人:</label>
-          <span>{{ contract.applicant }}</span>
+        <div class="info-item">
+          <label>合同编号:</label>
+          <span>{{ contract.contractID }}</span>
         </div>
-        <div class="detail-item">
-          <label>申请日期:</label>
-          <span>{{ formatDate(contract.applyDate) }}</span>
+        <div class="info-item">
+          <label>创建日期:</label>
+          <span>{{ formatDate(contract.creationDate) }}</span>
         </div>
-        <div class="detail-item">
-          <label>合同内容:</label>
-          <div class="contract-content">{{ contract.content }}</div>
+        <div class="info-item">
+          <label>当前状态:</label>
+          <span>{{ contract.status }}</span>
         </div>
       </div>
       
-      <div class="cosign-form">
-        <h3>签署信息</h3>
-        <form @submit.prevent="submitCoSign">
+      <div class="draft-form">
+        <h3>会签内容</h3>
+        <form @submit.prevent="submitDraft">
           <div class="form-group">
-            <label for="signDate">签署日期:</label>
-            <input 
-              type="date" 
-              id="signDate" 
-              v-model="signData.signDate" 
-              required
-            />
+            
+            <span class="error" v-if="errors.draftTitle">{{ errors.draftTitle }}</span>
           </div>
+          
           <div class="form-group">
-            <label for="comment">签署意见:</label>
+            <label for="description">会签修改意见摘要:</label>
             <textarea 
-              id="comment" 
-              v-model="signData.comment" 
+              id="description" 
+              v-model="contract.description" 
               required
-              placeholder="请输入签署意见"
-              rows="4"
+              placeholder="请简要描述合同修改意见(200字以内)"
+              maxlength="200"
+              rows="2"
             ></textarea>
-            <div v-if="errors.comment" class="error">{{ errors.comment }}</div>
+            <span class="error" v-if="errors.description">{{ errors.description }}</span>
           </div>
+          
+          <div class="form-group">
+            <label for="draftContent">完整合同内容:</label>
+            <textarea 
+              id="draftContent" 
+              v-model="draft.draftContent" 
+              required
+              placeholder="请输入详细的合同内容"
+              rows="10"
+            ></textarea>
+            <span class="error" v-if="errors.draftContent">{{ errors.draftContent }}</span>
+            
+            <div class="upload-section">
+              <input 
+                type="file" 
+                id="fileInput" 
+                ref="fileInput"
+                style="display: none"
+                @change="handleFileUpload"
+                accept=".pdf,.docx,.txt"
+              />
+              <button 
+                type="button" 
+                class="upload-btn"
+                @click="triggerFileInput"
+              >
+                上传文件
+              </button>
+              <span v-if="uploading" class="upload-status">文件上传中...</span>
+              <span v-if="fileName" class="file-name">{{ fileName }}</span>
+              <span v-if="fileError" class="error">{{ fileError }}</span>
+            </div>
+          </div>
+          
           <div class="form-actions">
+            <button type="button" class="secondary" @click="saveAsDraft">
+              {{ savingDraft ? '保存中...' : '保存草稿' }}
+            </button>
             <button type="submit" :disabled="submitting">
-              {{ submitting ? '提交中...' : '提交' }}
+              {{ submitting ? '提交中...' : '提交草案' }}
             </button>
           </div>
         </form>
       </div>
-      
     </div>
   </div>
 </template>
 
 <script>
-import { defineComponent, ref } from 'vue';
-import { NCard, NForm, NFormItem, NInput, NUpload, NButton } from 'naive-ui';
+import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { PDFDocument } from 'pdf-lib';
+import * as docx from 'docx';
 
-export default defineComponent({
-  components: {
-    NCard,
-    NForm,
-    NFormItem,
-    NInput,
-    NUpload,
-    NButton
-  },
-  data() {
-    return {
-      contract: {
-        contractNumber: '',
-        contractName: '',
-        applicant: '',
-        applyDate: '',
-        content: ''
-      },
-      signData: {
-        signDate: '',
-        comment: ''
-      },
-      loading: true,
-      submitting: false,
-      errors: {
-        comment: ''
-      }
-    }
-  },
-  created() {
-    this.fetchContractDetails();
-  },
-  methods: {
-    async fetchContractDetails() {
+export default {
+  setup() {
+    const router = useRouter();
+    const fileInput = ref(null);
+    
+    const loading = ref(true);
+    const savingDraft = ref(false);
+    const submitting = ref(false);
+    const uploading = ref(false);
+    const fileName = ref('');
+    const fileError = ref('');
+    
+    const contract = ref({
+      contractID: '',
+      title: '',
+      description: '',
+      status: '待起草',
+      creationDate: new Date()
+    });
+    
+    const draft = ref({
+      draftTitle: '',
+      draftContent: '',
+      createdBy: '当前用户'
+    });
+    
+    const errors = ref({
+      draftTitle: '',
+      description: '',
+      draftContent: ''
+    });
+    
+    const triggerFileInput = () => {
+      fileInput.value.click();
+    };
+    
+    const handleFileUpload = async (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      fileName.value = file.name;
+      uploading.value = true;
+      fileError.value = '';
+      
       try {
-        // 模拟API调用
-        this.contract = {
-          id: 1,
-          contractNumber: 'HT20230001',
-          contractName: '年度服务器采购合同',
-          applicant: '张三',
-          applyDate: '2023-05-15',
-          content: '本合同为年度服务器采购合同，包含100台服务器及相关配件，总金额￥1,200,000元。'
-        };
-        
-        this.loading = false;
+        if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
+          await handlePdfFile(file);
+        } else if (
+          file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || 
+          file.name.endsWith('.docx')
+        ) {
+          await handleDocxFile(file);
+        } else {
+          await handleTextFile(file);
+        }
       } catch (error) {
-        console.error('获取合同详情失败:', error);
-        this.loading = false;
+        console.error('文件处理错误:', error);
+        fileError.value = '文件处理失败: ' + error.message;
+      } finally {
+        uploading.value = false;
       }
-    },
-    validateForm() {
+    };
+    
+    const handleTextFile = (file) => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          draft.value.draftContent = e.target.result;
+          resolve();
+        };
+        reader.onerror = () => reject(new Error('文本文件读取失败'));
+        reader.readAsText(file);
+      });
+    };
+    
+    const handlePdfFile = async (file) => {
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdfDoc = await PDFDocument.load(arrayBuffer);
+        let fullText = '';
+        
+        // 提取PDF文本内容
+        const pages = pdfDoc.getPages();
+        for (const page of pages) {
+          const text = await page.getText();
+          fullText += text + '\n\n';
+        }
+        
+        draft.value.draftContent = fullText;
+      } catch (error) {
+        throw new Error('PDF解析失败: ' + error.message);
+      }
+    };
+    
+    const handleDocxFile = async (file) => {
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        const text = await docx.extractRawText(arrayBuffer);
+        draft.value.draftContent = text;
+      } catch (error) {
+        throw new Error('Word文档解析失败: ' + error.message);
+      }
+    };
+    
+    const fetchContractInfo = async () => {
+      try {
+        contract.value = {
+          contractID: 'CON' + Math.floor(Math.random() * 10000).toString().padStart(4, '0'),
+          title: '新合同',
+          description: '',
+          status: '待起草',
+          creationDate: new Date()
+        };
+        loading.value = false;
+      } catch (error) {
+        console.error('获取合同信息失败:', error);
+        loading.value = false;
+      }
+    };
+    
+    const validateForm = () => {
       let isValid = true;
       
-      if (!this.signData.comment.trim()) {
-        this.errors.comment = '签署意见不能为空';
+      if (!draft.value.draftTitle.trim()) {
+        errors.value.draftTitle = '草案标题不能为空';
         isValid = false;
       } else {
-        this.errors.comment = '';
+        errors.value.draftTitle = '';
+      }
+      
+      if (!contract.value.description.trim()) {
+        errors.value.description = '合同摘要不能为空';
+        isValid = false;
+      } else if (contract.value.description.length > 200) {
+        errors.value.description = '摘要不能超过200字';
+        isValid = false;
+      } else {
+        errors.value.description = '';
+      }
+      
+      if (!draft.value.draftContent.trim()) {
+        errors.value.draftContent = '合同内容不能为空';
+        isValid = false;
+      } else {
+        errors.value.draftContent = '';
       }
       
       return isValid;
-    },
-    async submitSignCo() {
-      if (!this.validateForm()) return;
+    };
+    
+    const saveAsDraft = async () => {
+      if (!validateForm()) return;
       
-      this.submitting = true;
+      savingDraft.value = true;
       
       try {
-        // 这里应该是API调用，提交签署结果
-        console.log('提交签署:', {
-          contractId: this.contract.id,
-          userId: '当前用户ID', // 实际应用中应从登录信息获取
-          action: this.signData.action,
-          comment: this.signData.comment
+        console.log('保存草稿:', {
+          contractID: contract.value.contractID,
+          ...draft.value
         });
         
-        // 模拟成功响应
         setTimeout(() => {
-          this.submitting = false;
-          alert('签署提交成功');
-          this.$router.push('/approveList');
+          savingDraft.value = false;
+          alert('草稿保存成功');
+        }, 800);
+      } catch (error) {
+        console.error('保存草稿失败:', error);
+        savingDraft.value = false;
+        alert('保存失败，请重试');
+      }
+    };
+    
+    const submitDraft = async () => {
+      if (!validateForm()) return;
+      
+      submitting.value = true;
+      
+      try {
+        console.log('提交草案:', {
+          contract: contract.value,
+          draft: draft.value
+        });
+        
+        setTimeout(() => {
+          submitting.value = false;
+          alert('草案提交成功');
+          router.push('/DraftContractList');
         }, 1000);
       } catch (error) {
-        console.error('提交签署失败:', error);
-        this.submitting = false;
-        alert('签署失败，请重试');
+        console.error('提交草案失败:', error);
+        submitting.value = false;
+        alert('提交失败，请重试');
       }
-    },
-    formatDate(dateString) {
-      return new Date(dateString).toLocaleDateString();
-    }
+    };
+    
+    const formatDate = (date) => {
+      return new Date(date).toLocaleString();
+    };
+    
+    fetchContractInfo();
+    
+    return {
+      loading,
+      savingDraft,
+      submitting,
+      uploading,
+      fileName,
+      fileError,
+      contract,
+      draft,
+      errors,
+      fileInput,
+      triggerFileInput,
+      handleFileUpload,
+      saveAsDraft,
+      submitDraft,
+      formatDate
+    };
   }
-});
+};
 </script>
 
 <style scoped>
-.contract-cosign {
-  margin-top: 20px;
+.contract-draft {
+  max-width: 900px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .back-link {
   margin-bottom: 20px;
 }
 
-.contract-details {
-  background-color: #f9f9f9;
- padding : 15px;
-  border-radius: 4px;
+.back-link a {
+  color: #409eff;
+  text-decoration: none;
+}
+
+h2 {
+  color: #333;
   margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
 }
 
-.detail-item {
+.contract-info, .draft-form {
+  background-color: #f9f9f9;
+  padding: 20px;
+  border-radius: 6px;
+  margin-bottom: 25px;
+}
+
+h3 {
+  color: #444;
+  margin-top: 0;
+  margin-bottom: 15px;
+}
+
+.info-item {
   margin-bottom: 10px;
+  display: flex;
 }
 
-.detail-item label {
+.info-item label {
   font-weight: bold;
   min-width: 100px;
-  display: inline-block;
-}
-
-.contract-content {
-  margin-top: 10px;
-  padding: 10px;
-  background-color: white;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-
-.cosign-form {
-  background-color: white;
-  padding: 15px;
-  border-radius: 4px;
-  margin-bottom: 20px;
+  color: #666;
 }
 
 .form-group {
-  margin-bottom: 15px;
+  margin-bottom: 20px;
 }
 
 .form-group label {
   display: block;
-  margin-bottom: 5px;
+  margin-bottom: 8px;
   font-weight: bold;
+  color: #555;
+}
+
+input[type="text"],
+textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: border-color 0.3s;
+}
+
+input[type="text"]:focus,
+textarea:focus {
+  border-color: #409eff;
+  outline: none;
 }
 
 textarea {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  min-height: 150px;
   resize: vertical;
 }
 
 .error {
-  color: #f44336;
-  font-size: 0.8em;
+  color: #f56c6c;
+  font-size: 12px;
   margin-top: 5px;
+  display: block;
+}
+
+.upload-section {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.upload-btn {
+  padding: 8px 15px;
+  background-color: #67c23a;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.upload-btn:hover {
+  background-color: #85ce61;
+}
+
+.upload-status {
+  color: #909399;
+  font-size: 13px;
+}
+
+.file-name {
+  color: #606266;
+  font-size: 13px;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .form-actions {
-  margin-top: 15px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  margin-top: 25px;
 }
 
-.form-actions button {
-  background-color: #4CAF50;
-  color: white;
+button {
+  padding: 10px 20px;
   border: none;
-  padding: 8px 16px;
   border-radius: 4px;
+  font-size: 14px;
   cursor: pointer;
+  transition: all 0.3s;
 }
 
-.form-actions button:disabled {
-  background-color: #cccccc;
+button[type="submit"] {
+  background-color: #409eff;
+  color: white;
+}
+
+button[type="submit"]:hover {
+  background-color: #66b1ff;
+}
+
+button[type="submit"]:disabled {
+  background-color: #c0c4cc;
   cursor: not-allowed;
+}
+
+button.secondary {
+  background-color: #f4f4f5;
+  color: #606266;
+}
+
+button.secondary:hover {
+  background-color: #e9e9eb;
+}
+
+.loading {
+  text-align: center;
+  padding: 50px;
+  color: #666;
 }
 </style>
