@@ -75,6 +75,35 @@ INSERT INTO `contractapproval` VALUES (1,'CTR0000002','李','审批不通过','2
 UNLOCK TABLES;
 
 --
+-- Table structure for table `contractassignment`
+--
+
+DROP TABLE IF EXISTS `contractassignment`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `contractassignment` (
+  `AssignmentID` int(11) NOT NULL AUTO_INCREMENT,
+  `ContractID` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `SignerID` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `ApproverID` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `ExecutorID` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `AssignmentDate` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`AssignmentID`),
+  KEY `ContractID` (`ContractID`),
+  CONSTRAINT `contractassignment_ibfk_1` FOREIGN KEY (`ContractID`) REFERENCES `contract` (`ContractID`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `contractassignment`
+--
+
+LOCK TABLES `contractassignment` WRITE;
+/*!40000 ALTER TABLE `contractassignment` DISABLE KEYS */;
+/*!40000 ALTER TABLE `contractassignment` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `contractdraft`
 --
 
@@ -189,6 +218,88 @@ LOCK TABLES `contractsigning` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `functions`
+--
+
+DROP TABLE IF EXISTS `functions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `functions` (
+  `FunctionID` int(11) NOT NULL AUTO_INCREMENT,
+  `FunctionName` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `FunctionDescription` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ParentID` int(11) DEFAULT NULL,
+  `CreatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`FunctionID`),
+  UNIQUE KEY `FunctionName` (`FunctionName`),
+  KEY `ParentID` (`ParentID`),
+  CONSTRAINT `functions_ibfk_1` FOREIGN KEY (`ParentID`) REFERENCES `functions` (`FunctionID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `functions`
+--
+
+LOCK TABLES `functions` WRITE;
+/*!40000 ALTER TABLE `functions` DISABLE KEYS */;
+/*!40000 ALTER TABLE `functions` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `rolepermissions`
+--
+
+DROP TABLE IF EXISTS `rolepermissions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `rolepermissions` (
+  `RoleID` int(11) NOT NULL,
+  `FunctionID` int(11) NOT NULL,
+  `CreatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`RoleID`,`FunctionID`),
+  KEY `FunctionID` (`FunctionID`),
+  CONSTRAINT `rolepermissions_ibfk_1` FOREIGN KEY (`RoleID`) REFERENCES `roles` (`RoleID`),
+  CONSTRAINT `rolepermissions_ibfk_2` FOREIGN KEY (`FunctionID`) REFERENCES `functions` (`FunctionID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `rolepermissions`
+--
+
+LOCK TABLES `rolepermissions` WRITE;
+/*!40000 ALTER TABLE `rolepermissions` DISABLE KEYS */;
+/*!40000 ALTER TABLE `rolepermissions` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `roles`
+--
+
+DROP TABLE IF EXISTS `roles`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `roles` (
+  `RoleID` int(11) NOT NULL AUTO_INCREMENT,
+  `RoleName` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `RoleDescription` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `CreatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`RoleID`),
+  UNIQUE KEY `RoleName` (`RoleName`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `roles`
+--
+
+LOCK TABLES `roles` WRITE;
+/*!40000 ALTER TABLE `roles` DISABLE KEYS */;
+/*!40000 ALTER TABLE `roles` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `users`
 --
 
@@ -197,8 +308,8 @@ DROP TABLE IF EXISTS `users`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `users` (
   `user_id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '用户ID',
-  `username` varchar(100) CHARACTER SET utf8mb4 NOT NULL COMMENT '用户账号',
-  `password_hash` varchar(255) CHARACTER SET utf8mb4 NOT NULL COMMENT '密码',
+  `username` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '用户账号',
+  `password_hash` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '密码',
   `role` tinyint(4) NOT NULL COMMENT '身份(0:管理员, 1:起草员, 2:客户)',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   PRIMARY KEY (`user_id`),
@@ -224,4 +335,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-05-29 17:06:59
+-- Dump completed on 2025-05-29 22:45:44
