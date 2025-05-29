@@ -40,6 +40,7 @@ CREATE TABLE `contract` (
 
 LOCK TABLES `contract` WRITE;
 /*!40000 ALTER TABLE `contract` DISABLE KEYS */;
+INSERT INTO `contract` VALUES ('CTR0000001','合同标题 1','这是描述 1','这里是合同正文内容 1。','待起草','2025-05-27 16:39:18','2025-05-27 16:39:18'),('CTR0000002','合同标题 2','这是描述 2','这里是合同正文内容 2。','待签署','2025-05-27 16:39:18','2025-05-28 16:53:00'),('CTR0000003','合同标题 3','这是描述 3','这里是合同正文内容 3。','待审批','2025-05-27 16:39:18','2025-05-28 19:11:18'),('CTR0000004','合同标题 4','这是描述 4','这里是合同正文内容 4。','待审批','2025-05-27 16:39:18','2025-05-28 19:11:21'),('CTR0000005','合同标题 5','这是描述 5','这里是合同正文内容 5。','待签署','2025-05-27 16:39:18','2025-05-27 16:39:18'),('CTR0000006','合同6','描述6','正文6','待签署','2025-05-28 16:47:58','2025-05-28 19:06:02');
 /*!40000 ALTER TABLE `contract` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -60,7 +61,7 @@ CREATE TABLE `contractapproval` (
   PRIMARY KEY (`ApprovalID`),
   KEY `ContractID` (`ContractID`),
   CONSTRAINT `contractapproval_ibfk_1` FOREIGN KEY (`ContractID`) REFERENCES `contract` (`ContractID`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -69,6 +70,7 @@ CREATE TABLE `contractapproval` (
 
 LOCK TABLES `contractapproval` WRITE;
 /*!40000 ALTER TABLE `contractapproval` DISABLE KEYS */;
+INSERT INTO `contractapproval` VALUES (1,'CTR0000002','李','审批不通过','2025-05-28 11:19:58',NULL),(2,'CTR0000002','userA','审批通过','2025-05-28 08:23:54','a'),(3,'CTR0000002','userA','审批通过','2025-05-28 08:42:08','a'),(4,'CTR0000002','userA','审批通过','2025-05-28 08:42:11','a'),(5,'CTR0000002','userA','审批通过','2025-05-28 08:42:54','a'),(6,'CTR0000002','userA','审批通过','2025-05-28 08:42:57','a'),(7,'CTR0000002','userA','审批通过','2025-05-28 08:45:04','a'),(8,'CTR0000002','userA','审批通过','2025-05-28 08:46:04','a'),(9,'CTR0000002','userA','审批通过','2025-05-28 08:46:52','测试'),(10,'CTR0000002','userA','审批通过','2025-05-28 08:51:00','通过'),(11,'CTR0000002','userA','审批通过','2025-05-28 08:51:51','通过'),(12,'CTR0000002','userA','审批通过','2025-05-28 08:53:00','可以'),(13,'CTR0000006','userA','审批通过','2025-05-28 11:06:02','可以');
 /*!40000 ALTER TABLE `contractapproval` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -194,20 +196,14 @@ DROP TABLE IF EXISTS `users`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `users` (
-  `user_id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '用户账号',
-  `password` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '密码',
-  `user_name` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '客户名称',
-  `identify` tinyint(4) NOT NULL COMMENT '身份(0管理员，1起草员，2客户)',
-  `email` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '邮箱',
-  `phone` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '电话',
-  `address` text COLLATE utf8mb4_unicode_ci COMMENT '地址',
-  `bank_name` varchar(30) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '银行名称',
-  `bank_id` varchar(60) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '银行卡号',
+  `user_id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '用户ID',
+  `username` varchar(100) CHARACTER SET utf8mb4 NOT NULL COMMENT '用户账号',
+  `password_hash` varchar(255) CHARACTER SET utf8mb4 NOT NULL COMMENT '密码',
+  `role` tinyint(4) NOT NULL COMMENT '身份(0:管理员, 1:起草员, 2:客户)',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  `status` tinyint(4) NOT NULL DEFAULT '1' COMMENT '用户状态:0-禁用  1-正常',
-  `other` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '备注',
-  PRIMARY KEY (`user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  PRIMARY KEY (`user_id`),
+  UNIQUE KEY `username` (`username`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户表';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -228,4 +224,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-05-27 14:05:36
+-- Dump completed on 2025-05-29 17:06:59
