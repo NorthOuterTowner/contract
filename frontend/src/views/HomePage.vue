@@ -47,7 +47,14 @@ const features = [
   { label: '会签合同', route: '/CoSignContractList', roles: ['operator'], icon: '🤝' },
   { label: '定稿合同', route: '/FinalizeContractList', roles: ['operator'], icon: '📑' },
   { label: '分配合同', route: 'PendingContractList', roles: ['operator'], icon: '🗂️' },
-  { label: '合同查询', route: '/query', roles: ['admin'], icon: '🔍' },
+  // 修改：查询功能
+  { 
+    label: '合同查询', 
+    route: '/query', 
+    // 修改：将允许访问的角色列表修改为包含 'operator' 和 'admin'
+    roles: ['operator', 'admin'], 
+    icon: '🔍' 
+  },
   { label: '用户管理', route: '/user-management', roles: ['admin'], icon: '👥' },
   { label: '审批合同', route: '/approveList',roles:['operator'],icon:'🔍'}
 ]
@@ -57,11 +64,12 @@ function hasAccess(allowedRoles) {
 }
 
 function handleClick(item) {
-  if (!hasAccess(item.roles)) {
+  // 修改：调整判断逻辑，让有访问权限时跳转，无权限时提示
+  if (hasAccess(item.roles)) {
+    router.push(item.route)
+  } else {
     alert('权限不足，无法访问该功能喵～')
-    return
   }
-  router.push(item.route)
 }
 
 function logout() {
