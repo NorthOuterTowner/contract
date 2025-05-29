@@ -59,7 +59,7 @@ const db = {
     },
 
   //查询待分配合同列表
-      getPendingContracts: () => {
+    getPendingContracts: () => {
       const sql = "SELECT * FROM Contract WHERE Status = '待起草'";
       return db.async.all(sql, []);
     },
@@ -78,6 +78,44 @@ const db = {
     saveContractAssignment: (contractId, signerId, approverId, executorId) => {
       const sql = "INSERT INTO ContractAssignment (ContractID, SignerID, ApproverID, ExecutorID) VALUES (?,?,?,?)";
       return db.async.run(sql, [contractId, signerId, approverId, executorId]);
+    },
+
+    //添加用户
+    addUser: (userName, password) => {
+      const sql = "INSERT INTO users (user_name, password) VALUES (?,?)";
+      return db.async.run(sql, [userName, password]);
+    },
+
+    // 查询用户
+    getUser: (query) => {
+      const sql = "SELECT * FROM users WHERE user_name = ? OR user_id = ?";
+      return db.async.all(sql, [query, query]);
+    },
+
+    // 修改用户信息
+    updateUser: (userId, userName, password) => {
+      let sql = "UPDATE users SET ";
+      const params = [];
+      if (userName) {
+        sql += "user_name = ?";
+        params.push(userName);
+        if (password) {
+          sql += ", password = ?";
+          params.push(password);
+        }
+      } else if (password) {
+        sql += "password = ?";
+        params.push(password);
+      }
+      sql += " WHERE user_id = ?";
+      params.push(userId);
+      return db.async.run(sql, params);
+    },
+
+    // 删除用户
+    deleteUser: (userId) => {
+      const sql = "DELETE FROM users WHERE user_id = ?";
+      return db.async.run(sql, [userId]);
     }
   },
 };
