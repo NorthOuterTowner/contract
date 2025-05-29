@@ -10,15 +10,15 @@ mysql -u [username] -p [database_name] < [database_name.sql]
 *方括号内为变量，根据实际情况填写。[username] 是本地 MySQL 的用户名，[database_name] 是数据库名称，[database_name.sql] 是 SQL 文件名。*
 
 ### 2. 安装依赖
-使用`npm install [xxx]`命令安装依赖包。
-前端需要安装的依赖有`axios` , `vue-router` ,  `pinia`,  `pdf-lib` 。
-此外还需要安装 Naive-UI 的 Vue 3 组件库`naive-ui`,与其他依赖安装方式略有不同，使用如下语句进行安装。
+使用`npm install [xxx]`命令安装依赖包。  
+前端需要安装的依赖有`axios` , `vue-router` ,  `pinia`,  `pdf-lib` 。  
+此外还需要安装 Naive-UI 的 Vue 3 组件库`naive-ui`,与其他依赖安装方式略有不同，使用如下语句进行安装。  
 ```bash
 npm i -D naive-ui
 ```
-后端需要安装的依赖有`express` , `mysql2` , `cors`。
+后端需要安装的依赖有`express` , `mysql2` , `cors`。  
 安装方式与前端一致，也使用`npm install [xxx]`命令安装依赖包。
-
+  
 ### 3. 启动服务
 确保当前处于contract目录下，接下来在终端中输入
 ```bash
@@ -33,6 +33,6 @@ npm run dev
 打开浏览器，输入`http://localhost:5173/`即可访问前端页面。
 
 ### 4. 开发说明
-（1） MySQL最好使用`5.7-8.0`版本均支持的操作，如`check`等命令在MySQL5.7中不报错，但不支持，最好使用触发器代替。
-（2） 后端backend文件夹下的`app.js`文件是后端服务的入口文件，充当后端API的中转作用，将请求转发到对应的路由处理函数。编写API时注意将一类功能新建一个js文件，在文件中编写，不要直接写在`app.js`中。
-（3） 由于系统采用B/S架构，所以在每个页面都需要进行权限的认证。（可以添加对登录状态的记录）
+（1） MySQL最好使用`5.7-8.0`版本均支持的操作，如`check`等命令在MySQL5.7中不报错，但不支持，最好使用触发器代替。  
+（2） 后端backend文件夹下的`app.js`文件是后端服务的入口文件，充当后端API的中转作用，将请求转发到对应的路由处理函数。编写API时注意将一类功能新建一个js文件，在文件中编写，不要直接写在`app.js`中。  
+（3） 由于系统采用B/S架构，所以在每个页面都需要进行权限的认证。（可以添加对登录状态的记录）  
