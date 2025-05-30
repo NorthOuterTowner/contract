@@ -2,19 +2,31 @@ const express = require("express");
 const router = express.Router();
 const { db } = require("../db/DBUtils");
 
+// 获取下一个可用的功能 ID
+router.get("/getNextId", async (req, res) => {
+  try {
+    const result = await db.async.getNextFunctionId();
+    res.json({ nextId: result.rows[0].nextId });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 // 添加功能
 router.post("/add", async (req, res) => {
-  const { functionName, functionCode, functionDescription, parentId } = req.body;
-  if (!functionName || !functionCode) {
-    return res.status(400).json({ error: "功能名称和功能代码不能为空" });
+  const { functionId, functionName, functionDescription, parentId } = req.body;
+  if (!functionName) {
+    return res.status(400).json({ error: "功能名称不能为空" });
   }
 
   try {
-    await db.async.run(
-      "INSERT INTO Functions (FunctionName, FunctionCode, FunctionDescription, ParentID) VALUES (?, ?, ?, ?)",
-      [functionName, functionCode, functionDescription, parentId]
+    await db.async.addFunction(
+      functionId,
+      functionName,
+      functionDescription,
+      parentId
     );
-    
     res.json({ message: "功能添加成功" });
   } catch (error) {
     console.error(error);

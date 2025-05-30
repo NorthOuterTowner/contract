@@ -5,6 +5,12 @@
     <!-- 表单区域 -->
     <div class="form-section">
       <div class="input-group">
+        <label class="form-label">角色 ID：</label>
+        <div class="input-wrapper">
+          <input v-model="roleId" type="text" readonly />
+        </div>
+      </div>
+      <div class="input-group">
         <label class="form-label">角色名称：</label>
         <div class="input-wrapper">
           <input 
@@ -128,16 +134,29 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import PermissionItem from '../components/PermissionItem.vue'; // 引入权限项组件
 
+const roleId = ref('');
 const roleName = ref('');
 const roleDescription = ref('');
 const permissions = ref([]);
 const submitted = ref(false);
 const message = ref('');
 const isSuccess = ref(false);
+
+// 在组件挂载时获取下一个可用的角色 ID
+onMounted(async () => {
+  try {
+    const response = await axios.get('/role/getNextId');
+    roleId.value = response.data.nextId;
+  } catch (error) {
+    message.value = '获取角色 ID 失败';
+    isSuccess.value = false;
+    console.error(error);
+  }
+});
 
 // 权限切换方法
 const togglePermission = (value) => {
@@ -158,6 +177,7 @@ const handleSubmit = async () => {
 
   try {
     await axios.post('/api/role/add', {
+      roleId: roleId.value,
       roleName: roleName.value,
       roleDescription: roleDescription.value,
       permissions: permissions.value
@@ -173,6 +193,7 @@ const handleSubmit = async () => {
 };
 
 const resetForm = () => {
+  roleId.value = '';
   roleName.value = '';
   roleDescription.value = '';
   permissions.value = [];

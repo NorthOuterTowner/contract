@@ -128,4 +128,15 @@ router.delete("/delete", async (req, res) => {
   }
 });
 
+// 获取下一个可用的角色 ID
+router.get('/getNextId', async (req, res) => {
+  try {
+    const result = await db.async.getNextRoleId();
+    res.json({ nextId: result.rows[0].nextId });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 module.exports = router;
