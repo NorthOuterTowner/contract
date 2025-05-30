@@ -13,22 +13,31 @@
     <!-- 功能导航菜单 -->
     <nav class="nav-bar">
       <div class="dropdown" @mouseleave="hideDropdown">
-        <div class="drop-trigger" @mouseover="showDropdown('contract')">
-          合同处理
-        </div>
-        <div class="drop-menu" v-show="activeMenu === 'contract'">
-          <div @click="go('/DraftContractList')">📝 起草合同</div>
-          <div @click="go('/CoSignContractList')">🤝 会签合同</div>
-          <div @click="go('/FinalizeContractList')">📑 定稿合同</div>
-          <div @click="go('PendingContractList')">🗂️ 分配合同</div>
-        </div>
+      <div class="drop-trigger" @mouseover="showDropdown('contract')">
+        合同处理
       </div>
+      <div
+        class="drop-menu"
+        v-show="activeMenu === 'contract'"
+        @mouseenter="showDropdown('contract')"
+        @mouseleave="hideDropdown"
+      >
+        <div @click="go('/DraftContractList')">📝 起草合同</div>
+        <div @click="go('/CoSignContractList')">🤝 会签合同</div>
+        <div @click="go('/FinalizeContractList')">📑 定稿合同</div>
+        <div @click="go('/PendingContractList')">🗂️ 分配合同</div>
+      </div>
+      </div>
+
 
       <div class="dropdown" @mouseleave="hideDropdown">
         <div class="drop-trigger" @mouseover="showDropdown('query')">
           信息查询
         </div>
-        <div class="drop-menu" v-show="activeMenu === 'query'">
+        <div class="drop-menu" 
+          v-show="activeMenu === 'query'"
+          @mouseenter="showDropdown('query')"
+          @mouseleave="hideDropdown">
           <div @click="go('/query')">🔍 合同查询</div>
           <div @click="go('/approveList')">📑 审批合同</div>
         </div>
@@ -38,7 +47,10 @@
         <div class="drop-trigger" @mouseover="showDropdown('system')">
           系统管理
         </div>
-        <div class="drop-menu" v-show="activeMenu === 'system'">
+        <div class="drop-menu" 
+          v-show="activeMenu === 'system'"
+          @mouseenter="showDropdown('system')"
+          @mouseleave="hideDropdown">
           <div @click="go('/user-management')">👥 用户管理</div>
           <div @click="go('/system')">⚙️ 系统设置</div>
         </div>
@@ -46,10 +58,10 @@
     </nav>
 
     <!-- 提示卡片 -->
-    <div class="notification-card" @click="go('/CoSignContractList')">
+    <div class="notification-card" v-if="cosignCount > 0" @click="go('/CoSignContractList')">
       🛎️ 当前有 {{ cosignCount }} 份合同待会签，点击跳转 →
     </div>
-    <div class="notification-card" @click="go('/ApproveList')">
+    <div class="notification-card" v-if="approveCount > 0" @click="go('/ApproveList')">
       🛎️ 当前有 {{ approveCount }} 份合同待审批，点击跳转 →
     </div>
 
@@ -77,12 +89,16 @@ const roleName = computed(() => {
   return '游客'
 })
 
-const activeMenu = ref('')
+let activeMenu = ref('')
+let hideTimer = null
 function showDropdown(menu) {
+  clearTimeout(hideTimer)
   activeMenu.value = menu
 }
 function hideDropdown() {
-  activeMenu.value = ''
+  hideTimer = setTimeout(()=>{
+    activeMenu.value = ''
+  },500)
 }
 
 function go(path) {
@@ -100,15 +116,12 @@ function login() {
 
 let cosignCount = ref(0);
 let approveCount = ref(0);
-/*let approveInfo = await axios.get("/approve/length");
-let approveLength = approveInfo.data.length;
-console.log(approveLength);*/
 
 onMounted(async () => {
   try {
     let approveInfo = await axios.get("/approve/length");
     let cosignInfo = await axios.get("/cosign/length");
-    
+
     approveCount.value = approveInfo.data.length || 0;
     cosignCount.value = cosignInfo.data.length || 0;
     
