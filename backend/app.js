@@ -13,7 +13,7 @@ app.use("/query", require("./router/queryRouter"));
 app.use("/approve",require("./router/approveRouter"));
 app.use("/api",require("./router/apiRouter"));
 app.use("/user", require("./router/userRouter"));
-
+app.use("/function", require("./router/functionRouter"));
 
 app.get('/api', (req, res) => {
   res.json({ message: 'Hello from backend!' });

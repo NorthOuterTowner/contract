@@ -16,9 +16,10 @@ import SystemManagement from '../views/SystemManagement.vue';
 import UserManagement from '../views/UserManagement.vue';
 import AddUser from '../views/AddUser.vue';
 import ModifyUser from '../views/ModifyUser.vue';
-
 import RoleManagement from '../views/RoleManagement.vue';
 import AddRole from '../views/AddRole.vue';
+
+import FunctionManagement from '../components/FunctionManagement.vue';
 
 let routes= [
     { path: '/', redirect: '/HomePage'},
@@ -40,6 +41,7 @@ let routes= [
     { path: '/system/user/modify/:=userId', component: ModifyUser },
     { path: '/system/role', component: RoleManagement },
     { path: '/system/role/add', component: AddRole },
+    { path: '/system/function', component:FunctionManagement },
     { path: "/query", component: QueryPage }
 ]
 const router = createRouter({
