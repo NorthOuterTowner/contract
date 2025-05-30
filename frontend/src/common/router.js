@@ -16,8 +16,6 @@ import SystemManagement from '../views/SystemManagement.vue';
 import UserManagement from '../views/UserManagement.vue';
 import AddUser from '../views/AddUser.vue';
 import ModifyUser from '../views/ModifyUser.vue';
-import RoleManagement from '../views/RoleManagement.vue';
-import AddRole from '../views/AddRole.vue';
 
 import FunctionManagement from '../views/FunctionManagement.vue';
 import AddFunction from '../views/AddFunction.vue';
@@ -40,8 +38,7 @@ let routes= [
     { path: '/system/user', component: UserManagement },
     { path: '/system/user/add', component: AddUser },
     { path: '/system/user/modify/:=userId', component: ModifyUser },
-    { path: '/system/role', component: RoleManagement },
-    { path: '/system/role/add', component: AddRole },
+
     { path: '/system/function', component: FunctionManagement },
     { path: '/system/function/add', component: AddFunction },
     { path: "/query", component: QueryPage }
