@@ -1,15 +1,21 @@
 <template>
   <div class="add-role-container">
     <h2 class="page-title">添加角色</h2>
-    
+
+    <!-- 新增：显示角色 ID 的输入框 -->
+    <div class="input-group">
+      <label class="form-label">角色 ID：</label>
+      <div class="input-wrapper">
+        <input 
+          v-model="roleId" 
+          type="text" 
+          readonly
+        />
+      </div>
+    </div>
+
     <!-- 表单区域 -->
     <div class="form-section">
-      <div class="input-group">
-        <label class="form-label">角色 ID：</label>
-        <div class="input-wrapper">
-          <input v-model="roleId" type="text" readonly />
-        </div>
-      </div>
       <div class="input-group">
         <label class="form-label">角色名称：</label>
         <div class="input-wrapper">
@@ -152,9 +158,7 @@ onMounted(async () => {
     const response = await axios.get('/role/getNextId');
     roleId.value = response.data.nextId;
   } catch (error) {
-    message.value = '获取角色 ID 失败';
-    isSuccess.value = false;
-    console.error(error);
+    console.error('获取角色 ID 失败', error);
   }
 });
 
