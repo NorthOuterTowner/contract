@@ -26,7 +26,8 @@ export default {
         { title: '待审批合同', path: '/approveList' },
         { title: '已完成合同', path: '/completed' },
         { title: '合同统计', path: '/statistics' },
-        { title: '分配合同', path: '/PendingContractList' }
+        { title: '分配合同', path: '/PendingContractList' },
+        { title: '返回主页', path: 'HomePage'}
       ]
     }
   },
