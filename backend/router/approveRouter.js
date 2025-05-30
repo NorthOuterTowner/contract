@@ -78,7 +78,7 @@ router.post("/determine",(req,res)=>{
 router.get("/search",async(req,res)=>{
     const keyWord = req.query.keyWord;
     const searchTerm = `%${keyWord}%`
-    let {err,rows} = await db.async.all("SELECT * FROM `contract` WHERE `status`='待审批' AND (`Title` LIKE ? OR `Content` LIKE ?)",[searchTerm,searchTerm]);
+    let {err,rows} = await db.async.all("SELECT * FROM `contract` WHERE `Status`='待审批' AND (`Title` LIKE ? OR `Content` LIKE ?)",[searchTerm,searchTerm]);
     if (err) {
         res.send({
             code: 500,
@@ -99,5 +99,19 @@ router.get("/search",async(req,res)=>{
     }
 });
 
+router.get("/length",async(req,res)=>{
+    let {err,rows} = await db.async.all("SELECT COUNT(*) AS length FROM `contract` WHERE `Status`='待审批' ",[]);
+    if(!err){
+        res.send({
+            code:200,
+            length:rows[0].length
+        });
+    }else{
+        res.send({
+            code: 500,
+            msg: "数据库查询失败",
+        });
+    }
+});
 
 module.exports = router;

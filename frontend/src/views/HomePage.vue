@@ -64,8 +64,9 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import axios from 'axios'
 
 const router = useRouter()
 const role = ref(localStorage.getItem('role') || 'operator')
@@ -97,8 +98,24 @@ function login() {
   router.push('/login')
 }
 
-let cosignCount = ref(3)
-let approveCount = ref(2)
+let cosignCount = ref(0);
+let approveCount = ref(0);
+/*let approveInfo = await axios.get("/approve/length");
+let approveLength = approveInfo.data.length;
+console.log(approveLength);*/
+
+onMounted(async () => {
+  try {
+    let approveInfo = await axios.get("/approve/length");
+    let cosignInfo = await axios.get("/cosign/length");
+    
+    approveCount.value = approveInfo.data.length || 0;
+    cosignCount.value = cosignInfo.data.length || 0;
+    
+  } catch (err) {
+    console.error("获取待审批合同数失败：", err)
+  }
+})
 </script>
 
 <style scoped>

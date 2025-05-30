@@ -13,6 +13,7 @@ app.use("/query", require("./router/queryRouter"));
 app.use("/approve",require("./router/approveRouter"));
 app.use("/api",require("./router/apiRouter"));
 app.use("/user", require("./router/userRouter"));
+app.use("/cosign",require("./router/cosignRouter"));
 
 
 app.get('/api', (req, res) => {
