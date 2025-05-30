@@ -40,7 +40,7 @@ const roleName = computed(() => {
   if (role.value === 'admin') return '合同管理员'
   if (role.value === 'operator') return '合同操作员'
   return '游客'
-})
+});
 
 const features = [
   { label: '起草合同', route: '/DraftContractList', roles: ['operator'], icon: '📝' },
@@ -54,7 +54,7 @@ const features = [
     icon: '🔍' 
   },
   { label: '用户管理', route: '/user-management', roles: ['admin'], icon: '👥' },
-  { label: '审批合同', route: '/approveList',roles:['operator'],icon:'🔍'}
+  { label: '审批合同', route: '/approveList',roles:['operator'],icon:'🔍'},
   { label: '系统管理', route: '/system', roles: ['operator'], icon: '⚙️' },
 ]
 

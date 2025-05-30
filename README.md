@@ -20,7 +20,7 @@ mysqldump -u [username] -p [database_name] > [database_name.sql]
 ```bash
 npm i -D naive-ui
 ```
-后端需要安装的依赖有`express` , `mysql2` , `cors`。  
+后端需要安装的依赖有`express` , `mysql2` , `cors`, `dotenv`。  
 安装方式与前端一致，也使用`npm install [xxx]`命令安装依赖包。
   
 ### 3. 启动服务
