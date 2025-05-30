@@ -1,20 +1,21 @@
 <template>
-  <div class="home-page">
+  <div class="system-management">
     <header class="header">
-      <h1>合同管理系统</h1>
+      <h2>系统管理</h2>
+      <!-- 继承主界面的用户信息栏 -->
       <div class="user-info">
         <span>欢迎您，{{ roleName }}</span>
         <button @click="logout">注销</button>
       </div>
     </header>
 
-    <main class="menu-grid">
+        <main class="menu-grid">
       <div
         v-for="item in features"
         :key="item.label"
         class="menu-item"
         :class="{ disabled: !hasAccess(item.roles) }"
-        @click="handleClick(item)"
+        @click="handleClick(item.route)"
       >
         <div class="icon">{{ item.icon }}</div>
         <div class="label">{{ item.label }}</div>
@@ -22,63 +23,56 @@
     </main>
 
     <footer class="footer">
-      <p>请选择上方功能进入相应模块～</p>
+      <p>系统管理模块，仅管理员可访问</p>
     </footer>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed } from 'vue';
+import { useRouter } from 'vue-router';
 
-const router = useRouter()
-const role = ref(localStorage.getItem('role') || 'operator') //默认为guest，测试临时修改
+const router = useRouter();
+const role = ref(localStorage.getItem('role') || 'operator');
 
-
-
+// 继承主界面的角色名称计算
 const roleName = computed(() => {
-  if (role.value === 'admin') return '合同管理员'
-  if (role.value === 'operator') return '合同操作员'
-  return '游客'
-})
+  if (role.value === 'admin') return '合同管理员';
+  if (role.value === 'operator') return '合同操作员';
+  return '游客';
+});
 
 const features = [
-  { label: '起草合同', route: '/DraftContractList', roles: ['operator'], icon: '📝' },
-  { label: '会签合同', route: '/CoSignContractList', roles: ['operator'], icon: '🤝' },
-  { label: '定稿合同', route: '/FinalizeContractList', roles: ['operator'], icon: '📑' },
-  { label: '分配合同', route: 'PendingContractList', roles: ['operator'], icon: '🗂️' },
-  { 
-    label: '合同查询', 
-    route: '/query', 
-    roles: ['operator', 'admin'], 
-    icon: '🔍' 
-  },
-  { label: '用户管理', route: '/user-management', roles: ['admin'], icon: '👥' },
-  { label: '审批合同', route: '/approveList',roles:['operator'],icon:'🔍'}
-  { label: '系统管理', route: '/system', roles: ['operator'], icon: '⚙️' },
+  { label: '用户管理', route: '/system/user', roles: ['operator'], icon: '👥' },
+  { label: '角色管理', route: '/system/role', roles: ['operator'], icon: '🔐' },
+  { label: '功能管理', route: '/', roles: ['operator'], icon: '⚙️' },
+  { label: '权限配置', route: '/', roles: ['operator'], icon: '🛡️' },
 ]
 
+// 权限检查函数（继承主界面逻辑）
 function hasAccess(allowedRoles) {
-  return allowedRoles.includes(role.value)
+  return allowedRoles.includes(role.value);
 }
 
-function handleClick(item) {
-  // 修改：调整判断逻辑，让有访问权限时跳转，无权限时提示
-  if (hasAccess(item.roles)) {
-    router.push(item.route)
-  } else {
-    alert('权限不足，无法访问该功能喵～')
-  }
+// 路由跳转函数
+function handleClick(route) {
+//   if (!hasAccess(['admin'])) {
+//     alert('权限不足，仅管理员可操作！');
+//     return;
+//   }
+  router.push(route);
 }
 
+// 注销函数（复用主界面逻辑）
 function logout() {
-  localStorage.removeItem('role')
-  router.push('/login')
+  localStorage.removeItem('role');
+  router.push('/login');
 }
 </script>
 
 <style scoped>
-.home-page {
+/* 继承主界面样式，保持一致性 */
+.system-management {
   max-width: 1000px;
   margin: 40px auto;
   padding: 0 20px;
@@ -141,7 +135,7 @@ function logout() {
 .menu-item.disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  pointer-events: auto;
+  pointer-events: none;
 }
 
 .footer {

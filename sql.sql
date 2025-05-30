@@ -75,3 +75,30 @@ CREATE TABLE ContractAssignment (
     PRIMARY KEY (AssignmentID),
     FOREIGN KEY (ContractID) REFERENCES Contract(ContractID) ON DELETE CASCADE
 );
+
+-- 角色表
+CREATE TABLE Roles (
+  RoleID INT PRIMARY KEY AUTO_INCREMENT,
+  RoleName VARCHAR(50) NOT NULL UNIQUE,
+  RoleDescription VARCHAR(255),
+  CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 功能表
+CREATE TABLE Functions (
+  FunctionID INT PRIMARY KEY AUTO_INCREMENT,
+  FunctionName VARCHAR(50) NOT NULL UNIQUE,
+  FunctionDescription VARCHAR(255),
+  ParentID INT DEFAULT NULL,
+  CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (ParentID) REFERENCES Functions(FunctionID)
+);
+
+-- 角色权限关联表
+CREATE TABLE RolePermissions (
+  RoleID INT,
+  FunctionID INT,
+  PRIMARY KEY (RoleID, FunctionID),
+  FOREIGN KEY (RoleID) REFERENCES Roles(RoleID),
+  FOREIGN KEY (FunctionID) REFERENCES Functions(FunctionID)
+);

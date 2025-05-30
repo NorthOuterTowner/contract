@@ -11,27 +11,37 @@ import FinalizeContractList from '../views/FinalizeContractList.vue';
 import content from '../views/content.vue';
 import PendingContractList from '../views/PendingContractList.vue';
 import AssignContract from '../views/AssignContract.vue';
-// 新增：导入查询页面组件
 import QueryPage from '../views/QueryPage.vue';
+import SystemManagement from '../views/SystemManagement.vue';
+import UserManagement from '../views/UserManagement.vue';
+import AddUser from '../views/AddUser.vue';
+import ModifyUser from '../views/ModifyUser.vue';
 
-let routes = [
-  { path: '/', redirect: '/HomePage' },
-  { path: '/HomePage', component: HomePage },
-  { path: "/approveList", component: approveList },
-  { path: '/approval', component: approval },
-  { path: "/DraftContract", component: DraftContract },
-  { path: "/DraftContractList", component: DraftContractList },
-  { path: "/CoSignContract", component: CoSignContract },
-  { path: "/CoSignContractList", component: CoSignContractList },
-  { path: "/FinalizeContract", component: FinalizeContract },
-  { path: "/FinalizeContractList", component: FinalizeContractList },
-  { path: '/PendingContractList', component: PendingContractList },
-  { path: '/allocate/:contractId', component: AssignContract },
-  { path: "/approve/content", component: content },
-  // 新增：查询页面路由
-  { path: "/query", component: QueryPage }
-];
+import RoleManagement from '../views/RoleManagement.vue';
+import AddRole from '../views/AddRole.vue';
 
+let routes= [
+    { path: '/', redirect: '/HomePage'},
+    { path: '/HomePage', component :HomePage},
+    { path: "/approveList", component:approveList },
+    { path: '/approval', component:approval },
+    { path: "/DraftContract", component: DraftContract },
+    { path: "/DraftContractList", component: DraftContractList },
+    { path: "/CoSignContract", component: CoSignContract },
+    { path: "/CoSignContractList", component: CoSignContractList },
+    { path: "/FinalizeContract", component: FinalizeContract },
+    { path: "/FinalizeContractList", component: FinalizeContractList },
+    { path: '/PendingContractList',component: PendingContractList },
+    { path: '/allocate/:contractId',component: AssignContract },
+    { path: "/approve/content",component:content },
+    { path: '/system', component: SystemManagement },
+    { path: '/system/user', component: UserManagement },
+    { path: '/system/user/add', component: AddUser },
+    { path: '/system/user/modify/:=userId', component: ModifyUser },
+    { path: '/system/role', component: RoleManagement },
+    { path: '/system/role/add', component: AddRole },
+    { path: "/query", component: QueryPage }
+]
 const router = createRouter({
   history: createWebHashHistory(),
   routes
