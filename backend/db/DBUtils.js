@@ -1,11 +1,12 @@
 const mysql = require("mysql2"); // 使用 mysql2 库
 const path = require("path");
+require('dotenv').config(); // 加载 .env 文件
 
 // 创建 MySQL 连接池
 const pool = mysql.createPool({
   host: "localhost", // MySQL 服务器地址
   user: "root",      // 数据库用户名
-  password: "Zxy_050713", // 数据库密码
+  password: "123456", // 数据库密码
   database: "contract",  // 数据库名称
   waitForConnections: true, // 是否等待连接
   connectionLimit: 200,      // 连接池最大连接数
