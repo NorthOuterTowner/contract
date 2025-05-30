@@ -6,7 +6,7 @@ require('dotenv').config(); // 加载 .env 文件
 const pool = mysql.createPool({
   host: "localhost", // MySQL 服务器地址
   user: "root",      // 数据库用户名
-  password: "123456", // 数据库密码
+  password: "Zxy_050713", // 数据库密码
   database: "contract",  // 数据库名称
   waitForConnections: true, // 是否等待连接
   connectionLimit: 200,      // 连接池最大连接数
@@ -123,7 +123,33 @@ const db = {
     getNextUserId: () => {
       const sql = "SELECT IFNULL(MAX(user_id), 0) + 1 as nextId FROM users";
       return db.async.all(sql, []);
-    }
+    },
+
+
+    // 获取下一个可用的角色 ID
+    getNextRoleId: () => {
+      const sql = "SELECT IFNULL(MAX(RoleID), 0) + 1 as nextId FROM Roles";
+      return db.async.all(sql, []);
+    },
+
+    // 获取下一个可用的功能 ID
+    getNextFunctionId: () => {
+      const sql = "SELECT IFNULL(MAX(FunctionID), 0) + 1 as nextId FROM Functions";
+      return db.async.all(sql, []);
+    },
+
+    // 添加功能
+    addFunction: (functionId, functionName, functionDescription, parentId) => {
+      const sql =
+        "INSERT INTO Functions (FunctionID, FunctionName, FunctionDescription, ParentID) VALUES (?,?,?,?)";
+      return db.async.run(sql, [
+        functionId,
+        functionName,
+        functionDescription,
+        parentId,
+      ]);
+    },
+
   },
 };
 

@@ -3,34 +3,36 @@
     <h2>功能管理</h2>
     <button @click="goToAddFunction" class="add-function-btn">添加功能</button>
     <div class="search-bar">
-      <input v-model="searchName" placeholder="输入功能ID或功能名查询" />
+      <input v-model="functionName" placeholder="输入功能名称查询" />
       <button @click="searchFunctions">查询</button>
     </div>
     <div v-if="loading" class="loading">加载中...</div>
-    <table v-if="systemFunctions.length > 0" class="function-table">
+    <table v-if="functions.length > 0" class="function-table">
       <thead>
         <tr>
           <th>功能ID</th>
-          <th>功能名</th>
+          <th>功能名称</th>
+          <th>功能描述</th>
           <th>父功能ID</th>
           <th>操作</th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="systemFunction in systemFunctions" :key="systemFunction.FunctionID">
+        <tr v-for="systemFunction in functions" :key="systemFunction.FunctionID">
           <td>{{ systemFunction.FunctionID }}</td>
           <td>{{ systemFunction.FunctionName }}</td>
+          <td>{{ systemFunction.FunctionDescription }}</td>
           <td>{{ systemFunction.ParentID || '无' }}</td>
           <td>
-            <button @click="viewSystemFunction(systemFunction.FunctionID)" class="action-btn">查看</button>
-            <button @click="deleteSystemFunction(systemFunction.FunctionID)" class="action-btn">删除</button>
+            <button @click="viewFunction(systemFunction.FunctionID)" class="action-btn">查看</button>
+            <button @click="deleteFunction(systemFunction.FunctionID)" class="action-btn">删除</button>
           </td>
         </tr>
       </tbody>
     </table>
-    <div v-else-if="!loading && searchName" class="no-data">未找到匹配的功能</div>
+    <div v-else-if="!loading && functionName" class="no-data">未找到匹配的功能</div>
     <!-- 分页组件 -->
-    <div v-if="systemFunctions.length > 0" class="pagination">
+    <div v-if="functions.length > 0" class="pagination">
       <button @click="prevPage" :disabled="currentPage === 1">上一页</button>
       <span>{{ currentPage }} / {{ totalPages }}</span>
       <button @click="nextPage" :disabled="currentPage === totalPages">下一页</button>
@@ -45,29 +47,24 @@ import axios from 'axios';
 
 const router = useRouter();
 const message = inject('message');
-const dialog = inject('dialog');
 
-const searchName = ref('');
-const systemFunctions = ref([]);
+const functionName = ref('');
+const functions = ref([]);
 const loading = ref(false);
 const currentPage = ref(1);
 const itemsPerPage = ref(10);
 
-const totalPages = ref(Math.ceil(systemFunctions.value.length / itemsPerPage.value));
+const totalPages = ref(Math.ceil(functions.value.length / itemsPerPage.value));
 
 const goToAddFunction = () => {
   router.push('/system/function/add');
 };
 
 const searchFunctions = async () => {
-  if (!searchName.value.trim()) {
-    return message.warning('请输入查询内容');
-  }
-
   loading.value = true;
   try {
-    const response = await axios.get(`/function/query?functionName=${searchName.value}`);
-    systemFunctions.value = response.data;
+    const response = await axios.get(`/function/query?functionName=${functionName.value}`);
+    functions.value = response.data;
 
     if (response.data.length === 0) {
       message.info('未找到匹配的功能');
@@ -80,18 +77,18 @@ const searchFunctions = async () => {
   } finally {
     loading.value = false;
   }
-  totalPages.value = Math.ceil(systemFunctions.value.length / itemsPerPage.value);
+  totalPages.value = Math.ceil(functions.value.length / itemsPerPage.value);
 };
 
-const viewSystemFunction = (functionId) => {
+const viewFunction = (functionId) => {
   // 这里可以实现查看功能详情的逻辑，例如跳转到功能详情页面
   console.log(`查看功能 ${functionId} 的详情`);
 };
 
-const deleteSystemFunction = async (functionId) => {
-  const confirm = await dialog.confirm({
+const deleteFunction = async (functionId) => {
+  const confirm = await inject('dialog').confirm({
     title: '确认删除',
-    content: '确定要删除此功能吗？该操作将一并删除与该功能的所有关联！',
+    content: '确定要删除此功能吗？',
     positiveText: '确认',
     negativeText: '取消'
   });
@@ -119,6 +116,9 @@ const nextPage = () => {
     currentPage.value++;
   }
 };
+
+// 页面加载时查询功能列表
+searchFunctions();
 </script>
 
 <style scoped>
