@@ -29,16 +29,9 @@ import SignContent from '../views/signContent.vue';
 import { compile } from 'vue';
 
 let routes= [
-
-    //{ path:'/',redirect:'/FirstPage'},
     { path:'/FirstPage',component : FirstPage},
-   // { path:'/',redirect:'Login'},
     { path:'/Login',component:Login},
-    
-    //{ path:'/',redirect:'/Register'},
     { path:'/Register',component:Register},
-
-
     { path: '/', redirect: '/HomePage'},
     { path: '/HomePage', component :HomePage},
     { path: "/approveList", component:approveList },
