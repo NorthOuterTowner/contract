@@ -5,7 +5,8 @@ const { db } = require("../db/DBUtils");
 // 获取下一个可用的功能 ID
 router.get("/getNextId", async (req, res) => {
   try {
-    const result = await db.async.getNextFunctionId();
+    const sql = "SELECT IFNULL(MAX(FunctionID), 0) + 1 as nextId FROM Functions";
+    const result = await db.async.all(sql, []);
     res.json({ nextId: result.rows[0].nextId });
   } catch (error) {
     console.error(error);
@@ -21,12 +22,14 @@ router.post("/add", async (req, res) => {
   }
 
   try {
-    await db.async.addFunction(
+    const sql =
+      "INSERT INTO Functions (FunctionID, FunctionName, FunctionDescription, ParentID) VALUES (?,?,?,?)";
+    await db.async.run(sql, [
       functionId,
       functionName,
       functionDescription,
-      parentId
-    );
+      parentId,
+    ]);
     res.json({ message: "功能添加成功" });
   } catch (error) {
     console.error(error);
