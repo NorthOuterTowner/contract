@@ -1,4 +1,8 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
+
+import FirstPage from '../views/FirstPage.vue';
+import Login from '../views/Login.vue';
+import Register from '../views/Register.vue';
 import HomePage from '../views/HomePage.vue';
 import approveList from '../views/approveList.vue';
 import approval from '../views/approval.vue';
@@ -22,8 +26,19 @@ import PermissionManagement from '../views/PermissionManagement.vue';
 import AssignPermissions from '../views/AssignPermission.vue'; 
 import SignContract from '../views/SignContract.vue';
 import SignContent from '../views/signContent.vue';
+import { compile } from 'vue';
 
 let routes= [
+
+    //{ path:'/',redirect:'/FirstPage'},
+    { path:'/FirstPage',component : FirstPage},
+   // { path:'/',redirect:'Login'},
+    { path:'/Login',component:Login},
+    
+    //{ path:'/',redirect:'/Register'},
+    { path:'/Register',component:Register},
+
+
     { path: '/', redirect: '/HomePage'},
     { path: '/HomePage', component :HomePage},
     { path: "/approveList", component:approveList },
