@@ -18,15 +18,25 @@ router.get("/getNextId", async (req, res) => {
 
 // 添加角色
 router.post("/add", async (req, res) => {
-  const { roleId, roleName, roleDescription } = req.body;
-  if (!roleName) return res.status(400).json({ error: "角色名称不能为空" });
+  const { roleId, roleName, roleDescription, selectedFunctions } = req.body;
+  if (!roleName) {
+    return res.status(400).json({ error: "角色名称不能为空" });
+  }
 
   try {
-    await db.async.run(
-      "INSERT INTO Roles (RoleID, RoleName, RoleDescription) VALUES (?,?,?)",
-      [roleId, roleName, roleDescription]
-    );
-    res.json({ message: "角色添加成功" });
+    // 插入角色信息
+    const roleSql = "INSERT INTO Roles (RoleID, RoleName, RoleDescription) VALUES (?,?,?)";
+    await db.async.run(roleSql, [roleId, roleName, roleDescription]);
+
+    // 插入角色权限信息
+    if (selectedFunctions && selectedFunctions.length > 0) {
+      const permissionSql = "INSERT INTO RolePermissions (RoleID, FunctionID) VALUES (?,?)";
+      for (const functionId of selectedFunctions) {
+        await db.async.run(permissionSql, [roleId, functionId]);
+      }
+    }
+
+    res.json({ message: "角色添加成功", roleId });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "系统异常，请稍后重试" });

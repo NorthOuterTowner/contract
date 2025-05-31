@@ -1,29 +1,27 @@
 <template>
   <div class="modify-role-container">
-    <div class="modify-role-content">
-      <h2>角色详细信息</h2>
-      <div v-if="loading" class="loading">加载中...</div>
-      <div v-else-if="role">
-        <div class="form-item">
-          <label>角色 ID：</label>
-          <input v-model="role.RoleID" type="text" readonly />
-        </div>
-        <div class="form-item">
-          <label>角色名称：</label>
-          <input v-model="role.RoleName" type="text" :readonly="!isEditing" />
-        </div>
-        <div class="form-item">
-          <label>角色描述：</label>
-          <input v-model="role.RoleDescription" type="text" :readonly="!isEditing" />
-        </div>
-        <div class="button-group">
-          <button @click="editRole" v-if="!isEditing" class="action-btn">编辑</button>
-          <button @click="saveRole" v-if="isEditing" class="action-btn">保存</button>
-          <button @click="deleteRole" class="action-btn">删除</button>
-        </div>
+    <h2>角色详细信息</h2>
+    <div v-if="loading" class="loading">加载中...</div>
+    <div v-else-if="role">
+      <div class="form-item">
+        <label>角色 ID：</label>
+        <input v-model="role.RoleID" type="text" readonly />
       </div>
-      <div v-else class="error-message">未找到该角色的详细信息</div>
+      <div class="form-item">
+        <label>角色名称：</label>
+        <input v-model="role.RoleName" type="text" :readonly="!isEditing" />
+      </div>
+      <div class="form-item">
+        <label>角色描述：</label>
+        <input v-model="role.RoleDescription" type="text" :readonly="!isEditing" />
+      </div>
+      <div class="button-group">
+        <button @click="editRole" v-if="!isEditing" class="action-btn">编辑</button>
+        <button @click="saveRole" v-if="isEditing" class="action-btn">保存</button>
+        <button @click="deleteRole" class="action-btn">删除</button>
+      </div>
     </div>
+    <div v-else class="error-message">未找到该角色的详细信息</div>
   </div>
 </template>
 
@@ -115,19 +113,10 @@ const deleteRole = async () => {
 
 <style scoped>
 .modify-role-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-}
-
-.modify-role-content {
   max-width: 600px;
-  width: 100%;
-  padding: 20px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin: 40px auto;
+  padding: 0 20px;
+  font-family: "Helvetica Neue", Arial, sans-serif;
 }
 
 h2 {
