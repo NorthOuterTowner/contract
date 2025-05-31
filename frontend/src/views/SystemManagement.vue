@@ -44,7 +44,7 @@ const roleName = computed(() => {
 
 const features = [
   { label: '用户管理', route: '/system/user', roles: ['operator'], icon: '👥' },
-  { label: '角色管理', route: '/', roles: ['operator'], icon: '🔐' },
+  { label: '角色管理', route: '/system/role', roles: ['operator'], icon: '🔐' },
   { label: '功能管理', route: '/system/function', roles: ['operator'], icon: '⚙️' },
   { label: '权限配置', route: '/', roles: ['operator'], icon: '🛡️' },
 ]

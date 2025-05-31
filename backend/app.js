@@ -12,6 +12,7 @@ app.use(express.json());
 app.use("/query", require("./router/queryRouter"));
 app.use("/approve",require("./router/approveRouter"));
 app.use("/user", require("./router/userRouter"));
+app.use("/role", require("./router/roleRouter"));
 app.use("/function", require("./router/functionRouter"));
 app.use("/assign",require("./router/assignRouter"));
 app.use("/cosign",require("./router/cosignRouter"));
