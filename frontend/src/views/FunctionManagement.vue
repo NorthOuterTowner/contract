@@ -7,7 +7,7 @@
       <button @click="searchFunctions">查询</button>
     </div>
     <div v-if="loading" class="loading">加载中...</div>
-    <table v-if="functions.length > 0" class="function-table">
+    <table v-if="currentPageFunctions.length > 0" class="function-table">
       <thead>
         <tr>
           <th>功能ID</th>
@@ -18,7 +18,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="systemFunction in functions" :key="systemFunction.FunctionID">
+        <tr v-for="systemFunction in currentPageFunctions" :key="systemFunction.FunctionID">
           <td>{{ systemFunction.FunctionID }}</td>
           <td>{{ systemFunction.FunctionName }}</td>
           <td>{{ systemFunction.FunctionDescription }}</td>
@@ -41,7 +41,7 @@
 </template>
 
 <script setup>
-import { ref, inject } from 'vue';
+import { ref, computed, inject } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 
@@ -54,10 +54,17 @@ const loading = ref(false);
 const currentPage = ref(1);
 const itemsPerPage = ref(10);
 
-const totalPages = ref(Math.ceil(functions.value.length / itemsPerPage.value));
+const totalPages = computed(() => Math.ceil(functions.value.length / itemsPerPage.value));
+
+// 计算当前页的数据
+const currentPageFunctions = computed(() => {
+  const startIndex = (currentPage.value - 1) * itemsPerPage.value;
+  const endIndex = startIndex + itemsPerPage.value;
+  return functions.value.slice(startIndex, endIndex);
+});
 
 const goToAddFunction = () => {
-  router.push('/system/function/add');
+  router.push('/function/add');
 };
 
 const searchFunctions = async () => {
@@ -77,7 +84,7 @@ const searchFunctions = async () => {
   } finally {
     loading.value = false;
   }
-  totalPages.value = Math.ceil(functions.value.length / itemsPerPage.value);
+  currentPage.value = 1; // 查询后重置到第一页
 };
 
 const viewFunction = (functionId) => {
