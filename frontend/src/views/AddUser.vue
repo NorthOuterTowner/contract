@@ -17,12 +17,18 @@
       <label>确认密码：</label>
       <input v-model="confirmPassword" type="password" placeholder="请再次输入密码" />
     </div>
+    <div class="form-item">
+      <label>角色：</label>
+      <select v-model="selectedRole">
+        <option v-for="role in roles" :key="role.RoleID" :value="role.RoleID">{{ role.RoleName }}</option>
+      </select>
+    </div>
     <button @click="addUser">保存</button>
   </div>
 </template>
 
 <script setup>
-import { ref, inject } from 'vue';
+import { ref, inject, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 
@@ -33,6 +39,8 @@ const userId = ref('');
 const userName = ref('');
 const password = ref('');
 const confirmPassword = ref('');
+const selectedRole = ref('');
+const roles = ref([]);
 
 // 在组件挂载时获取下一个可用的 ID
 const getNextUserId = async () => {
@@ -44,7 +52,21 @@ const getNextUserId = async () => {
   }
 };
 
-getNextUserId();
+// 在组件挂载时获取所有角色
+const fetchAllRoles = async () => {
+  try {
+    const response = await axios.get('/role/all');
+    roles.value = response.data;
+  } catch (error) {
+    message.error('获取角色列表失败');
+    console.error(error);
+  }
+};
+
+onMounted(() => {
+  getNextUserId();
+  fetchAllRoles();
+});
 
 const addUser = async () => {
   // 表单验证
@@ -57,18 +79,22 @@ const addUser = async () => {
   if (password.value !== confirmPassword.value) {
     return message.error('两次输入的密码不一致');
   }
+  if (!selectedRole.value) {
+    return message.error('请选择用户角色');
+  }
 
   try {
     // 提交请求
     await axios.post('/user/add', {
       userId: userId.value,
       userName: userName.value,
-      password: password.value
+      password: password.value,
+      roleId: selectedRole.value
     });
     
     // 添加成功
     message.success('添加成功！');
-    router.push('/user'); // 返回用户列表
+    router.push('/system/user'); // 返回用户列表
   } catch (error) {
     // 处理错误
     if (error.response) {

@@ -12,6 +12,7 @@
         <tr>
           <th>用户ID</th>
           <th>用户名</th>
+          <th>角色</th>
           <th>操作</th>
         </tr>
       </thead>
@@ -19,6 +20,7 @@
         <tr v-for="user in users" :key="user.user_id">
           <td>{{ user.user_id }}</td>
           <td>{{ user.user_name }}</td>
+          <td>{{ user.role_name }}</td>
           <td>
             <button @click="viewUser(user.user_id)" class="action-btn">查看</button>
             <button @click="deleteUser(user.user_id)" class="action-btn">删除</button>
@@ -37,7 +39,7 @@
 </template>
 
 <script setup>
-import { ref, inject } from 'vue';
+import { ref, inject, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 
@@ -45,10 +47,7 @@ const router = useRouter();
 const message = inject('message');
 
 const query = ref('');
-const users = ref([
-  { user_id: '001', user_name: '张三' },
-  { user_id: '002', user_name: '李四' }
-]);
+const users = ref([]);
 const loading = ref(false);
 const currentPage = ref(1);
 const itemsPerPage = ref(10);
@@ -119,6 +118,26 @@ const nextPage = () => {
     currentPage.value++;
   }
 };
+
+// 页面加载时获取所有用户
+const fetchAllUsers = async () => {
+  loading.value = true;
+  try {
+    const response = await axios.get('/user/all');
+    users.value = response.data;
+    message.success('加载用户列表成功！');
+  } catch (error) {
+    message.error('加载用户列表失败！');
+    console.error(error);
+  } finally {
+    loading.value = false;
+  }
+  totalPages.value = Math.ceil(users.value.length / itemsPerPage.value);
+};
+
+onMounted(() => {
+  fetchAllUsers();
+});
 </script>
 
 <style scoped>
