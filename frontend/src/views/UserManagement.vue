@@ -7,20 +7,19 @@
       <button @click="searchUsers">查询</button>
     </div>
     <div v-if="loading" class="loading">加载中...</div>
-    <table v-if="users.length > 0" class="user-table">
+    <!-- 使用 currentPageUsers 渲染表格 -->
+    <table v-if="currentPageUsers.length > 0" class="user-table">
       <thead>
         <tr>
           <th>用户ID</th>
           <th>用户名</th>
-          <th>角色</th>
           <th>操作</th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="user in users" :key="user.user_id">
+        <tr v-for="user in currentPageUsers" :key="user.user_id">
           <td>{{ user.user_id }}</td>
           <td>{{ user.user_name }}</td>
-          <td>{{ user.role_name }}</td>
           <td>
             <button @click="viewUser(user.user_id)" class="action-btn">查看</button>
             <button @click="deleteUser(user.user_id)" class="action-btn">删除</button>
@@ -39,7 +38,7 @@
 </template>
 
 <script setup>
-import { ref, inject, onMounted } from 'vue';
+import { ref, inject, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 
@@ -47,15 +46,22 @@ const router = useRouter();
 const message = inject('message');
 
 const query = ref('');
-const users = ref([]);
+const users = ref('');
 const loading = ref(false);
 const currentPage = ref(1);
 const itemsPerPage = ref(10);
 
 const totalPages = ref(Math.ceil(users.value.length / itemsPerPage.value));
 
+// 计算当前页的用户数据
+const currentPageUsers = computed(() => {
+  const startIndex = (currentPage.value - 1) * itemsPerPage.value;
+  const endIndex = startIndex + itemsPerPage.value;
+  return users.value.slice(startIndex, endIndex);
+});
+
 const goToAddUser = () => {
-  router.push('/system/user/add');
+  router.push('/user/add');
 };
 
 const searchUsers = async () => {
@@ -80,6 +86,7 @@ const searchUsers = async () => {
     loading.value = false;
   }
   totalPages.value = Math.ceil(users.value.length / itemsPerPage.value);
+  currentPage.value = 1; // 查询后重置到第一页
 };
 
 const viewUser = (userId) => {
@@ -118,26 +125,6 @@ const nextPage = () => {
     currentPage.value++;
   }
 };
-
-// 页面加载时获取所有用户
-const fetchAllUsers = async () => {
-  loading.value = true;
-  try {
-    const response = await axios.get('/user/all');
-    users.value = response.data;
-    message.success('加载用户列表成功！');
-  } catch (error) {
-    message.error('加载用户列表失败！');
-    console.error(error);
-  } finally {
-    loading.value = false;
-  }
-  totalPages.value = Math.ceil(users.value.length / itemsPerPage.value);
-};
-
-onMounted(() => {
-  fetchAllUsers();
-});
 </script>
 
 <style scoped>

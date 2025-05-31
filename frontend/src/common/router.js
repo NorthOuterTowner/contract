@@ -20,6 +20,8 @@ import UserManagement from '../views/UserManagement.vue';
 import AddUser from '../views/AddUser.vue';
 import ModifyUser from '../views/ModifyUser.vue';
 import RoleManagement from '../views/RoleManagement.vue';
+import AddRole from '../views/AddRole.vue';
+import EditRole from '../views/EditRole.vue';
 import FunctionManagement from '../views/FunctionManagement.vue';
 import AddFunction from '../views/AddFunction.vue';
 import PermissionManagement from '../views/PermissionManagement.vue';
@@ -54,8 +56,10 @@ let routes= [
     { path: "/approve/content",component:content },
     { path: '/user', component: UserManagement },
     { path: '/user/add', component: AddUser },
+    { path: '/user/modify/:userId', component: ModifyUser },
     { path: '/role', component: RoleManagement },
-    { path: '/user/modify/:=userId', component: ModifyUser },
+    { path: '/role/add', component: AddRole},
+    { path: '/role/edit/:RoleId', component: EditRole},
     { path: '/function', component: FunctionManagement },
     { path: '/function/add', component: AddFunction },
     { path: '/permission', component: PermissionManagement },
