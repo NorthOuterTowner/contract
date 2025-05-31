@@ -103,7 +103,7 @@ router.get("/checkName", async (req, res) => {
       sql += " AND roleID != ?";
       params.push(roleID);
     }
-    const result = await db.async.get(sql, params);
+    const result = await db.async.all(sql, params);
     const exists = result.count > 0;
     res.json({ exists });
   } catch (error) {
@@ -119,7 +119,7 @@ router.put("/update", async (req, res) => {
     return res.status(400).json({ error: "角色ID和角色名称不能为空" });
   }
   try {
-    await db.async.run(
+    await db.async.all(
       "UPDATE Roles SET roleName = ?, roleDescription = ? WHERE roleID = ?",
       [roleName, roleDescription, roleID]
     );

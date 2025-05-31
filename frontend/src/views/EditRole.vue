@@ -1,11 +1,11 @@
 <template>
-  <div class="edit-role">
-    <div v-if="messageRef" class="message-box">
-        <span :class="{ 'success-msg': isSuccess, 'error-msg': !isSuccess }">{{
-        messageRef
-        }}</span>
+  <div class="edit-role-container">
+    <!-- 消息提示 -->
+    <div v-if="message" class="message-box">
+      <span :class="{ 'success-msg': isSuccess, 'error-msg': !isSuccess }">{{ message }}</span>
     </div>
-    <h2>编辑角色</h2>
+    <h2 class="page-title">编辑角色</h2>
+    <!-- 表单区域 -->
     <div class="form-section">
       <div class="input-group">
         <label class="form-label">角色 ID：</label>
@@ -20,7 +20,7 @@
             v-model="roleName"
             type="text"
             placeholder="请输入角色名称"
-            :class="{ 'is-error': !roleName && submitted }"
+            :class="{ 'is-error':!roleName && submitted }"
             required
           />
           <div v-if="!roleName && submitted" class="error-tooltip">
@@ -48,12 +48,6 @@
       <button @click="handleSubmit" class="primary-btn">提交</button>
       <button @click="resetForm" class="secondary-btn">重置</button>
     </div>
-    <!-- 消息提示 -->
-    <div v-if="message" class="message-box">
-      <span :class="{ 'success-msg': isSuccess, 'error-msg': !isSuccess }">{{
-        message
-      }}</span>
-    </div>
   </div>
 </template>
 
@@ -74,6 +68,7 @@ const messageRef = ref('');
 const isSuccess = ref(false);
 const roleNameExists = ref(false);
 
+// 在组件挂载时获取角色信息
 onMounted(async () => {
   const id = route.params.roleId;
   roleId.value = id;
@@ -94,6 +89,7 @@ onMounted(async () => {
   }
 });
 
+// 检查角色名称是否已存在
 const checkRoleNameExists = async () => {
   try {
     const response = await axios.get(`/role/checkName?roleName=${roleName.value}&roleId=${roleId.value}`);
@@ -103,16 +99,17 @@ const checkRoleNameExists = async () => {
   }
 };
 
+// 处理表单提交
 const handleSubmit = async () => {
   submitted.value = true;
   if (!roleName.value) {
-    messageRef.value = '角色名称不能为空';
+    message.value = '角色名称不能为空';
     isSuccess.value = false;
     return;
   }
   await checkRoleNameExists();
   if (roleNameExists.value) {
-    messageRef.value = '角色名称已存在';
+    message.value = '角色名称已存在';
     isSuccess.value = false;
     return;
   }
@@ -122,36 +119,37 @@ const handleSubmit = async () => {
       roleName: roleName.value,
       roleDescription: roleDescription.value
     });
-    messageRef.value = '修改成功！';
+    message.value = '修改成功！';
     isSuccess.value = true;
     setTimeout(() => {
       router.push('/system/role');
     }, 1500);
   } catch (error) {
-    messageRef.value = error.response.data.error || '修改失败！';
+    message.value = error.response?.data?.error || '修改失败！';
     isSuccess.value = false;
   }
 };
 
+// 重置表单
 const resetForm = () => {
   roleName.value = '';
   roleDescription.value = '';
   submitted.value = false;
-  messageRef.value = '';
+  message.value = '';
   isSuccess.value = false;
   roleNameExists.value = false;
 };
 </script>
 
 <style scoped>
-.edit-role {
+.edit-role-container {
   max-width: 600px;
   margin: 40px auto;
   padding: 0 20px;
   font-family: "Helvetica Neue", Arial, sans-serif;
 }
 
-h2 {
+.page-title {
   font-size: 24px;
   margin-bottom: 20px;
 }
@@ -161,25 +159,26 @@ h2 {
 }
 
 .input-group {
-  margin-bottom: 15px;
+  margin-bottom: 16px;
 }
 
 .form-label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: bold;
+  display: inline-block;
+  width: 120px;
+  margin-bottom: 8px;
 }
 
 .input-wrapper {
-  position: relative;
+  display: flex;
+  align-items: center;
 }
 
 .input-wrapper input,
 .input-wrapper textarea {
-  width: 100%;
-  padding: 8px 12px;
+  padding: 6px 12px;
   border: 1px solid #ddd;
   border-radius: 4px;
+  flex: 1;
 }
 
 .is-error {
@@ -188,24 +187,25 @@ h2 {
 
 .error-tooltip {
   color: red;
-  font-size: 12px;
-  position: absolute;
-  bottom: -15px;
-  left: 0;
+  margin-left: 10px;
 }
 
 .button-group {
   display: flex;
-  gap: 10px;
+  justify-content: center;
+  gap: 16px;
+  margin: 30px 0;
 }
 
 .primary-btn {
   background-color: #007bff;
   color: white;
-  padding: 8px 16px;
+  padding: 12px 24px;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
+  font-size: 16px;
   cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
 .primary-btn:hover {
@@ -213,16 +213,18 @@ h2 {
 }
 
 .secondary-btn {
-  background-color: #ccc;
-  color: #333;
-  padding: 8px 16px;
+  background-color: #6c757d;
+  color: white;
+  padding: 12px 24px;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
+  font-size: 16px;
   cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
 .secondary-btn:hover {
-  background-color: #bbb;
+  background-color: #5a6268;
 }
 
 .message-box {
