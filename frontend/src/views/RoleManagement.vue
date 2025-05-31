@@ -39,7 +39,7 @@
 </template>
 
 <script setup>
-import { ref, inject } from 'vue';
+import { ref, inject, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 
@@ -65,7 +65,7 @@ const searchRoles = async () => {
   
   loading.value = true;
   try {
-    const response = await axios.get(`/role/query?query=${query.value}`);
+    const response = await axios.get(`/role/query?roleName=${query.value}`);
     roles.value = response.data;
     
     if (response.data.length === 0) {
@@ -118,6 +118,26 @@ const nextPage = () => {
     currentPage.value++;
   }
 };
+
+// 页面加载时获取所有角色
+const fetchAllRoles = async () => {
+  loading.value = true;
+  try {
+    const response = await axios.get('/role/all');
+    roles.value = response.data;
+    message.success('加载角色列表成功！');
+  } catch (error) {
+    message.error('加载角色列表失败！');
+    console.error(error);
+  } finally {
+    loading.value = false;
+  }
+  totalPages.value = Math.ceil(roles.value.length / itemsPerPage.value);
+};
+
+onMounted(() => {
+  fetchAllRoles();
+});
 </script>
 
 <style scoped>

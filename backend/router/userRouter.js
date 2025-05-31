@@ -16,9 +16,9 @@ router.get('/getNextId', async (req, res) => {
 
 // 新增用户
 router.post('/add', async (req, res) => {
-  const { userId, userName, password } = req.body;
-  if (!userId || !userName || !password) {
-    return res.status(400).json({ error: '用户 ID、用户名和密码为必填项' });
+  const { userId, userName, password, roleId } = req.body;
+  if (!userId || !userName || !password || !roleId) {
+    return res.status(400).json({ error: '用户 ID、用户名、密码和角色 ID 为必填项' });
   }
   try {
     // 检查 ID 和用户名是否重复
@@ -31,8 +31,8 @@ router.post('/add', async (req, res) => {
     if (existingUserName.rows.length > 0) {
       return res.status(400).json({ error: '用户名已存在' });
     }
-    const addSql = "INSERT INTO users (user_id, username, password_hash) VALUES (?,?,?)";
-    await db.async.run(addSql, [userId, userName, password]);
+    const addSql = "INSERT INTO users (user_id, username, password_hash, role) VALUES (?,?,?,?)";
+    await db.async.run(addSql, [userId, userName, password, roleId]);
     res.json({ message: '用户添加成功' });
   } catch (error) {
     console.error(error);
@@ -47,7 +47,7 @@ router.get('/query', async (req, res) => {
     return res.status(400).json({ error: '请输入查询条件' });
   }
   try {
-    const sql = "SELECT * FROM users WHERE username = ? OR user_id = ?";
+    const sql = "SELECT u.user_id, u.username as user_name, r.RoleName as role_name FROM users u LEFT JOIN roles r ON u.role = r.RoleID WHERE u.username = ? OR u.user_id = ?";
     const users = await db.async.all(sql, [query, query]);
     res.json(users.rows);
   } catch (error) {
@@ -56,9 +56,37 @@ router.get('/query', async (req, res) => {
   }
 });
 
+// 获取所有用户
+router.get('/all', async (req, res) => {
+  try {
+    const sql = "SELECT u.user_id, u.username as user_name, r.RoleName as role_name FROM users u LEFT JOIN roles r ON u.role = r.RoleID";
+    const users = await db.async.all(sql, []);
+    res.json(users.rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// 获取所有用户及其角色信息
+router.get('/allWithRoles', async (req, res) => {
+  try {
+    const sql = `
+      SELECT u.user_id, u.username, r.RoleName 
+      FROM users u
+      JOIN roles r ON u.role = r.RoleID
+    `;
+    const result = await db.async.all(sql);
+    res.json(result.rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 // 修改用户信息
 router.put('/update', async (req, res) => {
-  const { userId, userName, password } = req.body;
+  const { userId, userName, password, roleId } = req.body;
   if (!userId) {
     return res.status(400).json({ error: '请提供用户 ID' });
   }
@@ -72,9 +100,20 @@ router.put('/update', async (req, res) => {
         sql += ", password_hash = ?";
         params.push(password);
       }
+      if (roleId) {
+        sql += ", role = ?";
+        params.push(roleId);
+      }
     } else if (password) {
       sql += "password_hash = ?";
       params.push(password);
+      if (roleId) {
+        sql += ", role = ?";
+        params.push(roleId);
+      }
+    } else if (roleId) {
+      sql += "role = ?";
+      params.push(roleId);
     }
     sql += " WHERE user_id = ?";
     params.push(userId);

@@ -2,14 +2,14 @@
   <div class="system-management">
     <header class="header">
       <h2>系统管理</h2>
-      <!-- 继承主界面的用户信息栏 -->
+      
       <div class="user-info">
         <span>欢迎您，{{ roleName }}</span>
         <button @click="logout">注销</button>
       </div>
     </header>
 
-        <main class="menu-grid">
+    <main class="menu-grid">
       <div
         v-for="item in features"
         :key="item.label"
@@ -46,7 +46,7 @@ const features = [
   { label: '用户管理', route: '/system/user', roles: ['operator'], icon: '👥' },
   { label: '角色管理', route: '/system/role', roles: ['operator'], icon: '🔐' },
   { label: '功能管理', route: '/system/function', roles: ['operator'], icon: '⚙️' },
-  { label: '权限配置', route: '/', roles: ['operator'], icon: '🛡️' },
+  { label: '权限配置', route: '/system/permission', roles: ['operator'], icon: '🛡️' },
 ]
 
 // 权限检查函数（继承主界面逻辑）
@@ -56,10 +56,6 @@ function hasAccess(allowedRoles) {
 
 // 路由跳转函数
 function handleClick(route) {
-//   if (!hasAccess(['admin'])) {
-//     alert('权限不足，仅管理员可操作！');
-//     return;
-//   }
   router.push(route);
 }
 

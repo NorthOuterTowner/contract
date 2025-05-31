@@ -19,6 +19,8 @@ import ModifyUser from '../views/ModifyUser.vue';
 import RoleManagement from '../views/RoleManagement.vue';
 import FunctionManagement from '../views/FunctionManagement.vue';
 import AddFunction from '../views/AddFunction.vue';
+import PermissionManagement from '../views/PermissionManagement.vue';
+import AssignPermissions from '../views/AssignPermission.vue'; 
 import SignContract from '../views/SignContract.vue';
 import SignContent from '../views/signContent.vue';
 
@@ -43,9 +45,11 @@ let routes= [
     { path: '/system/user/modify/:=userId', component: ModifyUser },
     { path: '/system/function', component: FunctionManagement },
     { path: '/system/function/add', component: AddFunction },
+    { path: '/system/permission', component: PermissionManagement },
+    { path: '/system/permission/assign/:userId', component: AssignPermissions },
     { path: "/query", component: QueryPage },
     { path: "/SignContractList", component: SignContract},
-    { path: "/sign/content", component: SignContent}
+    { path: "/sign/content", component: SignContent },
 ]
 const router = createRouter({
   history: createWebHashHistory(),
