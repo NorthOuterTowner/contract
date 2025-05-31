@@ -12,7 +12,6 @@ import content from '../views/content.vue';
 import PendingContractList from '../views/PendingContractList.vue';
 import AssignContract from '../views/AssignContract.vue';
 import QueryPage from '../views/QueryPage.vue';
-import SystemManagement from '../views/SystemManagement.vue';
 import UserManagement from '../views/UserManagement.vue';
 import AddUser from '../views/AddUser.vue';
 import ModifyUser from '../views/ModifyUser.vue';
@@ -38,15 +37,14 @@ let routes= [
     { path: '/PendingContractList',component: PendingContractList },
     { path: '/allocate/:contractId',component: AssignContract },
     { path: "/approve/content",component:content },
-    { path: '/system', component: SystemManagement },
-    { path: '/system/user', component: UserManagement },
-    { path: '/system/user/add', component: AddUser },
-    { path: '/system/role', component: RoleManagement },
-    { path: '/system/user/modify/:=userId', component: ModifyUser },
-    { path: '/system/function', component: FunctionManagement },
-    { path: '/system/function/add', component: AddFunction },
-    { path: '/system/permission', component: PermissionManagement },
-    { path: '/system/permission/assign/:userId', component: AssignPermissions },
+    { path: '/user', component: UserManagement },
+    { path: '/user/add', component: AddUser },
+    { path: '/role', component: RoleManagement },
+    { path: '/user/modify/:=userId', component: ModifyUser },
+    { path: '/function', component: FunctionManagement },
+    { path: '/function/add', component: AddFunction },
+    { path: '/permission', component: PermissionManagement },
+    { path: '/permission/assign/:userId', component: AssignPermissions },
     { path: "/query", component: QueryPage },
     { path: "/SignContractList", component: SignContract},
     { path: "/sign/content", component: SignContent },
