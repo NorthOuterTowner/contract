@@ -26,8 +26,8 @@ CREATE TABLE `contract` (
   `ContractID` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
   `Title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `Description` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `Content` longtext COLLATE utf8mb4_unicode_ci,
-  `Status` enum('待起草','会签处理中','待定稿','待审批','待签署','已签署','未通过') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '待起草',
+  `Content` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `Status` enum('待起草','会签处理中','待定稿','待审批','已签订','未通过','待签订') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '待起草',
   `CreationDate` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `LastModifiedDate` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`ContractID`)
@@ -40,7 +40,7 @@ CREATE TABLE `contract` (
 
 LOCK TABLES `contract` WRITE;
 /*!40000 ALTER TABLE `contract` DISABLE KEYS */;
-INSERT INTO `contract` VALUES ('CTR0000001','合同标题 1','这是描述 1','这里是合同正文内容 1。','待起草','2025-05-27 16:39:18','2025-05-27 16:39:18'),('CTR0000002','合同标题 2','这是描述 2','这里是合同正文内容 2。','待签署','2025-05-27 16:39:18','2025-05-28 16:53:00'),('CTR0000003','合同标题 3','这是描述 3','这里是合同正文内容 3。','待审批','2025-05-27 16:39:18','2025-05-28 19:11:18'),('CTR0000004','合同标题 4','这是描述 4','这里是合同正文内容 4。','待审批','2025-05-27 16:39:18','2025-05-28 19:11:21'),('CTR0000005','合同标题 5','这是描述 5','这里是合同正文内容 5。','待签署','2025-05-27 16:39:18','2025-05-27 16:39:18'),('CTR0000006','合同6','描述6','正文6','待签署','2025-05-28 16:47:58','2025-05-28 19:06:02');
+INSERT INTO `contract` VALUES ('CTR0000001','合同标题 1','这是描述 1','这里是合同正文内容 1。','已签订','2025-05-27 16:39:18','2025-05-31 13:12:01'),('CTR0000002','合同标题 2','这是描述 2','这里是合同正文内容 2。','未通过','2025-05-27 16:39:18','2025-05-31 13:10:02'),('CTR0000003','合同标题 3','这是描述 3','这里是合同正文内容 3。','会签处理中','2025-05-27 16:39:18','2025-05-31 13:09:55'),('CTR0000004','合同标题 4','这是描述 4','这里是合同正文内容 4。','待审批','2025-05-27 16:39:18','2025-05-28 19:11:21'),('CTR0000005','合同标题 5','这是描述 5','这里是合同正文内容 5。','未通过','2025-05-27 16:39:18','2025-05-31 10:52:41'),('CTR0000006','合同6','描述6','正文6','已签订','2025-05-28 16:47:58','2025-05-31 13:07:01'),('CTR0000007','title7','description7','content7','待审批','2025-05-30 13:59:49','2025-05-30 13:59:49');
 /*!40000 ALTER TABLE `contract` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -61,7 +61,7 @@ CREATE TABLE `contractapproval` (
   PRIMARY KEY (`ApprovalID`),
   KEY `ContractID` (`ContractID`),
   CONSTRAINT `contractapproval_ibfk_1` FOREIGN KEY (`ContractID`) REFERENCES `contract` (`ContractID`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -70,7 +70,7 @@ CREATE TABLE `contractapproval` (
 
 LOCK TABLES `contractapproval` WRITE;
 /*!40000 ALTER TABLE `contractapproval` DISABLE KEYS */;
-INSERT INTO `contractapproval` VALUES (1,'CTR0000002','李','审批不通过','2025-05-28 11:19:58',NULL),(2,'CTR0000002','userA','审批通过','2025-05-28 08:23:54','a'),(3,'CTR0000002','userA','审批通过','2025-05-28 08:42:08','a'),(4,'CTR0000002','userA','审批通过','2025-05-28 08:42:11','a'),(5,'CTR0000002','userA','审批通过','2025-05-28 08:42:54','a'),(6,'CTR0000002','userA','审批通过','2025-05-28 08:42:57','a'),(7,'CTR0000002','userA','审批通过','2025-05-28 08:45:04','a'),(8,'CTR0000002','userA','审批通过','2025-05-28 08:46:04','a'),(9,'CTR0000002','userA','审批通过','2025-05-28 08:46:52','测试'),(10,'CTR0000002','userA','审批通过','2025-05-28 08:51:00','通过'),(11,'CTR0000002','userA','审批通过','2025-05-28 08:51:51','通过'),(12,'CTR0000002','userA','审批通过','2025-05-28 08:53:00','可以'),(13,'CTR0000006','userA','审批通过','2025-05-28 11:06:02','可以');
+INSERT INTO `contractapproval` VALUES (1,'CTR0000002','李','审批不通过','2025-05-28 11:19:58',NULL),(2,'CTR0000002','userA','审批通过','2025-05-28 08:23:54','a'),(3,'CTR0000002','userA','审批通过','2025-05-28 08:42:08','a'),(4,'CTR0000002','userA','审批通过','2025-05-28 08:42:11','a'),(5,'CTR0000002','userA','审批通过','2025-05-28 08:42:54','a'),(6,'CTR0000002','userA','审批通过','2025-05-28 08:42:57','a'),(7,'CTR0000002','userA','审批通过','2025-05-28 08:45:04','a'),(8,'CTR0000002','userA','审批通过','2025-05-28 08:46:04','a'),(9,'CTR0000002','userA','审批通过','2025-05-28 08:46:52','测试'),(10,'CTR0000002','userA','审批通过','2025-05-28 08:51:00','通过'),(11,'CTR0000002','userA','审批通过','2025-05-28 08:51:51','通过'),(12,'CTR0000002','userA','审批通过','2025-05-28 08:53:00','可以'),(13,'CTR0000006','userA','审批通过','2025-05-28 11:06:02','可以'),(14,'CTR0000005','userA','审批不通过','2025-05-31 02:52:41','x');
 /*!40000 ALTER TABLE `contractapproval` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -85,13 +85,12 @@ CREATE TABLE `contractassignment` (
   `AssignmentID` int(11) NOT NULL AUTO_INCREMENT,
   `ContractID` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
   `SignerID` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `ApproverID` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `ExecutorID` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
   `AssignmentDate` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `comment` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`AssignmentID`),
   KEY `ContractID` (`ContractID`),
   CONSTRAINT `contractassignment_ibfk_1` FOREIGN KEY (`ContractID`) REFERENCES `contract` (`ContractID`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -199,13 +198,13 @@ DROP TABLE IF EXISTS `contractsigning`;
 CREATE TABLE `contractsigning` (
   `SignID` int(11) NOT NULL AUTO_INCREMENT,
   `ContractID` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `Signer` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `SigningDate` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `ModificationSuggestions` text COLLATE utf8mb4_unicode_ci,
+  `SignerID` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `SignDate` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `comment` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`SignID`),
   KEY `ContractID` (`ContractID`),
   CONSTRAINT `contractsigning_ibfk_1` FOREIGN KEY (`ContractID`) REFERENCES `contract` (`ContractID`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -214,6 +213,7 @@ CREATE TABLE `contractsigning` (
 
 LOCK TABLES `contractsigning` WRITE;
 /*!40000 ALTER TABLE `contractsigning` DISABLE KEYS */;
+INSERT INTO `contractsigning` VALUES (1,'CTR0000001','userA','2025-05-31 05:12:01','可以的');
 /*!40000 ALTER TABLE `contractsigning` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -335,4 +335,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-05-29 22:45:44
+-- Dump completed on 2025-05-31 13:16:45
