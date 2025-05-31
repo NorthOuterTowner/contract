@@ -53,16 +53,6 @@
           </div>
           
           <div class="form-group">
-            <label for="draftContent">合同内容:</label>
-            <textarea 
-              id="draftContent" 
-              v-model="draft.draftContent" 
-              required
-              placeholder="请输入详细的合同内容"
-              rows="10"
-            ></textarea>
-            <span class="error" v-if="errors.draftContent">{{ errors.draftContent }}</span>
-            
             <div class="upload-section">
               <input 
                 type="file" 
@@ -76,10 +66,12 @@
                 class="upload-btn"
                 @click="triggerFileInput"
               >
-                上传文件
+                上传合同文件
               </button>
               <span v-if="uploading" class="upload-status">文件上传中...</span>
-              <span v-if="fileName" class="file-name">{{ fileName }}</span>
+              <div v-if="fileName" class="file-info">
+                <div class="file-name">已选择文件: {{ fileName }}</div>
+              </div>
             </div>
           </div>
           
@@ -122,14 +114,12 @@ export default {
     
     const draft = ref({
       draftTitle: '',
-      draftContent: '',
       createdBy: '当前用户'
     });
     
     const errors = ref({
       draftTitle: '',
-      description: '',
-      draftContent: ''
+      description: ''
     });
     
     const triggerFileInput = () => {
@@ -140,38 +130,12 @@ export default {
       const file = event.target.files[0];
       if (!file) return;
       
-      fileName.value = file.name;
       uploading.value = true;
+      fileName.value = file.name;
       
-      const reader = new FileReader();
-      
-      reader.onload = (e) => {
-        try {
-          const content = e.target.result;
-          draft.value.draftContent = content;
-          uploading.value = false;
-        } catch (error) {
-          console.error('文件读取错误:', error);
-          uploading.value = false;
-          alert('文件读取失败，请重试');
-        }
-      };
-      
-      reader.onerror = () => {
+      setTimeout(() => {
         uploading.value = false;
-        alert('文件读取错误，请选择其他文件');
-      };
-      
-      // 支持大文件读取
-      if (file.size > 1024 * 1024 * 10) { // 大于10MB的文件使用不同读取方式
-        reader.readAsText(file); // 对于超大文本文件
-      } else {
-        if (file.type.includes('text') || file.name.endsWith('.txt') || file.name.endsWith('.doc') || file.name.endsWith('.docx')) {
-          reader.readAsText(file);
-        } else {
-          reader.readAsDataURL(file); // 对于非文本文件
-        }
-      }
+      }, 500);
     };
     
     const fetchContractInfo = async () => {
@@ -210,13 +174,6 @@ export default {
         errors.value.description = '';
       }
       
-      if (!draft.value.draftContent.trim()) {
-        errors.value.draftContent = '合同内容不能为空';
-        isValid = false;
-      } else {
-        errors.value.draftContent = '';
-      }
-      
       return isValid;
     };
     
@@ -228,7 +185,8 @@ export default {
       try {
         console.log('保存草稿:', {
           contractID: contract.value.contractID,
-          ...draft.value
+          ...draft.value,
+          fileName: fileName.value
         });
         
         setTimeout(() => {
@@ -250,7 +208,8 @@ export default {
       try {
         console.log('提交草案:', {
           contract: contract.value,
-          draft: draft.value
+          draft: draft.value,
+          fileName: fileName.value
         });
         
         setTimeout(() => {
@@ -383,7 +342,7 @@ textarea {
 .upload-section {
   margin-top: 10px;
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 10px;
 }
 
@@ -395,6 +354,7 @@ textarea {
   border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.3s;
+  align-self: flex-start;
 }
 
 .upload-btn:hover {
@@ -406,9 +366,17 @@ textarea {
   font-size: 13px;
 }
 
+.file-info {
+  margin-top: 10px;
+  padding: 10px;
+  background-color: #f0f0f0;
+  border-radius: 4px;
+}
+
 .file-name {
   color: #606266;
   font-size: 13px;
+  margin: 5px 0;
 }
 
 .form-actions {

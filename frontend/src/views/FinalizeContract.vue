@@ -9,7 +9,12 @@
       <h2>合同定稿</h2>
       
       <div class="contract-info" v-if="contract.contractID">
+      <div class="info-header">
         <h3>合同基本信息</h3>
+        <button class="download-btn" @click="downloadExistingVersion">
+          下载已有版本
+        </button>
+      </div>
         <div class="info-item">
           <label>合同名称:</label>
           <span>{{ contract.title }}</span>
@@ -28,32 +33,48 @@
         </div>
       </div>
       
+      <!-- 会签意见部分 -->
+      <div class="signing-opinions">
+        <h3>会签意见</h3>
+        <div class="opinion-list">
+          <div class="opinion-item" v-for="(opinion, index) in signingOpinions" :key="index">
+            <div class="opinion-header">
+              <span class="opinion-party">{{ opinion.party }}</span>
+              <span class="opinion-date">{{ formatDate(opinion.date) }}</span>
+            </div>
+            <div class="opinion-content">
+              <textarea 
+                readonly
+                :value="opinion.content"
+                rows="3"
+                class="opinion-textarea"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+      
       <div class="draft-form">
         <h3>定稿内容</h3>
-        <form @submit.prevent="submitDraft">
-          
-          
-          <div class="form-group">
-            <label for="description">定稿意见摘要:</label>
-            <textarea 
-              id="description" 
-              v-model="contract.description" 
-              required
-              placeholder="请简要描述合同定稿意见(200字以内)"
-              maxlength="200"
-              rows="2"
-            ></textarea>
-            <span class="error" v-if="errors.description">{{ errors.description }}</span>
-          </div>
-          
-        </form>
+        <div class="file-upload-section">
+          <label for="file-upload" class="upload-btn">
+            上传终稿版本
+            <input 
+              id="file-upload" 
+              type="file" 
+              @change="handleFileUpload" 
+              accept=".doc,.docx,.pdf"
+              style="display: none;"
+            >
+          </label>
+          <span class="file-name" v-if="uploadedFile">
+            {{ uploadedFile.name }}
+          </span>
+        </div>
         
-        <div class="finalize-actions">
-          <button type="button" class="approve-btn" @click="approveDraft">
-            定稿通过
-          </button>
-          <button type="button" class="reject-btn" @click="rejectDraft">
-            驳回定稿
+        <div class="submit-section">
+          <button type="button" class="complete-btn" @click="completeFinalize">
+            完成
           </button>
         </div>
       </div>
@@ -70,33 +91,34 @@ export default {
     const router = useRouter();
     
     const loading = ref(true);
-    const savingDraft = ref(false);
-    const submitting = ref(false);
+    const uploadedFile = ref(null);
     
     const contract = ref({
       contractID: '',
       title: '',
-      description: '',
       status: '待定稿',
       creationDate: new Date()
     });
     
-    const draft = ref({
-      draftTitle: '',
-      createdBy: '当前用户'
-    });
-    
-    const errors = ref({
-      draftTitle: '',
-      description: ''
-    });
+    // 会签意见数据
+    const signingOpinions = ref([
+      {
+        party: '技术部 - 张经理',
+        content: '经技术评估，合同中的服务器配置满足我司未来三年的业务发展需求，建议通过。',
+        date: new Date(Date.now() - 86400000) // 昨天
+      },
+      {
+        party: '财务部 - 李总监',
+        content: '合同金额在预算范围内，付款条款合理，建议财务部会签通过。但建议将付款周期从30天调整为45天。',
+        date: new Date(Date.now() - 172800000) // 前天
+      }
+    ]);
     
     const fetchContractInfo = async () => {
       try {
         contract.value = {
           contractID: 'CON' + Math.floor(Math.random() * 10000).toString().padStart(4, '0'),
           title: '年度服务器采购合同',
-          description: '',
           status: '待定稿',
           creationDate: new Date()
         };
@@ -107,97 +129,61 @@ export default {
       }
     };
     
-    const validateForm = () => {
-      let isValid = true;
-      
-  
-      
-      if (!contract.value.description.trim()) {
-        errors.value.description = '合同摘要不能为空';
-        isValid = false;
-      } else if (contract.value.description.length > 200) {
-        errors.value.description = '摘要不能超过200字';
-        isValid = false;
-      } else {
-        errors.value.description = '';
-      }
-      
-      return isValid;
-    };
-    
-    const saveAsDraft = async () => {
-      if (!validateForm()) return;
-      
-      savingDraft.value = true;
-      
-      try {
-        console.log('保存草稿:', {
-          contractID: contract.value.contractID,
-          ...draft.value
-        });
+    const handleFileUpload = (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        // 检查文件类型
+        const validTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+        if (!validTypes.includes(file.type)) {
+          alert('请上传PDF或Word文档');
+          return;
+        }
         
-        setTimeout(() => {
-          savingDraft.value = false;
-          alert('草稿保存成功');
-        }, 800);
-      } catch (error) {
-        console.error('保存草稿失败:', error);
-        savingDraft.value = false;
-        alert('保存失败，请重试');
-      }
-    };
-    
-    const submitDraft = async () => {
-      if (!validateForm()) return;
-      
-      submitting.value = true;
-      
-      try {
-        console.log('提交草案:', {
-          contract: contract.value,
-          draft: draft.value
-        });
+        // 检查文件大小 (5MB以内)
+        if (file.size > 5 * 1024 * 1024) {
+          alert('文件大小不能超过5MB');
+          return;
+        }
         
-        setTimeout(() => {
-          submitting.value = false;
-          alert('草案提交成功');
-          router.push('/DraftContractList');
-        }, 1000);
-      } catch (error) {
-        console.error('提交草案失败:', error);
-        submitting.value = false;
-        alert('提交失败，请重试');
+        uploadedFile.value = file;
       }
     };
     
-    const approveDraft = () => {
-      alert('定稿通过');
-      // 在此处添加定稿通过的逻辑
-    };
-    
-    const rejectDraft = () => {
-      alert('驳回定稿');
-      // 在此处添加驳回定稿的逻辑
+    const completeFinalize = () => {
+      if (!uploadedFile.value) {
+        alert('请先上传合同文件');
+        return;
+      }
+      
+      // 这里可以添加文件上传逻辑
+      alert('合同定稿完成，文件已上传: ' + uploadedFile.value.name);
+      router.push('/FinalizeContractList');
     };
     
     const formatDate = (date) => {
       return new Date(date).toLocaleString();
+    };
+
+    const downloadExistingVersion = () => {
+      // 这里添加下载逻辑
+      alert('开始下载已有版本...');
+      // 模拟下载过程
+      setTimeout(() => {
+        alert('下载完成');
+      }, 1000);
     };
     
     fetchContractInfo();
     
     return {
       loading,
-      savingDraft,
-      submitting,
       contract,
-      draft,
-      errors,
-      saveAsDraft,
-      submitDraft,
-      approveDraft,
-      rejectDraft,
-      formatDate
+      signingOpinions,
+      uploadedFile,
+      handleFileUpload,
+      completeFinalize,
+      formatDate,
+      downloadExistingVersion
     };
   }
 };
@@ -229,7 +215,7 @@ h2 {
   border-bottom: 1px solid #eee;
 }
 
-.contract-info, .draft-form {
+.contract-info, .draft-form, .signing-opinions {
   background-color: #f9f9f9;
   padding: 20px;
   border-radius: 6px;
@@ -253,106 +239,119 @@ h3 {
   color: #666;
 }
 
-.form-group {
-  margin-bottom: 20px;
+/* 会签意见样式 */
+.signing-opinions {
+  background-color: #f0f7ff;
 }
 
-.form-group label {
-  display: block;
-  margin-bottom: 8px;
+.opinion-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.opinion-item {
+  background-color: white;
+  border-radius: 4px;
+  padding: 15px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.opinion-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+.opinion-party {
   font-weight: bold;
-  color: #555;
+  color: #333;
 }
 
-input[type="text"],
-textarea {
+.opinion-date {
+  color: #666;
+}
+
+.opinion-textarea {
   width: 100%;
   padding: 10px;
   border: 1px solid #ddd;
   border-radius: 4px;
+  background-color: #fafafa;
+  resize: none;
+  color: #333;
   font-size: 14px;
-  transition: border-color 0.3s;
 }
 
-input[type="text"]:focus,
-textarea:focus {
-  border-color: #409eff;
-  outline: none;
-}
-
-textarea {
-  min-height: 150px;
-  resize: vertical;
-}
-
-.error {
-  color: #f56c6c;
-  font-size: 12px;
-  margin-top: 5px;
-  display: block;
-}
-
-.form-actions {
+/* 文件上传区域 */
+.file-upload-section {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
   gap: 15px;
-  margin-top: 25px;
+  margin-bottom: 20px;
 }
 
-button {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.3s;
+.info-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
 }
 
-button[type="submit"] {
+.download-btn {
+  padding: 8px 15px;
   background-color: #409eff;
   color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  font-size: 14px;
 }
 
-button[type="submit"]:hover {
+.download-btn:hover {
   background-color: #66b1ff;
 }
 
-button[type="submit"]:disabled {
-  background-color: #c0c4cc;
-  cursor: not-allowed;
+.upload-btn {
+  padding: 10px 20px;
+  background-color: #409eff;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  display: inline-block;
 }
 
-button.secondary {
-  background-color: #f4f4f5;
-  color: #606266;
+.upload-btn:hover {
+  background-color: #66b1ff;
 }
 
-button.secondary:hover {
-  background-color: #e9e9eb;
+.file-name {
+  color: #333;
+  font-size: 14px;
 }
 
-.finalize-actions {
+/* 完成按钮区域 */
+.submit-section {
   display: flex;
-  gap: 15px;
-  margin-top: 20px;
+  justify-content: flex-end;
 }
 
-.approve-btn {
+.complete-btn {
+  padding: 10px 30px;
   background-color: #67c23a;
   color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  font-size: 16px;
 }
 
-.approve-btn:hover {
+.complete-btn:hover {
   background-color: #85ce61;
-}
-
-.reject-btn {
-  background-color: #f56c6c;
-  color: white;
-}
-
-.reject-btn:hover {
-  background-color: #f78989;
 }
 
 .loading {
