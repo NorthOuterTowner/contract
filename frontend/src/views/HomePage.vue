@@ -74,6 +74,7 @@
       </p>
     </section>
   </div>
+  <footer>@Copyright</footer>
 </template>
 
 <script setup>

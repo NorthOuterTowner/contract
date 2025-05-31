@@ -90,7 +90,7 @@ CREATE TABLE `contractassignment` (
   PRIMARY KEY (`AssignmentID`),
   KEY `ContractID` (`ContractID`),
   CONSTRAINT `contractassignment_ibfk_1` FOREIGN KEY (`ContractID`) REFERENCES `contract` (`ContractID`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -234,7 +234,7 @@ CREATE TABLE `functions` (
   UNIQUE KEY `FunctionName` (`FunctionName`),
   KEY `ParentID` (`ParentID`),
   CONSTRAINT `functions_ibfk_1` FOREIGN KEY (`ParentID`) REFERENCES `functions` (`FunctionID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=36 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -243,6 +243,7 @@ CREATE TABLE `functions` (
 
 LOCK TABLES `functions` WRITE;
 /*!40000 ALTER TABLE `functions` DISABLE KEYS */;
+INSERT INTO `functions` VALUES (1,'合同管理','合同全生命周期管理',NULL,'2025-05-31 07:53:09'),(2,'流程管理','合同流程配置与执行',NULL,'2025-05-31 07:53:09'),(3,'用户管理','系统用户配置与维护',NULL,'2025-05-31 07:53:09'),(4,'角色管理','系统角色配置与维护',NULL,'2025-05-31 07:53:09'),(5,'功能操作','系统功能配置与维护',NULL,'2025-05-31 07:53:09'),(6,'权限管理','系统权限分配与管理',NULL,'2025-05-31 07:53:09'),(7,'客户管理','客户信息维护与管理',NULL,'2025-05-31 07:53:09'),(8,'起草合同','创建新合同文档',1,'2025-05-31 07:53:09'),(9,'定稿合同','完成合同定稿流程',1,'2025-05-31 07:53:09'),(10,'查询合同','查询和浏览合同文档',1,'2025-05-31 07:53:09'),(11,'删除合同','删除不需要的合同',1,'2025-05-31 07:53:09'),(12,'会签合同','执行合同会签流程',2,'2025-05-31 07:53:09'),(13,'审批合同','执行合同审批流程',2,'2025-05-31 07:53:09'),(14,'签订合同','执行合同签订流程',2,'2025-05-31 07:53:09'),(15,'分配会签','分配会签人员和顺序',2,'2025-05-31 07:53:09'),(16,'分配审批','分配审批人员和顺序',2,'2025-05-31 07:53:09'),(17,'分配签订','分配签订人员和顺序',2,'2025-05-31 07:53:09'),(18,'流程查询','查询和跟踪流程状态',2,'2025-05-31 07:53:09'),(19,'新增用户','创建新系统用户',3,'2025-05-31 07:53:09'),(20,'编辑用户','修改现有用户信息',3,'2025-05-31 07:53:09'),(21,'查询用户','查询和浏览用户信息',3,'2025-05-31 07:53:09'),(22,'删除用户','删除系统用户',3,'2025-05-31 07:53:09'),(23,'新增角色','创建新系统角色',4,'2025-05-31 07:53:10'),(24,'编辑角色','修改现有角色信息',4,'2025-05-31 07:53:10'),(25,'查询角色','查询和浏览角色信息',4,'2025-05-31 07:53:10'),(26,'删除角色','删除系统角色',4,'2025-05-31 07:53:10'),(27,'新增功能','创建新系统功能',5,'2025-05-31 07:53:10'),(28,'编辑功能','修改现有功能信息',5,'2025-05-31 07:53:10'),(29,'查询功能','查询和浏览功能信息',5,'2025-05-31 07:53:10'),(30,'删除功能','删除系统功能',5,'2025-05-31 07:53:10'),(31,'配置权限','分配角色和用户权限',6,'2025-05-31 07:53:10'),(32,'新增客户','创建新客户信息',7,'2025-05-31 07:53:10'),(33,'编辑客户','修改现有客户信息',7,'2025-05-31 07:53:10'),(34,'查询客户','查询和浏览客户信息',7,'2025-05-31 07:53:10'),(35,'删除客户','删除客户信息',7,'2025-05-31 07:53:10');
 /*!40000 ALTER TABLE `functions` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -335,4 +336,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-05-31 13:16:45
+-- Dump completed on 2025-05-31 16:09:05
