@@ -26,6 +26,7 @@
         <div @click="go('/CoSignContractList')">🤝 会签合同</div>
         <div @click="go('/FinalizeContractList')">📑 定稿合同</div>
         <div @click="go('/PendingContractList')">🗂️ 分配合同</div>
+        <div @click="go('/SignContractList')">🖊 签订合同</div>
       </div>
       </div>
 
