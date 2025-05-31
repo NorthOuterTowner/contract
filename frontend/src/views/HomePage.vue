@@ -25,7 +25,6 @@
         <div @click="go('/DraftContractList')">📝 起草合同</div>
         <div @click="go('/CoSignContractList')">🤝 会签合同</div>
         <div @click="go('/FinalizeContractList')">📑 定稿合同</div>
-        <div @click="go('/PendingContractList')">🗂️ 分配合同</div>
         <div @click="go('/SignContractList')">🖊 签订合同</div>
       </div>
       </div>
@@ -52,8 +51,11 @@
           v-show="activeMenu === 'system'"
           @mouseenter="showDropdown('system')"
           @mouseleave="hideDropdown">
-          <div @click="go('/user-management')">👥 用户管理</div>
-          <div @click="go('/system')">⚙️ 系统设置</div>
+          <div @click="go('/PendingContractList')">🗂️ 分配合同</div>
+          <div @click="go('/user')">👥 用户管理</div>
+          <div @click="go('/role')">🔐 角色管理</div>
+          <div @click="go('/function')">⚙️ 功能管理</div>
+          <div @click="go('/permission')">🛡️ 权限配置</div>
         </div>
       </div>
     </nav>
