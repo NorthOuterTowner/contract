@@ -1,14 +1,13 @@
 <template>
   <div class="add-role-container">
     <h2 class="page-title">添加角色</h2>
-    <!-- 表单区域 -->
-    <div class="form-section">
       <div class="input-group">
         <label class="form-label">角色 ID：</label>
         <div class="input-wrapper">
           <input v-model="roleId" type="text" readonly />
         </div>
-      </div>
+    </div>
+    <div class="form-section">
       <div class="input-group">
         <label class="form-label">角色名称：</label>
         <div class="input-wrapper">
@@ -36,6 +35,30 @@
         </div>
       </div>
     </div>
+    <!-- 功能权限区域 -->
+    <div class="permission-section">
+      <h3 class="section-title">功能权限</h3>
+      <div v-for="Function in topLevelFunctions" :key="Function.FunctionID" class="Function-group">
+        <div class="parent-Function">
+          <input
+            type="checkbox"
+            :checked="isFunctionChecked(Function.FunctionID)"
+            @change="toggleFunction(Function.FunctionID)"
+          />
+          {{ Function.FunctionName }}
+        </div>
+        <div v-if="Function.children.length > 0" class="child-Functions">
+          <div v-for="child in Function.children" :key="child.FunctionID">
+            <input
+              type="checkbox"
+              :checked="isFunctionChecked(child.FunctionID)"
+              @change="toggleFunction(child.FunctionID)"
+            />
+            {{ child.FunctionName }}
+          </div>
+        </div>
+      </div>
+    </div>
     <!-- 操作按钮区域 -->
     <div class="button-group">
       <button @click="handleSubmit" class="primary-btn">提交</button>
@@ -51,7 +74,7 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import axios from "axios";
 
 const roleId = ref("");
@@ -60,6 +83,86 @@ const roleDescription = ref("");
 const submitted = ref(false);
 const message = ref("");
 const isSuccess = ref(false);
+const allFunctions = ref([]);
+const selectedFunctions = ref([]);
+const topLevelFunctions = ref([]); 
+
+// 获取所有功能数据
+const getFunctions = async () => {
+  try {
+    const response = await axios.get('/function/all');
+    allFunctions.value = response.data;
+    buildFunctionTree();
+  } catch (error) {
+    message.value = "获取功能列表失败";
+    isSuccess.value = false;
+    console.error(error);
+  }
+};
+
+// 构建功能树结构
+const buildFunctionTree = () => {
+  const functionMap = {};
+  const topLevel = [];
+
+  allFunctions.value.forEach((func) => {
+    func.children = [];
+    functionMap[func.FunctionID] = func;
+  });
+
+  allFunctions.value.forEach((func) => {
+    if (func.ParentID === null) {
+      topLevel.push(func);
+    } else {
+      const parent = functionMap[func.ParentID];
+      if (parent) {
+        parent.children.push(func);
+      }
+    }
+  });
+
+  topLevelFunctions.value = topLevel; 
+};
+
+// 检查功能是否被选中
+const isFunctionChecked = (FunctionId) => {
+  return selectedFunctions.value.includes(FunctionId);
+};
+
+// 递归取消子功能选中状态
+const unselectChildren = (functionId) => {
+  const functionObj = allFunctions.value.find((func) => func.FunctionID === functionId);
+  if (functionObj && functionObj.children.length > 0) {
+    functionObj.children.forEach((child) => {
+      const index = selectedFunctions.value.indexOf(child.FunctionID);
+      if (index > -1) {
+        selectedFunctions.value.splice(index, 1);
+      }
+      unselectChildren(child.FunctionID);
+    });
+  }
+};
+
+// 切换功能勾选状态
+const toggleFunction = (FunctionId) => {
+  const index = selectedFunctions.value.indexOf(FunctionId);
+  if (index > -1) {
+    selectedFunctions.value.splice(index, 1);
+    // 取消选中父功能时，取消所有子功能选中状态
+    unselectChildren(FunctionId);
+  } else {
+    selectedFunctions.value.push(FunctionId);
+    // 选中父功能时，选中所有子功能
+    const functionObj = allFunctions.value.find((func) => func.FunctionID === FunctionId);
+    if (functionObj && functionObj.children.length > 0) {
+      functionObj.children.forEach((child) => {
+        if (!selectedFunctions.value.includes(child.FunctionID)) {
+          selectedFunctions.value.push(child.FunctionID);
+        }
+      });
+    }
+  }
+};
 
 // 在组件挂载时获取下一个可用的角色 ID
 const getNextRoleId = async () => {
@@ -73,8 +176,7 @@ const getNextRoleId = async () => {
   }
 };
 
-getNextRoleId();
-
+// 提交表单
 const handleSubmit = async () => {
   submitted.value = true;
   if (!roleName.value) {
@@ -88,6 +190,7 @@ const handleSubmit = async () => {
       roleId: roleId.value,
       roleName: roleName.value,
       roleDescription: roleDescription.value,
+      selectedFunctions: selectedFunctions.value,
     });
     message.value = "添加成功！";
     isSuccess.value = true;
@@ -99,17 +202,24 @@ const handleSubmit = async () => {
   }
 };
 
+// 重置表单
 const resetForm = () => {
+  getNextRoleId();
   roleName.value = "";
   roleDescription.value = "";
   submitted.value = false;
-  getNextRoleId();
+  selectedFunctions.value = [];
 };
+
+onMounted(() => {
+  getFunctions();
+  getNextRoleId();
+});
 </script>
 
 <style scoped>
 .add-role-container {
-  max-width: 600px;
+  max-width: 800px;
   margin: 40px auto;
   padding: 0 20px;
   font-family: "Helvetica Neue", Arial, sans-serif;
@@ -150,6 +260,28 @@ const resetForm = () => {
 .error-tooltip {
   color: red;
   margin-left: 10px;
+}
+
+.permission-section {
+  margin-bottom: 20px;
+}
+
+.section-title {
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.Function-group {
+  margin-bottom: 10px;
+}
+
+.parent-Function {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.child-Functions {
+  margin-left: 20px;
 }
 
 .button-group {
