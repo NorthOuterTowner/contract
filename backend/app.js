@@ -11,15 +11,11 @@ app.use(express.json());
 // 引入并使用新创建的查询路由
 app.use("/query", require("./router/queryRouter"));
 app.use("/approve",require("./router/approveRouter"));
-app.use("/api",require("./router/apiRouter"));
 app.use("/user", require("./router/userRouter"));
 app.use("/function", require("./router/functionRouter"));
+app.use("/assign",require("./router/assignRouter"));
 app.use("/cosign",require("./router/cosignRouter"));
 app.use("/sign",require("./router/signRouter"));
-
-app.get('/api', (req, res) => {
-  res.json({ message: 'Hello from backend!' });
-});
 
 app.listen(PORT, () => {
   console.log(`Backend server running on http://localhost:${PORT}`);

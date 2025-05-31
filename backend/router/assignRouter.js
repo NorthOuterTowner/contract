@@ -1,10 +1,12 @@
 const express = require("express");
 const router = express.Router();
-const {db} = require("../db/DBUtils");
+const { db } = require("../db/DBUtils");
 
+// 获取待分配合同列表
 router.get('/pending-contracts', async (req, res) => {
   try {
-    const { rows } = await db.async.getPendingContracts();
+    const sql = "SELECT * FROM Contract WHERE Status = '待起草'";
+    const { rows } = await db.async.all(sql, []);
     res.json(rows);
   } catch (error) {
     console.error(error);
@@ -16,9 +18,11 @@ router.get('/pending-contracts', async (req, res) => {
 router.get('/contract-assignment/:contractId', async (req, res) => {
   const { contractId } = req.params;
   try {
+    const contractInfoSql = "SELECT * FROM Contract WHERE ContractID = ?";
+    const userListSql = "SELECT user_id, username FROM Users";
     const [contractInfo, userList] = await Promise.all([
-      db.async.getContractInfo(contractId),
-      db.async.getUserList()
+      db.async.all(contractInfoSql, [contractId]),
+      db.async.all(userListSql, [])
     ]);
     res.json({ contractInfo: contractInfo.rows[0], userList: userList.rows });
   } catch (error) {
@@ -34,7 +38,8 @@ router.post('/contract-assignment', async (req, res) => {
     return res.status(400).json({ error: '会签、审批、签订人员需全部指定' });
   }
   try {
-    await db.async.saveContractAssignment(contractId, signerId, approverId, executorId);
+    const sql = "INSERT INTO ContractAssignment (ContractID, SignerID, ApproverID, ExecutorID) VALUES (?,?,?,?)";
+    await db.async.run(sql, [contractId, signerId, approverId, executorId]);
     res.json({ message: '合同分配成功' });
   } catch (error) {
     console.error(error);
