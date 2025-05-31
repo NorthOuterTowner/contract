@@ -93,7 +93,7 @@ const searchRoles = async () => {
 
 const viewRole = (roleId) => {
   // 跳转到编辑角色页面，并传递角色 ID
-  router.push(`/role/edit/${roleId}`);
+  router.push(`/role/modify/${roleId}`);
 };
 
 const deleteRole = async (roleId) => {

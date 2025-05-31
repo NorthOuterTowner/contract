@@ -21,7 +21,7 @@ import AddUser from '../views/AddUser.vue';
 import ModifyUser from '../views/ModifyUser.vue';
 import RoleManagement from '../views/RoleManagement.vue';
 import AddRole from '../views/AddRole.vue';
-import EditRole from '../views/EditRole.vue';
+import ModifyRole from '../views/ModifyRole.vue';
 import FunctionManagement from '../views/FunctionManagement.vue';
 import AddFunction from '../views/AddFunction.vue';
 import PermissionManagement from '../views/PermissionManagement.vue';
@@ -59,7 +59,7 @@ let routes= [
     { path: '/user/modify/:userId', component: ModifyUser },
     { path: '/role', component: RoleManagement },
     { path: '/role/add', component: AddRole},
-    { path: '/role/edit/:RoleId', component: EditRole},
+    { path: '/role/modify/:roleId', component: ModifyRole},
     { path: '/function', component: FunctionManagement },
     { path: '/function/add', component: AddFunction },
     { path: '/permission', component: PermissionManagement },
