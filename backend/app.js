@@ -9,8 +9,8 @@ app.use(cors());
 app.use(express.json());
 
 // 引入并使用新创建的查询路由
-app.use("/test",require("./router/testRouter"));
-app.use("/login",require("./router/loginRouter"));
+//app.use("/test",require("./router/testRouter"));
+//app.use("/login",require("./router/loginRouter"));
 app.use("/register",require("./router/registerRouter"));
 app.use("/query", require("./router/queryRouter"));
 app.use("/approve",require("./router/approveRouter"));
