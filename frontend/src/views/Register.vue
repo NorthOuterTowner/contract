@@ -114,8 +114,8 @@ export default {
       
       try {
         // 发送注册请求到后端
-        await this.$axios.post('/api/register', this.form);
-        
+       // await this.$axios.post('/api/register', this.form);
+        const response = await this.$axios.post('/register',this.form);
         // 注册成功提示
         alert('注册成功！请登录');
         this.$router.push('/login');

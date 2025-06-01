@@ -1,5 +1,6 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
 
+import test from '../views/test.vue';
 import FirstPage from '../views/FirstPage.vue';
 import Login from '../views/Login.vue';
 import Register from '../views/Register.vue';
@@ -31,10 +32,22 @@ import SignContent from '../views/signContent.vue';
 import { compile } from 'vue';
 
 let routes= [
+
+
+ 
+  // { path:'/',redirect:'/FirstPage'},
+
+
     { path:'/FirstPage',component : FirstPage},
     { path:'/Login',component:Login},
     { path:'/Register',component:Register},
+
+
+
+   
+
     { path: '/', redirect: '/HomePage'},
+
     { path: '/HomePage', component :HomePage},
     { path: "/approveList", component:approveList },
     { path: '/approval', component:approval },

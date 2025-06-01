@@ -5,9 +5,18 @@ import {router} from './common/router'
 import {createDiscreteApi} from 'naive-ui'
 import axios from 'axios'
 import naive from 'naive-ui'
-axios.defaults.baseURL = "http://localhost:3000";
-const {message,notification,dialog} = createDiscreteApi(["message","dialog","notification"]);
+
+//先创建app实例
 const app = createApp(App);
+
+//设置axios默认配置
+axios.defaults.baseURL = "http://localhost:3000";
+//讲axios挂载到app的全局属性上
+app.config.globalProperties.$axios = axios;
+
+
+const {message,notification,dialog} = createDiscreteApi(["message","dialog","notification"]);
+
 
 app.provide("axios",axios);
 app.provide("message",message);
