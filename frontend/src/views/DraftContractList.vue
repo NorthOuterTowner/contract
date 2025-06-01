@@ -12,7 +12,7 @@
         <input 
           type="text" 
           v-model="searchQuery" 
-          placeholder="输入合同名称、编号或申请人搜索..." 
+          placeholder="输入合同名称、编号搜索..." 
           @keyup.enter="searchContracts"
         />
         <button @click="searchContracts" class="search-button">
@@ -27,22 +27,20 @@
             <tr>
               <th>合同编号</th>
               <th>合同名称</th>
-              <th>申请人</th>
               <th>申请日期</th>
               <th>操作</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="contract in filteredContracts" :key="contract.id">
-              <td>{{ contract.contractNumber }}</td>
-              <td>{{ contract.contractName }}</td>
-              <td>{{ contract.applicant }}</td>
-              <td>{{ formatDate(contract.applyDate) }}</td>
-              <td>
-                <button @click="viewContract(contract.id)">编辑</button>
-              </td>
-            </tr>
-          </tbody>
+      <tr v-for="contract in filteredContracts" :key="contract.id">
+      <td>{{ contract.ContractID }}</td>
+      <td>{{ contract.Title }}</td>
+      <td>{{ formatDate(contract.LastModifiedDate) }}</td>
+      <td>
+        <button @click="viewContract(contract.ContractID)">继续编辑</button>
+      </td>
+    </tr>
+  </tbody>
         </table>
         <div v-if="filteredContracts.length === 0" class="no-data">
           {{ searchQuery ? '没有找到匹配的合同' : '暂无待审批合同' }}
@@ -53,6 +51,7 @@
 </template>
 
 <script>
+import axios from 'axios';
 import Sidebar from '../components/sidebar.vue';
 export default {
   components: {
@@ -71,9 +70,8 @@ export default {
       if (!this.searchQuery) return this.contracts;
       const query = this.searchQuery.toLowerCase();
       return this.contracts.filter(contract => 
-        contract.contractNumber.toLowerCase().includes(query) || 
-        contract.contractName.toLowerCase().includes(query) ||
-        contract.applicant.toLowerCase().includes(query)
+        contract.ContractID.toLowerCase().includes(query) || 
+        contract.Title.toLowerCase().includes(query)
       );
     }
   },
@@ -83,23 +81,9 @@ export default {
   methods: {
     async fetchPendingContracts() {
       try {
-        // 这里应该是API调用，模拟数据
-        this.contracts = [
-          {
-            id: 1,
-            contractNumber: 'HT20230001',
-            contractName: '年度服务器采购合同',
-            applicant: '张三',
-            applyDate: '2023-05-15'
-          },
-          {
-            id: 2,
-            contractNumber: 'HT20230002',
-            contractName: '办公室租赁合同',
-            applicant: '李四',
-            applyDate: '2023-05-18'
-          }
-        ];
+        const res = await axios.get("/draft/list"); 
+        this.contracts = res.data.rows;
+        this.contracts.approver = res.data.rowsApprover;
         this.loading = false;
       } catch (error) {
         console.error('获取合同列表失败:', error);
