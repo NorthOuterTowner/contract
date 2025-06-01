@@ -21,6 +21,8 @@ import UserManagement from '../views/UserManagement.vue';
 import AddUser from '../views/AddUser.vue';
 import ModifyUser from '../views/ModifyUser.vue';
 import RoleManagement from '../views/RoleManagement.vue';
+import AddRole from '../views/AddRole.vue';
+import ModifyRole from '../views/ModifyRole.vue';
 import FunctionManagement from '../views/FunctionManagement.vue';
 import AddFunction from '../views/AddFunction.vue';
 import PermissionManagement from '../views/PermissionManagement.vue';
@@ -31,17 +33,21 @@ import { compile } from 'vue';
 
 let routes= [
 
-  {path:'/test/hello',component:test},
-   { path:'/',redirect:'/FirstPage'},
+
+ 
+  // { path:'/',redirect:'/FirstPage'},
+
+
     { path:'/FirstPage',component : FirstPage},
-   // { path:'/',redirect:'Login'},
     { path:'/Login',component:Login},
-    
-    //{ path:'/',redirect:'/Register'},
     { path:'/Register',component:Register},
 
 
-    //{ path: '/', redirect: '/HomePage'},
+
+   
+
+    { path: '/', redirect: '/HomePage'},
+
     { path: '/HomePage', component :HomePage},
     { path: "/approveList", component:approveList },
     { path: '/approval', component:approval },
@@ -56,8 +62,10 @@ let routes= [
     { path: "/approve/content",component:content },
     { path: '/user', component: UserManagement },
     { path: '/user/add', component: AddUser },
+    { path: '/user/modify/:userId', component: ModifyUser },
     { path: '/role', component: RoleManagement },
-    { path: '/user/modify/:=userId', component: ModifyUser },
+    { path: '/role/add', component: AddRole},
+    { path: '/role/modify/:roleId', component: ModifyRole},
     { path: '/function', component: FunctionManagement },
     { path: '/function/add', component: AddFunction },
     { path: '/permission', component: PermissionManagement },

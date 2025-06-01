@@ -7,7 +7,7 @@
       <button @click="searchRoles">查询</button>
     </div>
     <div v-if="loading" class="loading">加载中...</div>
-    <table v-if="roles.length > 0" class="role-table">
+    <table v-if="currentPageRoles.length > 0" class="role-table">
       <thead>
         <tr>
           <th>角色ID</th>
@@ -17,11 +17,12 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="role in roles" :key="role.RoleID">
+        <tr v-for="role in currentPageRoles" :key="role.RoleID">
           <td>{{ role.RoleID }}</td>
           <td>{{ role.RoleName }}</td>
           <td>{{ role.RoleDescription || '无' }}</td>
           <td>
+            <!-- 修改查看按钮的点击事件 -->
             <button @click="viewRole(role.RoleID)" class="action-btn">查看</button>
             <button @click="deleteRole(role.RoleID)" class="action-btn">删除</button>
           </td>
@@ -39,7 +40,7 @@
 </template>
 
 <script setup>
-import { ref, inject, onMounted } from 'vue';
+import { ref, inject, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 
@@ -54,8 +55,15 @@ const itemsPerPage = ref(10);
 
 const totalPages = ref(Math.ceil(roles.value.length / itemsPerPage.value));
 
+// 计算当前页的角色数据
+const currentPageRoles = computed(() => {
+  const startIndex = (currentPage.value - 1) * itemsPerPage.value;
+  const endIndex = startIndex + itemsPerPage.value;
+  return roles.value.slice(startIndex, endIndex);
+});
+
 const goToAddRole = () => {
-  router.push('/system/role/add');
+  router.push('/role/add');
 };
 
 const searchRoles = async () => {
@@ -65,7 +73,7 @@ const searchRoles = async () => {
   
   loading.value = true;
   try {
-    const response = await axios.get(`/role/query?roleName=${query.value}`);
+    const response = await axios.get(`/role/query?query=${query.value}`);
     roles.value = response.data;
     
     if (response.data.length === 0) {
@@ -80,11 +88,12 @@ const searchRoles = async () => {
     loading.value = false;
   }
   totalPages.value = Math.ceil(roles.value.length / itemsPerPage.value);
+  currentPage.value = 1; // 查询后重置到第一页
 };
 
 const viewRole = (roleId) => {
-  // 这里可以实现查看角色详情的逻辑，例如跳转到角色详情页面
-  console.log(`查看角色 ${roleId} 的详情`);
+  // 跳转到编辑角色页面，并传递角色 ID
+  router.push(`/role/modify/${roleId}`);
 };
 
 const deleteRole = async (roleId) => {
@@ -119,15 +128,15 @@ const nextPage = () => {
   }
 };
 
-// 页面加载时获取所有角色
-const fetchAllRoles = async () => {
+// 在组件挂载时获取所有角色
+const getAllRoles = async () => {
   loading.value = true;
   try {
     const response = await axios.get('/role/all');
     roles.value = response.data;
-    message.success('加载角色列表成功！');
+    message.success('获取角色列表成功！');
   } catch (error) {
-    message.error('加载角色列表失败！');
+    message.error('获取角色列表失败！');
     console.error(error);
   } finally {
     loading.value = false;
@@ -135,9 +144,7 @@ const fetchAllRoles = async () => {
   totalPages.value = Math.ceil(roles.value.length / itemsPerPage.value);
 };
 
-onMounted(() => {
-  fetchAllRoles();
-});
+getAllRoles();
 </script>
 
 <style scoped>

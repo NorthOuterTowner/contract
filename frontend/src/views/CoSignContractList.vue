@@ -52,8 +52,7 @@
               <td>{{ contract.applicant }}</td>
               <td>{{ formatDate(contract.applyDate) }}</td>
               <td>
-                <button @click="viewContract(contract.id)">单次会签</button>&nbsp;
-                <button @click="endContract(contract.id)">结束会签</button>
+                <button @click="viewContract(contract.id)">会签</button>&nbsp;
               </td>
             </tr>
           </tbody>
@@ -162,10 +161,6 @@ export default {
   methods: {
     viewContract(contractId) {
       this.$router.push(`/CoSignContract/${contractId}`);
-    },
-    endContract(contractId) {
-      // 结束会签的逻辑
-      console.log('结束会签:', contractId);
     },
     formatDate(dateString) {
       return new Date(dateString).toLocaleDateString();

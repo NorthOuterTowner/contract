@@ -62,7 +62,7 @@ const fetchUsers = async () => {
 };
 
 const goToAssignPermissions = (userId) => {
-  router.push(`/system/permission/assign/${userId}`);
+  router.push(`/permission/assign/${userId}`);
 };
 
 const prevPage = () => {
