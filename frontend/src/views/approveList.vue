@@ -68,6 +68,7 @@ export default {
         this.loading = false;
       }
     },
+    
     viewContract(contractId) {
       this.$router.push(
         {path:`/approve/content`,query:{id:contractId}}

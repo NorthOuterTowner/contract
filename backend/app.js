@@ -21,6 +21,7 @@ app.use("/assign",require("./router/assignRouter"));
 app.use("/cosign",require("./router/cosignRouter"));
 app.use("/sign",require("./router/signRouter"));
 app.use("/download",require("./router/fileDownload"));
+app.use("/draft",require("./router/draftRouter"));
 
 app.listen(PORT, () => {
   console.log(`Backend server running on http://localhost:${PORT}`);
