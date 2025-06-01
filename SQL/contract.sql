@@ -40,7 +40,6 @@ CREATE TABLE `contract` (
 
 LOCK TABLES `contract` WRITE;
 /*!40000 ALTER TABLE `contract` DISABLE KEYS */;
-INSERT INTO `contract` VALUES ('HT001','标题','描述1','测试文件1.txt','待审批','2025-06-01 14:36:42','2025-06-01 20:43:17'),('HT002','标题2','描述2','测试文件2.docx','待审批','2025-06-01 20:43:43','2025-06-01 20:43:43');
 /*!40000 ALTER TABLE `contract` ENABLE KEYS */;
 UNLOCK TABLES;
 
