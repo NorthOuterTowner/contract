@@ -1,5 +1,6 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
 
+import test from '../views/test.vue';
 import FirstPage from '../views/FirstPage.vue';
 import Login from '../views/Login.vue';
 import Register from '../views/Register.vue';
@@ -30,7 +31,8 @@ import { compile } from 'vue';
 
 let routes= [
 
-    //{ path:'/',redirect:'/FirstPage'},
+  {path:'/test/hello',component:test},
+   { path:'/',redirect:'/FirstPage'},
     { path:'/FirstPage',component : FirstPage},
    // { path:'/',redirect:'Login'},
     { path:'/Login',component:Login},
@@ -39,7 +41,7 @@ let routes= [
     { path:'/Register',component:Register},
 
 
-    { path: '/', redirect: '/HomePage'},
+    //{ path: '/', redirect: '/HomePage'},
     { path: '/HomePage', component :HomePage},
     { path: "/approveList", component:approveList },
     { path: '/approval', component:approval },
