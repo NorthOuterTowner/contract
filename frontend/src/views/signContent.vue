@@ -11,7 +11,7 @@
           <li><strong>合同标题：</strong>{{ contract.Title }}</li>
           <li><strong>状态：</strong>{{ contract.Status }}</li>
           <li><strong>内容：</strong>
-            <a href="javascript:void(0)" onclick="onDownload">{{ contract.Content }}</a>
+            <a href="javascript:void(0)" @click="onDownload">{{ contract.Content }}</a>
           </li>
           <li><strong>修改时间：</strong>{{ formatDate(contract.LastModifiedDate) }}</li>
         </ul>

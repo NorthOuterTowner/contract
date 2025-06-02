@@ -2,7 +2,7 @@
   <div class="home-page">
     <!-- 顶部栏 -->
     <header class="header">
-      <h1 class="logo">合同管理系统</h1>
+      <h1 class="logo">基于Web的合同管理系统</h1>
       <div class="user-controls">
         <span class="welcome">欢迎您，{{ roleName }}</span>
         <button @click="login" class="btn">登录</button>
@@ -68,6 +68,9 @@
     <div class="notification-card" v-if="approveCount > 0" @click="go('/ApproveList')">
       🛎️ 当前有 {{ approveCount }} 份合同待审批，点击跳转 →
     </div>
+    <div class="notification-card" v-if="signCount > 0" @click="go('/SignContractList')">
+      🛎️ 当前有 {{ signCount }} 份合同待签订，点击跳转 →
+    </div>
 
     <!-- 系统介绍卡片 -->
     <section class="intro-card">
@@ -121,15 +124,17 @@ function login() {
 
 let cosignCount = ref(0);
 let approveCount = ref(0);
+let signCount = ref(0);
 
 onMounted(async () => {
   try {
     let approveInfo = await axios.get("/approve/length");
     let cosignInfo = await axios.get("/cosign/length");
+    let signInfo = await axios.get("/sign/length");
 
     approveCount.value = approveInfo.data.length || 0;
     cosignCount.value = cosignInfo.data.length || 0;
-    
+    signCount.value = signInfo.data.length || 0;
   } catch (err) {
     console.error("获取待审批合同数失败：", err)
   }
@@ -153,7 +158,7 @@ onMounted(async () => {
 }
 
 .logo {
-  font-size: 1.8em;
+  font-size: 2em;
   color: #1f2937;
 }
 
@@ -187,6 +192,7 @@ onMounted(async () => {
   margin-top: 30px;
   border-bottom: 1px solid #cbd5e1;
   padding-bottom: 10px;
+  /*font-size: 1.5em;*/
 }
 
 .dropdown {
@@ -214,6 +220,7 @@ onMounted(async () => {
   padding: 10px 15px;
   cursor: pointer;
   white-space: nowrap;
+  
 }
 
 .drop-menu div:hover {

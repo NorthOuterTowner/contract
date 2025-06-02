@@ -3,13 +3,14 @@
     <Sidebar class="sidebar" />
 
     <div class="content">
-      <div v-if="loading" class="loading">加载中喵...</div>
+      <div v-if="loading" class="loading">加载中...</div>
 
       <div v-else-if="contract" class="details-box">
         <h2 class="title">合同详情（编号：{{ contract.ContractID }}）</h2>
         <ul class="info-list">
           <li><strong>合同标题：</strong>{{ contract.Title }}</li>
           <li><strong>状态：</strong>{{ contract.Status }}</li>
+          <li><strong>描述：</strong>{{ contract.Description }}</li>
           <li><strong>内容：</strong>
             <a href="javascript:void(0)" @click="onDownload">{{ contract.Content }}</a>
           </li>
@@ -32,7 +33,7 @@
       </div>
 
       <div v-else class="error-message">
-        未找到该合同的详细信息喵~
+        未找到该合同的详细信息
       </div>
     </div>
   </div>
@@ -76,7 +77,7 @@ export default {
         const res = await axios.get('/approve/content', {
           params: { id }
         });
-
+        //console.log(res);
         if (res.data.code === 200) {
           this.contract = res.data.data;
         } else {
