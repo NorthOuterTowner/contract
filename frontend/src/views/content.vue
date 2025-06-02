@@ -3,14 +3,17 @@
     <Sidebar class="sidebar" />
 
     <div class="content">
-      <div v-if="loading" class="loading">加载中喵...</div>
+      <div v-if="loading" class="loading">加载中...</div>
 
       <div v-else-if="contract" class="details-box">
         <h2 class="title">合同详情（编号：{{ contract.ContractID }}）</h2>
         <ul class="info-list">
           <li><strong>合同标题：</strong>{{ contract.Title }}</li>
           <li><strong>状态：</strong>{{ contract.Status }}</li>
-          <li><strong>内容：</strong>{{ contract.Content }}</li>
+          <li><strong>描述：</strong>{{ contract.Description }}</li>
+          <li><strong>内容：</strong>
+            <a href="javascript:void(0)" @click="onDownload">{{ contract.Content }}</a>
+          </li>
           <li><strong>修改时间：</strong>{{ formatDate(contract.LastModifiedDate) }}</li>
         </ul>
 
@@ -30,7 +33,7 @@
       </div>
 
       <div v-else class="error-message">
-        未找到该合同的详细信息喵~
+        未找到该合同的详细信息
       </div>
     </div>
   </div>
@@ -74,7 +77,7 @@ export default {
         const res = await axios.get('/approve/content', {
           params: { id }
         });
-
+        //console.log(res);
         if (res.data.code === 200) {
           this.contract = res.data.data;
         } else {
@@ -116,6 +119,41 @@ export default {
     },
     formatDate(dateString) {
       return new Date(dateString).toLocaleString();
+    },
+    async onDownload() {
+      try {
+        //console.log(this.contract.Content);
+        const response = await axios.get("/download", {
+          params: { filename: this.contract.Content }, // 正确传递查询参数
+          responseType: 'blob' // 重要：指定响应类型为blob
+        });
+
+        // 创建下载链接
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        
+        // 尝试从响应头获取文件名，如果没有则使用默认
+        const contentDisposition = response.headers['content-disposition'];
+        let filename = this.contract.Content;
+        if (contentDisposition) {
+          const filenameMatch = contentDisposition.match(/filename="?(.+?)"?$/);
+          if (filenameMatch && filenameMatch[1]) {
+            filename = filenameMatch[1];
+          }
+        }
+        
+        link.setAttribute('download', filename);
+        document.body.appendChild(link);
+        link.click();
+        
+        // 清理
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error('下载失败:', error);
+        this.message.error("文件下载失败");
+      }
     }
   }
 };

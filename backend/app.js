@@ -42,7 +42,9 @@ app.use(session({
 }));
 
 // 引入并使用新创建的查询路由
+
 app.use("/login",require("./router/loginRouter"));
+
 
 app.use("/register",require("./router/registerRouter"));
 app.use("/query", require("./router/queryRouter"));
@@ -53,6 +55,9 @@ app.use("/function", require("./router/functionRouter"));
 app.use("/assign",require("./router/assignRouter"));
 app.use("/cosign",require("./router/cosignRouter"));
 app.use("/sign",require("./router/signRouter"));
+app.use("/download",require("./router/fileDownload"));
+app.use("/draft",require("./router/draftRouter"));
+app.use("/finalize",require("./router/finalizeRouter"));
 
 app.listen(PORT, () => {
   console.log(`Backend server running on http://localhost:${PORT}`);

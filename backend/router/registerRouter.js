@@ -86,4 +86,5 @@ router.post('/',async(req,res) => {
 router.get('/test', (req, res) => {
   res.send('注册路由测试成功！');
 });
-    module.exports = router;
+
+module.exports = router;

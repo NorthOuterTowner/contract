@@ -15,6 +15,10 @@
           <span>{{ contract.contractID }}</span>
         </div>
         <div class="info-item">
+          <label>草案标题:</label>
+          <span>{{ draft.draftTitle }}</span>
+        </div>
+        <div class="info-item">
           <label>创建日期:</label>
           <span>{{ formatDate(contract.creationDate) }}</span>
         </div>
@@ -37,6 +41,20 @@
               placeholder="请输入草案标题"
             />
             <span class="error" v-if="errors.draftTitle">{{ errors.draftTitle }}</span>
+          </div>
+          
+          <div class="form-group">
+            <label for="contractNumber">合同编号:</label>
+            <input 
+              type="text" 
+              id="contractNumber" 
+              v-model="contract.contractID" 
+              required
+              placeholder="请输入合同编号(10个字符以内)"
+              maxlength="10"
+              @input="validateContractNumber"
+            />
+            <span class="error" v-if="errors.contractNumber">{{ errors.contractNumber }}</span>
           </div>
           
           <div class="form-group">
@@ -119,6 +137,7 @@ export default {
     
     const errors = ref({
       draftTitle: '',
+      contractNumber: '',
       description: ''
     });
     
@@ -136,6 +155,15 @@ export default {
       setTimeout(() => {
         uploading.value = false;
       }, 500);
+    };
+    
+    const validateContractNumber = () => {
+      if (contract.value.contractID.length > 10) {
+        errors.value.contractNumber = '合同编号不能超过10个字符';
+        return false;
+      }
+      errors.value.contractNumber = '';
+      return true;
     };
     
     const fetchContractInfo = async () => {
@@ -164,6 +192,13 @@ export default {
         errors.value.draftTitle = '';
       }
       
+      if (!contract.value.contractID.trim()) {
+        errors.value.contractNumber = '合同编号不能为空';
+        isValid = false;
+      } else if (!validateContractNumber()) {
+        isValid = false;
+      }
+      
       if (!contract.value.description.trim()) {
         errors.value.description = '合同摘要不能为空';
         isValid = false;
@@ -178,27 +213,43 @@ export default {
     };
     
     const saveAsDraft = async () => {
-      if (!validateForm()) return;
-      
-      savingDraft.value = true;
-      
-      try {
-        console.log('保存草稿:', {
-          contractID: contract.value.contractID,
-          ...draft.value,
-          fileName: fileName.value
-        });
-        
-        setTimeout(() => {
-          savingDraft.value = false;
-          alert('草稿保存成功');
-        }, 800);
-      } catch (error) {
-        console.error('保存草稿失败:', error);
-        savingDraft.value = false;
-        alert('保存失败，请重试');
+  if (!validateForm()) return;
+  
+  savingDraft.value = true;
+  
+  try {
+    const formData = new FormData();
+    formData.append('contractID', contract.value.contractID);
+    formData.append('title', draft.value.draftTitle);
+    formData.append('description', contract.value.description);
+    formData.append('creationDate', contract.creationDate); // 格式化的日期字符串
+    formData.append('status', '待起草');
+    
+    // 如果有文件，添加文件到FormData
+    if (fileInput.value.files[0]) {
+      formData.append('content', fileInput.value.files[0]);
+    }
+    
+    const response = await axios.post('/draft/savedraft', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
       }
-    };
+    });
+    
+    if (response.data.code === 200) {
+      alert('草稿保存成功');
+      // 可以跳转到列表页或保持当前页面
+      // router.push('/DraftContractList');
+    } else {
+      alert('保存失败: ' + response.data.msg);
+    }
+  } catch (error) {
+    console.error('保存草稿失败:', error);
+    alert('保存失败，请重试');
+  } finally {
+    savingDraft.value = false;
+  }
+};
     
     const submitDraft = async () => {
       if (!validateForm()) return;
@@ -242,6 +293,7 @@ export default {
       fileInput,
       triggerFileInput,
       handleFileUpload,
+      validateContractNumber,
       saveAsDraft,
       submitDraft,
       formatDate

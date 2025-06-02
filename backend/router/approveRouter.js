@@ -63,7 +63,7 @@ router.post("/determine",(req,res)=>{
     if(info.approve == true){
         db.async.run("INSERT INTO `contractapproval` (ContractID,Approver,ApprovalDecision,ApprovalDate,ApprovalComments) VALUES (?,?,?,?,?)",
             [info.contractId,info.approver,'审批通过',currentDate,info.comment]);
-        db.async.run("UPDATE `contract` set `Status`='待签署' WHERE `ContractID` = ?",[info.contractId]);
+        db.async.run("UPDATE `contract` set `Status`='待签订' WHERE `ContractID` = ?",[info.contractId]);
     }else{
         db.async.run("INSERT INTO `contractapproval` (ContractID,Approver,ApprovalDecision,ApprovalDate,ApprovalComments) VALUES (?,?,?,?,?)",
             [info.contractId,info.approver,'审批不通过',currentDate,info.comment]);
