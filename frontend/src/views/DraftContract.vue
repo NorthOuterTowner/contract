@@ -30,7 +30,7 @@
       
       <div class="draft-form">
         <h3>起草内容</h3>
-        <form @submit.prevent="submitDraft">
+        <form @submit.prevent="saveAsDraft">
           <div class="form-group">
             <label for="draftTitle">草案标题:</label>
             <input 
@@ -94,11 +94,8 @@
           </div>
           
           <div class="form-actions">
-            <button type="button" class="secondary" @click="saveAsDraft">
+            <button type="submit" :disabled="savingDraft">
               {{ savingDraft ? '保存中...' : '保存草稿' }}
-            </button>
-            <button type="submit" :disabled="submitting">
-              {{ submitting ? '提交中...' : '提交草案' }}
             </button>
           </div>
         </form>
@@ -108,6 +105,7 @@
 </template>
 
 <script>
+import axios from 'axios';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 
@@ -118,7 +116,6 @@ export default {
     
     const loading = ref(true);
     const savingDraft = ref(false);
-    const submitting = ref(false);
     const uploading = ref(false);
     const fileName = ref('');
     
@@ -213,65 +210,39 @@ export default {
     };
     
     const saveAsDraft = async () => {
-  if (!validateForm()) return;
-  
-  savingDraft.value = true;
-  
-  try {
-    const formData = new FormData();
-    formData.append('contractID', contract.value.contractID);
-    formData.append('title', draft.value.draftTitle);
-    formData.append('description', contract.value.description);
-    formData.append('creationDate', contract.creationDate); // 格式化的日期字符串
-    formData.append('status', '待起草');
-    
-    // 如果有文件，添加文件到FormData
-    if (fileInput.value.files[0]) {
-      formData.append('content', fileInput.value.files[0]);
-    }
-    
-    const response = await axios.post('/draft/savedraft', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-    });
-    
-    if (response.data.code === 200) {
-      alert('草稿保存成功');
-      // 可以跳转到列表页或保持当前页面
-      // router.push('/DraftContractList');
-    } else {
-      alert('保存失败: ' + response.data.msg);
-    }
-  } catch (error) {
-    console.error('保存草稿失败:', error);
-    alert('保存失败，请重试');
-  } finally {
-    savingDraft.value = false;
-  }
-};
-    
-    const submitDraft = async () => {
       if (!validateForm()) return;
       
-      submitting.value = true;
+      savingDraft.value = true;
       
       try {
-        console.log('提交草案:', {
-          contract: contract.value,
-          draft: draft.value,
-          fileName: fileName.value
+        const formData = new FormData();
+        formData.append('contractID', contract.value.contractID);
+        formData.append('title', draft.value.draftTitle);
+        formData.append('description', contract.value.description);
+        formData.append('creationDate', contract.value.creationDate.toISOString());
+        formData.append('status', '待起草');
+        
+        if (fileInput.value.files[0]) {
+          formData.append('content', fileInput.value.files[0]);
+        }
+
+        const response = await axios.post('/draft/savedraft', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
         });
         
-        setTimeout(() => {
-          submitting.value = false;
-          alert('草案提交成功');
+        if (response.data.code === 200) {
+          alert('草稿保存成功');
           router.push('/DraftContractList');
-        }, 1000);
+        } else {
+          alert('保存失败: ' + response.data.msg);
+        }
       } catch (error) {
-        console.error('提交草案失败:', error);
-        submitting.value = false;
-        alert('提交失败，请重试');
+        console.error('保存草稿失败:', error);
+        alert('保存失败，请重试');
+      } finally {
+        savingDraft.value = false;
       }
     };
     
@@ -284,7 +255,6 @@ export default {
     return {
       loading,
       savingDraft,
-      submitting,
       uploading,
       fileName,
       contract,
@@ -295,7 +265,6 @@ export default {
       handleFileUpload,
       validateContractNumber,
       saveAsDraft,
-      submitDraft,
       formatDate
     };
   }
@@ -445,29 +414,17 @@ button {
   font-size: 14px;
   cursor: pointer;
   transition: all 0.3s;
-}
-
-button[type="submit"] {
   background-color: #409eff;
   color: white;
 }
 
-button[type="submit"]:hover {
+button:hover {
   background-color: #66b1ff;
 }
 
-button[type="submit"]:disabled {
+button:disabled {
   background-color: #c0c4cc;
   cursor: not-allowed;
-}
-
-button.secondary {
-  background-color: #f4f4f5;
-  color: #606266;
-}
-
-button.secondary:hover {
-  background-color: #e9e9eb;
 }
 
 .loading {
