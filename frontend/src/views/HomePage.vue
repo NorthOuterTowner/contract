@@ -26,6 +26,7 @@
         <div @click="go('/CoSignContractList')">🤝 会签合同</div>
         <div @click="go('/FinalizeContractList')">📑 定稿合同</div>
         <div @click="go('/SignContractList')">🖊 签订合同</div>
+        <div @click="go('/approveList')">📝 审批合同</div>
       </div>
       </div>
 
@@ -39,7 +40,7 @@
           @mouseenter="showDropdown('query')"
           @mouseleave="hideDropdown">
           <div @click="go('/query')">🔍 合同查询</div>
-          <div @click="go('/approveList')">📑 审批合同</div>
+          <!--<div @click="go('/approveList')">📑 审批合同</div>-->
         </div>
       </div>
 

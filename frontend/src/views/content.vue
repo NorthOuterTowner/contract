@@ -121,7 +121,7 @@ export default {
     },
     async onDownload() {
       try {
-        console.log(this.contract.Content);
+        //console.log(this.contract.Content);
         const response = await axios.get("/download", {
           params: { filename: this.contract.Content }, // 正确传递查询参数
           responseType: 'blob' // 重要：指定响应类型为blob
