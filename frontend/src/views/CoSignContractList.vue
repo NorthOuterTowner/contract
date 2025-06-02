@@ -5,18 +5,7 @@
     <div class="contract-list">
       <h2>合同会签列表</h2>
       <div class="tab-buttons">
-        <button 
-          @click="activeTab = 'pending'" 
-          :class="{ active: activeTab === 'pending' }"
-        >
-          待会签
-        </button>
-        <button 
-          @click="activeTab = 'completed'" 
-          :class="{ active: activeTab === 'completed' }"
-        >
-          已结束
-        </button>
+        
       </div>
       
       <!-- 搜索栏 -->
@@ -24,7 +13,7 @@
         <input 
           type="text" 
           v-model="searchQuery" 
-          placeholder="输入合同名称、编号或申请人搜索..." 
+          placeholder="输入合同名称、编号搜索..." 
           @keyup.enter="searchContracts"
         />
         <button @click="searchContracts" class="search-button">
@@ -40,19 +29,17 @@
             <tr>
               <th>合同编号</th>
               <th>合同名称</th>
-              <th>申请人</th>
               <th>申请日期</th>
               <th>操作</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="contract in filteredPendingContracts" :key="contract.id">
-              <td>{{ contract.contractNumber }}</td>
-              <td>{{ contract.contractName }}</td>
-              <td>{{ contract.applicant }}</td>
-              <td>{{ formatDate(contract.applyDate) }}</td>
+              <td>{{ contract.ContractID }}</td>
+              <td>{{ contract.Title }}</td>
+              <td>{{ formatDate(contract.LastModifiedDate) }}</td>
               <td>
-                <button @click="viewContract(contract.id)">会签</button>&nbsp;
+                <button @click="viewContract(contract.ContractID)">会签</button>&nbsp;
               </td>
             </tr>
           </tbody>
@@ -64,19 +51,17 @@
             <tr>
               <th>合同编号</th>
               <th>合同名称</th>
-              <th>申请人</th>
               <th>申请日期</th>
               <th>操作</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="contract in filteredCompletedContracts" :key="contract.id">
-              <td>{{ contract.contractNumber }}</td>
-              <td>{{ contract.contractName }}</td>
-              <td>{{ contract.applicant }}</td>
-              <td>{{ formatDate(contract.applyDate) }}</td>
+              <td>{{ contract.ContractID }}</td>
+              <td>{{ contract.Title }}</td>
+              <td>{{ formatDate(contract.LastModifiedDate) }}</td>
               <td>
-                <button @click="viewContract(contract.id)">查看</button>
+                <button @click="viewContract(contract.ContractID)">查看</button>
               </td>
             </tr>
           </tbody>
@@ -85,9 +70,7 @@
         <div v-if="activeTab === 'pending' && filteredPendingContracts.length === 0" class="no-data">
           {{ searchQuery ? '没有找到匹配的合同' : '暂无待会签合同' }}
         </div>
-        <div v-if="activeTab === 'completed' && filteredCompletedContracts.length === 0" class="no-data">
-          {{ searchQuery ? '没有找到匹配的合同' : '暂无已结束合同' }}
-        </div>
+        
       </div>
     </div>
   </div>
@@ -95,79 +78,75 @@
 
 <script>
 import Sidebar from '../components/sidebar.vue';
+import axios from 'axios';
+
 export default {
-  components:{
+  components: {
     Sidebar
   },
   data() {
     return {
-      pendingContracts: [
-        {
-          id: 1,
-          contractNumber: 'HT20230001',
-          contractName: '年度服务器采购合同',
-          applicant: '张三',
-          applyDate: '2023-05-15'
-        },
-        {
-          id: 2,
-          contractNumber: 'HT20230002',
-          contractName: '办公室租赁合同',
-          applicant: '李四',
-          applyDate: '2023-05-18'
-        }
-      ],
-      completedContracts: [
-        {
-          id: 3,
-          contractNumber: 'HT20230003',
-          contractName: '软件开发合同',
-          applicant: '王五',
-          applyDate: '2023-04-10'
-        },
-        {
-          id: 4,
-          contractNumber: 'HT20230004',
-          contractName: '咨询服务合同',
-          applicant: '赵六',
-          applyDate: '2023-04-25'
-        }
-      ],
-      loading: false,
-      activeTab: 'pending', // 默认显示待会签列表
-      searchQuery: ''
-    }
+      pendingContracts: [],
+      completedContracts: [],
+      loading: true,
+      searchQuery: '',
+      activeTab: 'pending'
+    };
   },
   computed: {
     filteredPendingContracts() {
       if (!this.searchQuery) return this.pendingContracts;
       const query = this.searchQuery.toLowerCase();
       return this.pendingContracts.filter(contract => 
-        contract.contractNumber.toLowerCase().includes(query) || 
-        contract.contractName.toLowerCase().includes(query) ||
-        contract.applicant.toLowerCase().includes(query)
+        contract.ContractID.toLowerCase().includes(query) || 
+        contract.Title.toLowerCase().includes(query)
       );
     },
     filteredCompletedContracts() {
       if (!this.searchQuery) return this.completedContracts;
       const query = this.searchQuery.toLowerCase();
       return this.completedContracts.filter(contract => 
-        contract.contractNumber.toLowerCase().includes(query) || 
-        contract.contractName.toLowerCase().includes(query) ||
-        contract.applicant.toLowerCase().includes(query)
+        contract.ContractID.toLowerCase().includes(query) || 
+        contract.Title.toLowerCase().includes(query)
       );
     }
   },
+  created() {
+    this.fetchContracts();
+  },
   methods: {
+    async fetchContracts() {
+      try {
+        this.loading = true;
+        // Fetch pending contracts (awaiting countersign)
+        const pendingRes = await axios.get("/cosign/list"); 
+        this.pendingContracts = pendingRes.data.rows;
+        this.pendingContracts.forEach(contract => {
+          contract.approver = pendingRes.data.rowsApprover;
+        });
+        
+        // Fetch completed contracts (you'll need to implement this endpoint)
+        // const completedRes = await axios.get("/countersign/completed");
+        // this.completedContracts = completedRes.data;
+        
+        this.loading = false;
+      } catch (error) {
+        console.error('获取合同列表失败:', error);
+        this.loading = false;
+      }
+    },
     viewContract(contractId) {
-      this.$router.push(`/CoSignContract/${contractId}`);
+      if (this.activeTab === 'pending') {
+        this.$router.push(`/CoSignContract/${contractId}`);
+      } else {
+        this.$router.push(`/ViewContract/${contractId}`);
+      }
     },
     formatDate(dateString) {
       return new Date(dateString).toLocaleDateString();
     },
     searchContracts() {
-      // 搜索逻辑已经在计算属性中实现
-      // 这里只是为了响应搜索按钮点击
+      // Search logic is handled in computed properties
     }
   }
 }
