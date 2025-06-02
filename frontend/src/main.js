@@ -13,6 +13,7 @@ const app = createApp(App);
 axios.defaults.baseURL = "http://localhost:3000";
 //讲axios挂载到app的全局属性上
 app.config.globalProperties.$axios = axios;
+axios.defaults.withCredentials = true;
 
 
 const {message,notification,dialog} = createDiscreteApi(["message","dialog","notification"]);
