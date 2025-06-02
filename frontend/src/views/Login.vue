@@ -1,8 +1,6 @@
 <template>
   <div class="login-container">
     <div class="login-card">
-      
-      
       <h3>用户登录</h3>
       
       <div class="form-group">
@@ -33,7 +31,9 @@
         <div v-if="errors.password" class="error-message">{{ errors.password }}</div>
       </div>
       
-      <button class="login-button" @click="handleLogin">登录</button>
+      <button class="login-button" @click="handleLogin" :disabled="isLoading">
+        {{ isLoading ? '登录中...' : '登录' }}
+      </button>
       
       <div class="auth-links">
         <router-link to="/register">注册账号</router-link>
@@ -55,7 +55,8 @@ export default {
       errors: {
         username: '',
         password: ''
-      }
+      },
+      isLoading: false // 新增加载状态
     }
   },
   methods: {
@@ -76,42 +77,59 @@ export default {
       return isValid;
     },
     
-    async handleLogin() {
-      if (!this.validateForm()) return;
-      console.log('尝试登录:', this.form.username); // 添加调试日志
-
-      try {
-        // 发送登录请求
-        console.log('发送登录请求:'); // 添加调试日志
-        let response = await this.$axios.post('/auth/api/login', {
-          username: this.form.username,
-          password: this.form.password
-        });
-        console.log('登录响应:', response.data); // 添加调试日志
-
-        // 存储 token
-        localStorage.setItem('token', response.data.token);
-        localStorage.setItem('role', response.data.role);
-        
-        // 登录成功，跳转到首页
-        this.$message.success('登录成功');
-        this.$router.push('/HomePage');
-      } catch (error) {
-        console.error('登录失败:', error);
-        
-        // 显示错误信息
-        if (error.response && error.response.data.message) {
-          this.$message.error(error.response.data.message);
-        } else {
-          this.$message.error('登录失败，请检查用户名和密码');
-        }
-      }
+   async handleLogin() {
+  if (this.isLoading) return; // 防止重复提交
+  if (!this.validateForm()) return;
+  
+  this.isLoading = true; // 开始加载
+  console.log('尝试登录:', this.form.username);
+  
+  try {
+    const response = await this.$axios.post('/login', {
+      username: this.form.username,
+      password: this.form.password
+    });
+    
+    console.log('登录响应:', response.data);
+    
+    // ✅ 根据后端返回的数据结构判断登录成功
+    if (response && response.data && response.data.user) {
+      // 保存用户信息到本地存储
+      localStorage.setItem('user', JSON.stringify(response.data.user));
+      
+      // 显示成功消息
+      //this.$message.success(response.data.message || '登录成功');
+      
+      // 跳转到首页
+      this.$router.push('/HomePage');
+    } else {
+      // 登录失败，显示服务器返回的消息
+      this.$message.error(response.data.message || '登录失败：服务器未返回用户信息');
     }
+  } catch (error) {
+    console.error('登录失败:', error);
+    
+    // ✅ 更详细的错误处理，避免访问未定义属性
+    if (error.response && error.response.data) {
+      // 服务器返回了错误响应
+      this.$message.error(error.response.data.message || '登录失败，请检查用户名和密码');
+    } else if (error.request) {
+      // 请求已发送，但没有收到响应
+      this.$message.error('服务器无响应，请稍后重试');
+    } else {
+      // 请求设置时出错
+      this.$message.error('请求配置错误: ' + error.message);
+    }
+  } finally {
+    this.isLoading = false; // 无论成功失败都结束加载状态
+  }
+}
   }
 }
 </script>
 
 <style scoped>
+/* 样式部分保持不变 */
 .login-container {
   display: flex;
   justify-content: center;
@@ -143,7 +161,6 @@ export default {
   height: 4px;
   background: linear-gradient(90deg, #409eff, #64b5f6);
 }
-
 
 h3 {
   margin-top: 0;

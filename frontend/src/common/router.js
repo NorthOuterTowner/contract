@@ -33,21 +33,17 @@ import { compile } from 'vue';
 
 let routes= [
 
-
- 
-  // { path:'/',redirect:'/FirstPage'},
-
-
+  
+   { path:'/',redirect:'/FirstPage'},
     { path:'/FirstPage',component : FirstPage},
-    { path:'/Login',component:Login},
-    { path:'/Register',component:Register},
+   // { path:'/',redirect:'Login'},
+    { path:'/login',component:Login},
+    
+    //{ path:'/',redirect:'/Register'},
+    { path:'/register',component:Register},
 
 
-
-   
-
-    { path: '/', redirect: '/HomePage'},
-
+    //{ path: '/', redirect: '/HomePage'},
     { path: '/HomePage', component :HomePage},
     { path: "/approveList", component:approveList },
     { path: '/approval', component:approval },
@@ -64,7 +60,7 @@ let routes= [
     { path: '/user/add', component: AddUser },
     { path: '/user/modify/:userId', component: ModifyUser },
     { path: '/role', component: RoleManagement },
-    { path: '/role/add', component: AddRole},
+     { path: '/role/add', component: AddRole},
     { path: '/role/modify/:roleId', component: ModifyRole},
     { path: '/function', component: FunctionManagement },
     { path: '/function/add', component: AddFunction },
