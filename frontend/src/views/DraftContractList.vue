@@ -3,7 +3,7 @@
     <Sidebar />
     <div class="contract-list">
       <div class="header">
-        <h2>未完成起草合同列表</h2>
+        <h2>合同起草列表</h2>
         <button class="new-contract-button" @click="goToDraftContract">起草新合同</button>
       </div>
       
@@ -37,7 +37,7 @@
       <td>{{ contract.Title }}</td>
       <td>{{ formatDate(contract.LastModifiedDate) }}</td>
       <td>
-        <button @click="viewContract(contract.ContractID)">继续编辑</button>
+        <button @click="viewContract(contract.ContractID)">查看</button>
       </td>
     </tr>
   </tbody>
