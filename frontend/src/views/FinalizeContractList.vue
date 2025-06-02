@@ -5,18 +5,7 @@
     <div class="contract-list">
       <h2>合同定稿列表</h2>
       <div class="tab-buttons">
-        <button 
-          @click="activeTab = 'draft'" 
-          :class="{ active: activeTab === 'draft' }"
-        >
-          待定稿
-        </button>
-        <button 
-          @click="activeTab = 'completed'" 
-          :class="{ active: activeTab === 'completed' }"
-        >
-          已结束
-        </button>
+        
       </div>
       
       <!-- 搜索栏 -->
@@ -40,56 +29,30 @@
             <tr>
               <th>合同编号</th>
               <th>合同名称</th>
-              <th>申请人</th>
+              
               <th>申请日期</th>
               <th>操作</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="contract in filteredDraftContracts" :key="contract.id">
-              <td>{{ contract.contractNumber }}</td>
-              <td>{{ contract.contractName }}</td>
-              <td>{{ contract.applicant }}</td>
-              <td>{{ formatDate(contract.applyDate) }}</td>
+              <td>{{ contract.ContractID }}</td>
+              <td>{{ contract.Title }}</td>
+              
+              <td>{{ formatDate(contract.LastModifiedDate) }}</td>
               <td>
-                <button @click="viewContract(contract.id)">查看</button>
+                <button @click="viewContract(contract.ContractID)">查看</button>
               </td>
             </tr>
           </tbody>
         </table>
         
-        <!-- 已结束合同列表 -->
-        <table v-if="activeTab === 'completed'" class="contract-table">
-          <thead>
-            <tr>
-              <th>合同编号</th>
-              <th>合同名称</th>
-              <th>申请人</th>
-              <th>申请日期</th>
-              <th>完成日期</th>
-              <th>操作</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="contract in filteredCompletedContracts" :key="contract.id">
-              <td>{{ contract.contractNumber }}</td>
-              <td>{{ contract.contractName }}</td>
-              <td>{{ contract.applicant }}</td>
-              <td>{{ formatDate(contract.applyDate) }}</td>
-              <td>{{ formatDate(contract.completeDate) }}</td>
-              <td>
-                <button @click="viewContract(contract.id)">查看</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      
         
         <div v-if="activeTab === 'draft' && filteredDraftContracts.length === 0" class="no-data">
           {{ searchQuery ? '没有找到匹配的合同' : '暂无待定稿合同' }}
         </div>
-        <div v-if="activeTab === 'completed' && filteredCompletedContracts.length === 0" class="no-data">
-          {{ searchQuery ? '没有找到匹配的合同' : '暂无已结束合同' }}
-        </div>
+        
       </div>
     </div>
   </div>
@@ -97,84 +60,68 @@
 
 <script>
 import Sidebar from '../components/sidebar.vue';
+import axios from 'axios';
+
 export default {
-  components:{
+  components: {
     Sidebar
   },
   data() {
     return {
-      draftContracts: [
-        {
-          id: 1,
-          contractNumber: 'HT20230001',
-          contractName: '年度服务器采购合同',
-          applicant: '张三',
-          applyDate: '2023-05-15'
-        },
-        {
-          id: 2,
-          contractNumber: 'HT20230002',
-          contractName: '办公室租赁合同',
-          applicant: '李四',
-          applyDate: '2023-05-18'
-        }
-      ],
-      completedContracts: [
-        {
-          id: 3,
-          contractNumber: 'HT20230003',
-          contractName: '软件开发合同',
-          applicant: '王五',
-          applyDate: '2023-04-10',
-          completeDate: '2023-05-20'
-        },
-        {
-          id: 4,
-          contractNumber: 'HT20230004',
-          contractName: '咨询服务合同',
-          applicant: '赵六',
-          applyDate: '2023-04-25',
-          completeDate: '2023-05-22'
-        }
-      ],
-      loading: false,
+      draftContracts: [],
+      completedContracts: [],
+      loading: true,
       activeTab: 'draft', // 默认显示待定稿列表
       searchQuery: ''
-    }
+    };
   },
   computed: {
     filteredDraftContracts() {
       if (!this.searchQuery) return this.draftContracts;
       const query = this.searchQuery.toLowerCase();
       return this.draftContracts.filter(contract => 
-        contract.contractNumber.toLowerCase().includes(query) || 
-        contract.contractName.toLowerCase().includes(query) ||
-        contract.applicant.toLowerCase().includes(query)
-      );
-    },
-    filteredCompletedContracts() {
-      if (!this.searchQuery) return this.completedContracts;
-      const query = this.searchQuery.toLowerCase();
-      return this.completedContracts.filter(contract => 
-        contract.contractNumber.toLowerCase().includes(query) || 
-        contract.contractName.toLowerCase().includes(query) ||
-        contract.applicant.toLowerCase().includes(query)
+        contract.ContractID.toLowerCase().includes(query) || 
+        contract.Title.toLowerCase().includes(query) 
+        
       );
     }
+  
+  },
+  created() {
+    this.fetchContracts();
   },
   methods: {
+    async fetchContracts() {
+      try {
+        this.loading = true;
+        
+        // 获取待定稿合同
+        const draftRes = await axios.get("/finalize/list");
+        this.draftContracts = draftRes.data.rows;
+        this.draftContracts.forEach(contract => {
+          contract.approver = draftRes.data.rowsApprover;
+        });
+        
+       
+        
+        this.loading = false;
+      } catch (error) {
+        console.error('获取合同列表失败:', error);
+        this.loading = false;
+      }
+    },
     viewContract(contractId) {
       this.$router.push(`/FinalizeContract/${contractId}`);
     },
     formatDate(dateString) {
+      if (!dateString) return 'N/A';
       return new Date(dateString).toLocaleDateString();
     },
     searchContracts() {
       // 搜索逻辑已经在计算属性中实现
-      // 这里只是为了响应搜索按钮点击
     }
   }
-}
+};
 </script>
 
 <style scoped>

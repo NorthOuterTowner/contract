@@ -223,7 +223,6 @@ export default {
     formData.append('title', draft.value.draftTitle);
     formData.append('description', contract.value.description);
     formData.append('creationDate', contract.creationDate); // 格式化的日期字符串
-    formData.append('content', fileInput.files[0]);
     formData.append('status', '待起草');
     
     // 如果有文件，添加文件到FormData
