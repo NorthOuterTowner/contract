@@ -40,6 +40,7 @@ CREATE TABLE `contract` (
 
 LOCK TABLES `contract` WRITE;
 /*!40000 ALTER TABLE `contract` DISABLE KEYS */;
+INSERT INTO `contract` VALUES ('AI001','Resnet结构图','图为renet的模块结构','ResNet.png','已签订','2025-06-02 10:51:47','2025-06-02 11:07:06'),('SAD001','软件系统分析与设计Logo','软件系统分析与设计的Logo图标。','SADLogo.png','待签订','2025-06-02 10:53:08','2025-06-02 10:59:19');
 /*!40000 ALTER TABLE `contract` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -60,7 +61,7 @@ CREATE TABLE `contractapproval` (
   PRIMARY KEY (`ApprovalID`),
   KEY `ContractID` (`ContractID`),
   CONSTRAINT `contractapproval_ibfk_1` FOREIGN KEY (`ContractID`) REFERENCES `contract` (`ContractID`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -69,6 +70,7 @@ CREATE TABLE `contractapproval` (
 
 LOCK TABLES `contractapproval` WRITE;
 /*!40000 ALTER TABLE `contractapproval` DISABLE KEYS */;
+INSERT INTO `contractapproval` VALUES (15,'AI001','userA','审批通过','2025-06-02 03:04:13','通过'),(16,'AI001','userA','审批通过','2025-06-02 03:05:43','通过'),(17,'AI001','userA','审批通过','2025-06-02 03:06:10','好的');
 /*!40000 ALTER TABLE `contractapproval` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -202,7 +204,7 @@ CREATE TABLE `contractsigning` (
   PRIMARY KEY (`SignID`),
   KEY `ContractID` (`ContractID`),
   CONSTRAINT `contractsigning_ibfk_1` FOREIGN KEY (`ContractID`) REFERENCES `contract` (`ContractID`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -211,6 +213,7 @@ CREATE TABLE `contractsigning` (
 
 LOCK TABLES `contractsigning` WRITE;
 /*!40000 ALTER TABLE `contractsigning` DISABLE KEYS */;
+INSERT INTO `contractsigning` VALUES (2,'AI001','userA','2025-06-02 03:07:06','完成'),(3,'AI001','userA','2025-06-02 03:09:00','同意');
 /*!40000 ALTER TABLE `contractsigning` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -268,6 +271,7 @@ CREATE TABLE `rolepermissions` (
 
 LOCK TABLES `rolepermissions` WRITE;
 /*!40000 ALTER TABLE `rolepermissions` DISABLE KEYS */;
+INSERT INTO `rolepermissions` VALUES (1,1,'2025-06-03 12:52:09'),(1,2,'2025-06-03 12:52:09'),(1,3,'2025-06-03 12:52:09'),(1,4,'2025-06-03 12:52:09'),(1,5,'2025-06-03 12:52:09'),(1,6,'2025-06-03 12:52:09'),(1,7,'2025-06-03 12:52:09'),(1,8,'2025-06-03 12:52:09'),(1,9,'2025-06-03 12:52:09'),(1,10,'2025-06-03 12:52:09'),(1,11,'2025-06-03 12:52:09'),(1,12,'2025-06-03 12:52:09'),(1,13,'2025-06-03 12:52:09'),(1,14,'2025-06-03 12:52:09'),(1,15,'2025-06-03 12:52:09'),(1,16,'2025-06-03 12:52:09'),(1,17,'2025-06-03 12:52:09'),(1,18,'2025-06-03 12:52:09'),(1,19,'2025-06-03 12:52:09'),(1,20,'2025-06-03 12:52:09'),(1,21,'2025-06-03 12:52:09'),(1,22,'2025-06-03 12:52:09'),(1,23,'2025-06-03 12:52:09'),(1,24,'2025-06-03 12:52:09'),(1,25,'2025-06-03 12:52:09'),(1,26,'2025-06-03 12:52:09'),(1,27,'2025-06-03 12:52:09'),(1,28,'2025-06-03 12:52:09'),(1,29,'2025-06-03 12:52:09'),(1,30,'2025-06-03 12:52:09'),(1,31,'2025-06-03 12:52:09'),(1,32,'2025-06-03 12:52:09'),(1,33,'2025-06-03 12:52:09'),(1,34,'2025-06-03 12:52:09'),(1,35,'2025-06-03 12:52:09');
 /*!40000 ALTER TABLE `rolepermissions` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -285,7 +289,7 @@ CREATE TABLE `roles` (
   `CreatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`RoleID`),
   UNIQUE KEY `RoleName` (`RoleName`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -294,7 +298,33 @@ CREATE TABLE `roles` (
 
 LOCK TABLES `roles` WRITE;
 /*!40000 ALTER TABLE `roles` DISABLE KEYS */;
+INSERT INTO `roles` VALUES (1,'管理员','用于所有权限','2025-06-03 12:52:09');
 /*!40000 ALTER TABLE `roles` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `sessions`
+--
+
+DROP TABLE IF EXISTS `sessions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `sessions` (
+  `session_id` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  `expires` int(11) unsigned NOT NULL,
+  `data` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin,
+  PRIMARY KEY (`session_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `sessions`
+--
+
+LOCK TABLES `sessions` WRITE;
+/*!40000 ALTER TABLE `sessions` DISABLE KEYS */;
+INSERT INTO `sessions` VALUES ('8a1XKxsduj7SqkHSnYC_S0-hS4-AKCxO',1748992899,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2025-06-03T23:20:52.833Z\",\"secure\":false,\"httpOnly\":true,\"path\":\"/\"},\"user\":{\"id\":1,\"username\":\"admin\",\"role\":2}}');
+/*!40000 ALTER TABLE `sessions` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -334,4 +364,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-06-01 20:45:13
+-- Dump completed on 2025-06-03 21:41:34
