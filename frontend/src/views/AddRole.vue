@@ -205,7 +205,6 @@ const saveRole = async () => {
     }
 
     const response = await axios.post('/role/add', {
-      roleID: role.value.RoleID,
       roleName: role.value.RoleName,
       roleDescription: role.value.RoleDescription,
       selectedFunctions: selectedFunctions.value
