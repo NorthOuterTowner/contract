@@ -122,17 +122,46 @@ router.get("/checkName", async (req, res) => {
   }
 });
 
-// 更新角色信息
+// 获取角色已授权的功能
+router.get("/permissions", async (req, res) => {
+  const { roleId } = req.query;
+  try {
+    const sql = "SELECT * FROM RolePermissions WHERE RoleID = ?";
+    const result = await db.async.all(sql, [roleId]);
+    res.json(result.rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "系统异常，请稍后重试" });
+  }
+});
+
+// 更新角色信息（包含权限）
 router.put("/update", async (req, res) => {
-  const { roleID, roleName, roleDescription } = req.body;
+  const { roleID, roleName, roleDescription, selectedFunctions } = req.body;
   if (!roleID || !roleName) {
     return res.status(400).json({ error: "角色ID和角色名称不能为空" });
   }
   try {
+    // 更新角色基本信息
     await db.async.all(
       "UPDATE Roles SET roleName = ?, roleDescription = ? WHERE roleID = ?",
       [roleName, roleDescription, roleID]
     );
+
+    // 先删除原有的角色权限
+    await db.async.run(
+      "DELETE FROM RolePermissions WHERE roleID = ?",
+      [roleID]
+    );
+
+    // 插入新的角色权限信息
+    if (selectedFunctions && selectedFunctions.length > 0) {
+      const permissionSql = "INSERT INTO RolePermissions (RoleID, FunctionID) VALUES (?,?)";
+      for (const functionId of selectedFunctions) {
+        await db.async.run(permissionSql, [roleID, functionId]);
+      }
+    }
+
     res.json({ message: "角色信息更新成功" });
   } catch (error) {
     console.error(error);
