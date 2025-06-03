@@ -1,4 +1,5 @@
 <template>
+  <SystemManagementSidebar />
   <div class="role-management">
     <h2>角色管理</h2>
     <button @click="goToAddRole" class="add-role-btn">添加角色</button>
@@ -24,6 +25,8 @@
           <td>
             <!-- 修改查看按钮的点击事件 -->
             <button @click="viewRole(role.RoleID)" class="action-btn">查看</button>
+            <!-- 修改为删除按钮 -->
+            <button @click="showDeleteConfirm(role.RoleID)" class="action-btn">删除</button> 
           </td>
         </tr>
       </tbody>
@@ -35,6 +38,22 @@
       <span>{{ currentPage }} / {{ totalPages }}</span>
       <button @click="nextPage" :disabled="currentPage === totalPages">下一页</button>
     </div>
+
+    <!-- 确认删除模态框 -->
+    <div v-if="isDeleteConfirmVisible" class="modal-overlay">
+      <div class="modal">
+        <div class="modal-header">
+          <h3>确认删除</h3>
+        </div>
+        <div class="modal-content">
+          <p>确定要删除此角色吗？</p>
+        </div>
+        <div class="modal-footer">
+          <button @click="cancelDelete" class="action-btn secondary">取消</button>
+          <button @click="confirmDelete" class="action-btn primary">确认</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -42,6 +61,7 @@
 import { ref, inject, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
+import SystemManagementSidebar from '../components/SystemManagementSidebar.vue';
 
 const router = useRouter();
 const message = inject('message');
@@ -51,7 +71,6 @@ const roles = ref([]);
 const loading = ref(false);
 const currentPage = ref(1);
 const itemsPerPage = ref(10);
-
 const totalPages = ref(Math.ceil(roles.value.length / itemsPerPage.value));
 
 // 计算当前页的角色数据
@@ -93,6 +112,31 @@ const searchRoles = async () => {
 const viewRole = (roleId) => {
   // 跳转到编辑角色页面，并传递角色 ID
   router.push(`/role/modify/${roleId}`);
+};
+
+const isDeleteConfirmVisible = ref(false);
+const roleIdToDelete = ref('');
+
+const showDeleteConfirm = (roleId) => {
+  roleIdToDelete.value = roleId;
+  isDeleteConfirmVisible.value = true;
+};
+
+const cancelDelete = () => {
+  isDeleteConfirmVisible.value = false;
+};
+
+const confirmDelete = async () => {
+  try {
+    await axios.delete(`/role/delete?roleId=${roleIdToDelete.value}`);
+    message.success('删除成功！');
+    // 重新获取角色列表
+    await getAllRoles();
+  } catch (error) {
+    message.error('删除失败！');
+    console.error('删除角色错误:', error);
+  }
+  isDeleteConfirmVisible.value = false;
 };
 
 const prevPage = () => {
@@ -244,5 +288,53 @@ h2 {
 .pagination button:disabled {
   background-color: #ccc;
   cursor: not-allowed;
+}
+
+/* 模态框样式 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal {
+  background-color: white;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  max-width: 400px;
+  width: 100%;
+}
+
+.modal-header {
+  padding: 16px;
+  border-bottom: 1px solid #ddd;
+}
+
+.modal-content {
+  padding: 16px;
+}
+
+.modal-footer {
+  padding: 16px;
+  border-top: 1px solid #ddd;
+  text-align: right;
+}
+
+.action-btn.secondary {
+  background-color: #6c757d;
+}
+
+.action-btn.secondary:hover {
+  background-color: #495057;
+}
+
+.action-btn.primary:hover {
+  background-color: #0056b3;
 }
 </style>

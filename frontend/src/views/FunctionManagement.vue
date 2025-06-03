@@ -1,4 +1,5 @@
 <template>
+  <SystemManagementSidebar />
   <div class="function-management">
     <h2>功能管理</h2>
     <button @click="goToAddFunction" class="add-function-btn">添加功能</button>
@@ -44,6 +45,7 @@
 import { ref, computed, inject } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
+import SystemManagementSidebar from '../components/SystemManagementSidebar.vue';
 
 const router = useRouter();
 const message = inject('message');

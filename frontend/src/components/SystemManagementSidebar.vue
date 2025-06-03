@@ -1,6 +1,6 @@
 <template>
   <div class="sidebar">
-    <div class="logo">合同管理系统</div>
+    <div class="logo">系统管理</div>
     <ul class="menu">
       <li 
         v-for="item in menuItems" 
@@ -19,25 +19,22 @@ export default {
   data() {
     return {
       menuItems: [
-
-        { title: '起草合同', path: '/DraftContractList' },
-        { title: '合同会签', path: '/CoSignContractList' },
-        { title: '合同定稿', path: '/FinalizeContractList' },
-        { title: '待审批合同', path: '/approveList' },
-        { title: '合同统计', path: '/statistics' },
-        { title: '签订合同', path: '/SignContractList'},
-        { title: '返回主页', path: '/HomePage'}
+        { title: '分配合同', path: '/PendingContractList' },
+        { title: '用户管理', path: '/user' },
+        { title: '角色管理', path: '/role' },
+        { title: '功能管理', path: '/function' },
+        { title: '权限配置', path: '/permission' }
       ]
-    }
+    };
   },
   methods: {
     navigateTo(path) {
       if (this.$route.path !== path) {
-        this.$router.push(path)
+        this.$router.push(path);
       }
     }
   }
-}
+};
 </script>
 
 <style scoped>
