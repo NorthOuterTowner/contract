@@ -1,4 +1,5 @@
 <template>
+  <SystemManagementSidebar />
   <div class="flex">
     <Sidebar />
     <div class="contract-list">
@@ -43,12 +44,13 @@
 </template>
 
 <script>
-import Sidebar from '../components/sidebar.vue';
+import SystemManagementSidebar from '../components/SystemManagementSidebar.vue';
+
 export default {
   components: {
-    Sidebar
+    SystemManagementSidebar
   },
-  data() {
+  data() {  
     return {
       contracts: [],
       loading: true,

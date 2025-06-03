@@ -1,4 +1,5 @@
 <template>
+  <SystemManagementSidebar />
   <div class="permission-management">
     <h2>权限配置</h2>
     <hr />
@@ -36,6 +37,7 @@
 import { ref, inject } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
+import SystemManagementSidebar from '../components/SystemManagementSidebar.vue';
 
 const router = useRouter();
 const message = inject('message');

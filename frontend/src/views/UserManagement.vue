@@ -1,4 +1,5 @@
 <template>
+  <SystemManagementSidebar />
   <div class="user-management">
     <h2>用户管理</h2>
     <button @click="goToAddUser" class="add-user-btn">添加用户</button>
@@ -38,20 +39,21 @@
 </template>
 
 <script setup>
-import { ref, inject, computed } from 'vue';
+import { ref, inject, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
+import SystemManagementSidebar from '../components/SystemManagementSidebar.vue';
 
 const router = useRouter();
 const message = inject('message');
 
 const query = ref('');
-const users = ref('');
+const users = ref([]);
 const loading = ref(false);
 const currentPage = ref(1);
 const itemsPerPage = ref(10);
 
-const totalPages = ref(Math.ceil(users.value.length / itemsPerPage.value));
+const totalPages = computed(() => Math.ceil(users.value.length / itemsPerPage.value));
 
 // 计算当前页的用户数据
 const currentPageUsers = computed(() => {
@@ -85,13 +87,11 @@ const searchUsers = async () => {
   } finally {
     loading.value = false;
   }
-  totalPages.value = Math.ceil(users.value.length / itemsPerPage.value);
   currentPage.value = 1; // 查询后重置到第一页
 };
 
 const viewUser = (userId) => {
-  // 这里可以实现查看用户详情的逻辑，例如跳转到用户详情页面
-  console.log(`查看用户 ${userId} 的详情`);
+  router.push(`/user/modify/${userId}`);
 };
 
 const deleteUser = async (userId) => {
@@ -125,6 +125,25 @@ const nextPage = () => {
     currentPage.value++;
   }
 };
+
+// 在组件挂载时获取所有用户信息
+const getAllUsers = async () => {
+  loading.value = true;
+  try {
+    const response = await axios.get('/user/all');
+    users.value = response.data;
+    message.success('获取用户列表成功！');
+  } catch (error) {
+    message.error('获取用户列表失败！');
+    console.error(error);
+  } finally {
+    loading.value = false;
+  }
+};
+
+onMounted(() => {
+  getAllUsers();
+});
 </script>
 
 <style scoped>

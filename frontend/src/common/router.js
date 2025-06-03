@@ -60,7 +60,7 @@ let routes= [
     { path: '/user/add', component: AddUser },
     { path: '/user/modify/:userId', component: ModifyUser },
     { path: '/role', component: RoleManagement },
-     { path: '/role/add', component: AddRole},
+    { path: '/role/add', component: AddRole},
     { path: '/role/modify/:roleId', component: ModifyRole},
     { path: '/function', component: FunctionManagement },
     { path: '/function/add', component: AddFunction },
