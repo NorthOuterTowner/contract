@@ -6,7 +6,7 @@ const path = require("path");
 const fs = require("fs");
 
 // 确保上传目录存在
-const uploadDir = 'uploads/contracts/';
+const uploadDir = 'files/';
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
