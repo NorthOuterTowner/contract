@@ -97,7 +97,12 @@ const viewRole = (roleId) => {
 };
 
 const deleteRole = async (roleId) => {
-  const confirm = await inject('dialog').confirm({
+  const dialog = inject('dialog');
+  if (!dialog) {
+    console.error('dialog 未正确注入');
+    return;
+  }
+  const confirm = await dialog.confirm({
     title: '确认删除',
     content: '确定要删除此角色吗？',
     positiveText: '确认',
@@ -107,11 +112,19 @@ const deleteRole = async (roleId) => {
   if (!confirm) return;
   
   try {
-    await axios.delete(`/role/delete?roleId=${roleId}`);
-    message.success('删除成功！');
-    searchRoles(); // 刷新列表
+    const response = await axios.delete(`/role/delete?roleID=${roleId}`);
+    if (response.data.message) {
+      message.success('删除成功！');
+      searchRoles(); // 刷新列表
+    } else {
+      message.error('删除失败，请重试');
+    }
   } catch (error) {
-    message.error('删除失败！');
+    if (error.response) {
+      message.error(error.response.data.error || '删除失败，请重试');
+    } else {
+      message.error('网络错误，请检查网络连接');
+    }
     console.error(error);
   }
 };
