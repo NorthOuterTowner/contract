@@ -56,12 +56,28 @@
         <button @click="saveRole" v-if="isEditing" class="save-btn">
           <i class="fa fa-save"></i> 保存
         </button>
-        <button @click="deleteRole" class="delete-btn">
+        <button @click="showDeleteConfirm" class="delete-btn">
           <i class="fa fa-trash"></i> 删除
         </button>
       </div>
     </div>
     <div v-else class="error-message">未找到该角色的详细信息</div>
+
+    <!-- 确认删除模态框 -->
+    <div v-if="isDeleteConfirmVisible" class="modal-overlay">
+      <div class="modal">
+        <div class="modal-header">
+          <h3>确认删除</h3>
+        </div>
+        <div class="modal-content">
+          <p>确定要删除此角色吗？</p>
+        </div>
+        <div class="modal-footer">
+          <button @click="cancelDelete" class="action-btn secondary">取消</button>
+          <button @click="confirmDelete" class="action-btn primary">确认</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -81,6 +97,7 @@ const isEditing = ref(false);
 const allFunctions = ref([]);
 const selectedFunctions = ref([]);
 const topLevelFunctions = ref([]); 
+const isDeleteConfirmVisible = ref(false);
 
 // 获取所有功能数据
 const getFunctions = async () => {
@@ -223,24 +240,24 @@ const saveRole = async () => {
   }
 };
 
-const deleteRole = async () => {
-  const confirm = await inject('dialog').confirm({
-    title: '确认删除',
-    content: '确定要删除此角色吗？',
-    positiveText: '确认',
-    negativeText: '取消'
-  });
+const showDeleteConfirm = () => {
+  isDeleteConfirmVisible.value = true;
+};
 
-  if (!confirm) return;
+const cancelDelete = () => {
+  isDeleteConfirmVisible.value = false;
+};
 
+const confirmDelete = async () => {
   try {
-    await axios.delete(`/role/delete?roleID=${roleId}`);
+    await axios.delete(`/role/delete?roleId=${roleId}`);
     message.success('删除成功！');
-    router.push('/system/role');
+    router.push('/role');
   } catch (error) {
     message.error('删除失败！');
     console.error(error);
   }
+  isDeleteConfirmVisible.value = false;
 };
 </script>
 
@@ -391,5 +408,69 @@ h2 {
 .error-message {
   color: red;
   text-align: center;
+}
+
+.action-btn {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 5px;
+}
+
+.action-btn:hover {
+  background-color: #0056b3;
+}
+
+/* 模态框样式 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal {
+  background-color: white;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  max-width: 400px;
+  width: 100%;
+}
+
+.modal-header {
+  padding: 16px;
+  border-bottom: 1px solid #ddd;
+}
+
+.modal-content {
+  padding: 16px;
+}
+
+.modal-footer {
+  padding: 16px;
+  border-top: 1px solid #ddd;
+  text-align: right;
+}
+
+.action-btn.secondary {
+  background-color: #6c757d;
+}
+
+.action-btn.secondary:hover {
+  background-color: #495057;
+}
+
+
+
+.action-btn.primary:hover {
+  background-color: #0056b3;
 }
 </style>

@@ -69,20 +69,20 @@ router.get("/query", async (req, res) => {
 
 // 删除角色
 router.delete("/delete", async (req, res) => {
-  const { roleID } = req.query;
-  if (!roleID) return res.status(400).json({ error: "角色ID不能为空" });
+  const { roleId } = req.query;
+  if (!roleId) return res.status(400).json({ error: "角色ID不能为空" });
 
   try {
     // 先删除关联权限
     await db.async.run(
       "DELETE FROM RolePermissions WHERE roleID = ?",
-      [roleID]
+      [roleId]
     );
     
     // 删除角色
     await db.async.run(
       "DELETE FROM Roles WHERE roleID = ?",
-      [roleID]
+      [roleId]
     );
     
     res.json({ message: "角色删除成功" });

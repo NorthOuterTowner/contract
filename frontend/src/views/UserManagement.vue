@@ -1,4 +1,5 @@
 <template>
+  <SystemManagementSidebar />
   <div class="user-management">
     <h2>用户管理</h2>
     <button @click="goToAddUser" class="add-user-btn">添加用户</button>
@@ -41,6 +42,7 @@
 import { ref, inject, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
+import SystemManagementSidebar from '../components/SystemManagementSidebar.vue';
 
 const router = useRouter();
 const message = inject('message');
