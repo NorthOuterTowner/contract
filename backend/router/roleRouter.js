@@ -18,25 +18,35 @@ router.get("/getNextId", async (req, res) => {
 
 // 添加角色
 router.post("/add", async (req, res) => {
-  const { roleId, roleName, roleDescription, selectedFunctions } = req.body;
+  const { roleName, roleDescription, selectedFunctions } = req.body;
   if (!roleName) {
     return res.status(400).json({ error: "角色名称不能为空" });
   }
 
   try {
-    // 插入角色信息
-    const roleSql = "INSERT INTO Roles (RoleID, RoleName, RoleDescription) VALUES (?,?,?)";
-    await db.async.run(roleSql, [roleId, roleName, roleDescription]);
+    // 检查角色名是否已存在
+    const checkSql = "SELECT COUNT(*) as count FROM Roles WHERE roleName = ?";
+    const checkResult = await db.async.all(checkSql, [roleName]);
+    if (checkResult.rows[0].count > 0) {
+      return res.status(400).json({ error: "该角色名称已存在，请更换" });
+    }
+
+    // 插入角色信息，让数据库自动生成 RoleID
+    const roleSql = "INSERT INTO Roles (RoleName, RoleDescription) VALUES (?,?)";
+    const roleResult = await db.async.run(roleSql, [roleName, roleDescription]);
+
+    // 获取插入的角色ID
+    const insertedRoleId = roleResult.result.insertId;
 
     // 插入角色权限信息
     if (selectedFunctions && selectedFunctions.length > 0) {
       const permissionSql = "INSERT INTO RolePermissions (RoleID, FunctionID) VALUES (?,?)";
       for (const functionId of selectedFunctions) {
-        await db.async.run(permissionSql, [roleId, functionId]);
+        await db.async.run(permissionSql, [insertedRoleId, functionId]);
       }
     }
 
-    res.json({ message: "角色添加成功", roleId });
+    res.json({ message: "角色添加成功", roleId: insertedRoleId });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "系统异常，请稍后重试" });

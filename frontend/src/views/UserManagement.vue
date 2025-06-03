@@ -91,8 +91,7 @@ const searchUsers = async () => {
 };
 
 const viewUser = (userId) => {
-  // 这里可以实现查看用户详情的逻辑，例如跳转到用户详情页面
-  console.log(`查看用户 ${userId} 的详情`);
+  router.push(`/user/modify/${userId}`);
 };
 
 const deleteUser = async (userId) => {
