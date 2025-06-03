@@ -24,7 +24,6 @@
           <td>
             <!-- 修改查看按钮的点击事件 -->
             <button @click="viewRole(role.RoleID)" class="action-btn">查看</button>
-            <button @click="deleteRole(role.RoleID)" class="action-btn">删除</button>
           </td>
         </tr>
       </tbody>
@@ -94,39 +93,6 @@ const searchRoles = async () => {
 const viewRole = (roleId) => {
   // 跳转到编辑角色页面，并传递角色 ID
   router.push(`/role/modify/${roleId}`);
-};
-
-const deleteRole = async (roleId) => {
-  const dialog = inject('dialog');
-  if (!dialog) {
-    console.error('dialog 未正确注入');
-    return;
-  }
-  const confirm = await dialog.confirm({
-    title: '确认删除',
-    content: '确定要删除此角色吗？',
-    positiveText: '确认',
-    negativeText: '取消'
-  });
-  
-  if (!confirm) return;
-  
-  try {
-    const response = await axios.delete(`/role/delete?roleID=${roleId}`);
-    if (response.data.message) {
-      message.success('删除成功！');
-      searchRoles(); // 刷新列表
-    } else {
-      message.error('删除失败，请重试');
-    }
-  } catch (error) {
-    if (error.response) {
-      message.error(error.response.data.error || '删除失败，请重试');
-    } else {
-      message.error('网络错误，请检查网络连接');
-    }
-    console.error(error);
-  }
 };
 
 const prevPage = () => {
