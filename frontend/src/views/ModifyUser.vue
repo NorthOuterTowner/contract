@@ -3,7 +3,6 @@
     <h2>用户详细信息</h2>
     <div v-if="loading" class="loading">加载中...</div>
     <div v-else-if="user">
-      <!-- 用户基本信息 -->
       <div class="form-section">
         <h3 class="section-title">基本信息</h3>
         <div class="form-item">
@@ -30,9 +29,14 @@
         <button @click="editUser" v-if="!isEditing" class="edit-btn">
           <i class="fa fa-pencil"></i> 编辑
         </button>
-        <button @click="saveUser" v-if="isEditing" class="save-btn">
-          <i class="fa fa-save"></i> 保存
-        </button>
+        <div v-if="isEditing">
+          <button @click="resetUser" class="reset-btn">
+            <i class="fa fa-refresh"></i> 重置
+          </button>
+          <button @click="saveUser" class="save-btn">
+            <i class="fa fa-save"></i> 保存
+          </button>
+        </div>
         <button @click="showDeleteConfirm" class="delete-btn">
           <i class="fa fa-trash"></i> 删除
         </button>
@@ -74,6 +78,7 @@ const isEditing = ref(false);
 const allRoles = ref([]);
 const selectedRole = ref('');
 const isDeleteConfirmVisible = ref(false);
+const originalUser = ref(null);
 
 // 获取所有角色数据
 const getRoles = async () => {
@@ -98,8 +103,8 @@ const getUserInfo = async () => {
       router.push('/user');
     } else {
       user.value = response.data[0];
-      // 根据用户的角色 ID 找到对应的角色对象
-      const userRole = allRoles.value.find(role => role.RoleID === user.value.role);
+      // 修复：根据后端返回的role_name匹配角色ID
+      const userRole = allRoles.value.find(role => role.RoleName === user.value.role_name);
       if (userRole) {
         selectedRole.value = userRole.RoleID; // 设置初始选中的角色
       }
@@ -113,7 +118,25 @@ const getUserInfo = async () => {
 };
 
 const editUser = () => {
+  // 编辑前保存原始数据
+  originalUser.value = JSON.parse(JSON.stringify(user.value));
   isEditing.value = true;
+};
+
+const resetUser = () => {
+  if (!originalUser.value) return;
+  
+  if (confirm('确定要重置所有修改吗？')) {
+    user.value = JSON.parse(JSON.stringify(originalUser.value));
+    
+    // 关键修复：根据角色名称找到对应的角色ID
+    const userRole = allRoles.value.find(role => role.RoleName === originalUser.value.role_name);
+    if (userRole) {
+      selectedRole.value = userRole.RoleID;
+    }
+    
+    isEditing.value = false;
+  }
 };
 
 const saveUser = async () => {
@@ -253,6 +276,22 @@ h2 {
 
 .edit-btn:hover {
   background-color: #0056b3;
+}
+
+.reset-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  margin: 0 5px;
+  transition: all 0.3s;
+  background-color: #6c757d;
+  color: white;
+}
+
+.reset-btn:hover {
+  background-color: #5a6268;
 }
 
 .save-btn {

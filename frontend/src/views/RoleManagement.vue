@@ -23,10 +23,8 @@
           <td>{{ role.RoleName }}</td>
           <td>{{ role.RoleDescription || '无' }}</td>
           <td>
-            <!-- 修改查看按钮的点击事件 -->
-            <button @click="viewRole(role.RoleID)" class="action-btn">查看</button>
-            <!-- 修改为删除按钮 -->
-            <button @click="showDeleteConfirm(role.RoleID)" class="action-btn">删除</button> 
+            <button @click="viewRole(role.RoleID)" class="action-btn view-btn">查看</button>
+            <button @click="showDeleteConfirm(role.RoleID)" class="action-btn delete-btn">删除</button>
           </td>
         </tr>
       </tbody>
@@ -258,6 +256,14 @@ h2 {
   border-radius: 4px;
   cursor: pointer;
   margin-right: 5px;
+}
+
+.action-btn.view-btn {
+  background-color: #007bff;
+}
+
+.action-btn.delete-btn {
+  background-color: #dc3545;
 }
 
 .action-btn:hover {
