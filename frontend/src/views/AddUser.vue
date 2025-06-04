@@ -16,7 +16,7 @@
             v-model="userName"
             type="text"
             placeholder="请输入用户名"
-            :class="{ 'is-error': !userName && submitted }"
+            :class="{ 'is-error':!userName && submitted }"
             required
           />
           <div v-if="!userName && submitted" class="error-tooltip">
@@ -31,11 +31,14 @@
             v-model="password"
             type="password"
             placeholder="请输入密码"
-            :class="{ 'is-error': !password && submitted }"
+            :class="{ 'is-error':!password && submitted }"
             required
           />
           <div v-if="!password && submitted" class="error-tooltip">
             密码不能为空
+          </div>
+          <div v-if="password && password.length < 6 && submitted" class="error-tooltip">
+            密码长度至少6位
           </div>
         </div>
       </div>
@@ -122,6 +125,9 @@ const addUser = async () => {
   }
   if (!password.value.trim()) {
     return message.error('密码不能为空');
+  }
+  if (password.value.length < 6) {
+    return message.error('密码长度至少6位');
   }
   if (password.value!== confirmPassword.value) {
     return message.error('两次输入的密码不一致');

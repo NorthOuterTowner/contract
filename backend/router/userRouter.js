@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { db } = require("../db/DBUtils");
+const bcrypt = require("bcryptjs");
 
 // 获取下一个可用的用户 ID
 router.get('/getNextId', async (req, res) => {
@@ -31,8 +32,13 @@ router.post('/add', async (req, res) => {
     if (existingUserName.rows.length > 0) {
       return res.status(400).json({ error: '用户名已存在' });
     }
+
+    // 加密密码
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
     const addSql = "INSERT INTO users (user_id, username, password_hash, role) VALUES (?,?,?,?)";
-    await db.async.run(addSql, [userId, userName, password, roleId]);
+    await db.async.run(addSql, [userId, userName, hashedPassword, roleId]);
     res.json({ message: '用户添加成功' });
   } catch (error) {
     console.error(error);
@@ -97,16 +103,22 @@ router.put('/update', async (req, res) => {
       sql += "username = ?";
       params.push(userName);
       if (password) {
+        // 加密密码
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
         sql += ", password_hash = ?";
-        params.push(password);
+        params.push(hashedPassword);
       }
       if (roleId) {
         sql += ", role = ?";
         params.push(roleId);
       }
     } else if (password) {
+      // 加密密码
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
       sql += "password_hash = ?";
-      params.push(password);
+      params.push(hashedPassword);
       if (roleId) {
         sql += ", role = ?";
         params.push(roleId);
