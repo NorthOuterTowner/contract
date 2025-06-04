@@ -136,4 +136,22 @@ router.delete('/delete', async (req, res) => {
   }
 });
 
+// 检查用户登录状态
+router.get('/checkAuth', async (req, res) => {
+  try {
+    // 这里假设使用 session 来管理用户登录状态
+    if (req.session.userId) {
+      const sql = 'SELECT RoleName FROM Roles JOIN Users ON Roles.RoleID = Users.role WHERE Users.user_id = ?';
+      const result = await db.async.all(sql, [req.session.userId]);
+      const role = result.rows[0]?.RoleName || '';
+      res.json({ isAuthenticated: true, role });
+    } else {
+      res.json({ isAuthenticated: false, role: '' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 module.exports = router;

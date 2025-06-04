@@ -152,4 +152,41 @@ router.get("/all", async (req, res) => {
   }
 });
 
+// 获取角色的权限
+router.get("/rolePermissions/:roleId", async (req, res) => {
+  try {
+    const roleId = req.params.roleId;
+    const sql = `
+      SELECT f.* 
+      FROM Functions f
+      JOIN RolePermissions rp ON f.FunctionID = rp.FunctionID
+      WHERE rp.RoleID = ?
+    `;
+    const result = await db.async.all(sql, [roleId]);
+    res.json(result.rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "系统异常，请稍后重试" });
+  }
+});
+
+
+// 获取角色的权限
+router.get("/rolePermissions/:roleId", async (req, res) => {
+  try {
+    const roleId = req.params.roleId;
+    const sql = `
+      SELECT f.* 
+      FROM Functions f
+      JOIN RolePermissions rp ON f.FunctionID = rp.FunctionID
+      WHERE rp.RoleID = ?
+    `;
+    const result = await db.async.all(sql, [roleId]);
+    res.json(result.rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "系统异常，请稍后重试" });
+  }
+});
+
 module.exports = router;
