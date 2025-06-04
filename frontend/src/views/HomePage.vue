@@ -32,9 +32,7 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
-const role = ref(localStorage.getItem('role') || 'operator') //默认为guest，测试临时修改
-
-
+const role = ref(localStorage.getItem('role') || 'operator') // 默认为operator
 
 const roleName = computed(() => {
   if (role.value === 'admin') return '合同管理员'
@@ -46,16 +44,16 @@ const features = [
   { label: '起草合同', route: '/DraftContractList', roles: ['operator'], icon: '📝' },
   { label: '会签合同', route: '/CoSignContractList', roles: ['operator'], icon: '🤝' },
   { label: '定稿合同', route: '/FinalizeContractList', roles: ['operator'], icon: '📑' },
-  { label: '分配合同', route: 'PendingContractList', roles: ['operator'], icon: '🗂️' },
+  { label: '分配合同', route: '/PendingContractList', roles: ['operator'], icon: '🗂️' },
   { 
     label: '合同查询', 
     route: '/query', 
     roles: ['operator', 'admin'], 
     icon: '🔍' 
   },
-  { label: '用户管理', route: '/user-management', roles: ['admin'], icon: '👥' },
-  { label: '审批合同', route: '/approveList',roles:['operator'],icon:'🔍'}
-  { label: '系统管理', route: '/system', roles: ['operator'], icon: '⚙️' },
+  { label: '用户管理', route: '/system/user', roles: ['admin'], icon: '👥' },
+  { label: '审批合同', route: '/approveList', roles: ['operator'], icon: '🔍' },
+  { label: '系统管理', route: '/system', roles: ['admin'], icon: '⚙️' },
 ]
 
 function hasAccess(allowedRoles) {
@@ -63,7 +61,6 @@ function hasAccess(allowedRoles) {
 }
 
 function handleClick(item) {
-  // 修改：调整判断逻辑，让有访问权限时跳转，无权限时提示
   if (hasAccess(item.roles)) {
     router.push(item.route)
   } else {
@@ -78,6 +75,7 @@ function logout() {
 </script>
 
 <style scoped>
+/* 保持原有样式不变 */
 .home-page {
   max-width: 1000px;
   margin: 40px auto;

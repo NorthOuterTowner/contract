@@ -40,4 +40,16 @@ router.get("/contract/status", async (req, res) => {
   }
 });
 
+// 新增获取所有合同列表的接口
+router.get("/contract/list", async (req, res) => {
+  try {
+    const sql = `SELECT * FROM contract`;
+    const { rows } = await db.async.query(sql);
+    res.json(rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 module.exports = router;
