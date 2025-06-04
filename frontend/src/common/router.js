@@ -50,6 +50,7 @@ let routes= [
     { path: "/DraftContract", component: DraftContract },
     { path: "/DraftContractList", component: DraftContractList },
     { path: "/CoSignContract", component: CoSignContract },
+    { path: "/CoSignContract/:contractId", component: CoSignContract },
     { path: "/CoSignContractList", component: CoSignContractList },
     { path: "/FinalizeContract", component: FinalizeContract },
     { path: "/FinalizeContractList", component: FinalizeContractList },
