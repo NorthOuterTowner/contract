@@ -25,8 +25,8 @@
           <td>{{ systemFunction.FunctionDescription }}</td>
           <td>{{ systemFunction.ParentID || '无' }}</td>
           <td>
-            <button @click="viewFunction(systemFunction.FunctionID)" class="action-btn">查看</button>
-            <button @click="deleteFunction(systemFunction.FunctionID)" class="action-btn">删除</button>
+            <button @click="viewFunction(systemFunction.FunctionID)" class="action-btn view-btn">查看</button>
+            <button @click="deleteFunction(systemFunction.FunctionID)" class="action-btn delete-btn">删除</button>
           </td>
         </tr>
       </tbody>
@@ -218,6 +218,14 @@ h2 {
   border-radius: 4px;
   cursor: pointer;
   margin-right: 5px;
+}
+
+.action-btn.view-btn {
+  background-color: #007bff;
+}
+
+.action-btn.delete-btn {
+  background-color: #dc3545;
 }
 
 .action-btn:hover {

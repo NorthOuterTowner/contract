@@ -8,7 +8,8 @@
       <button @click="searchUsers">查询</button>
     </div>
     <div v-if="loading" class="loading">加载中...</div>
-    <!-- 使用 currentPageUsers 渲染表格 -->
+    
+    <!-- 用户表格 -->
     <table v-if="currentPageUsers.length > 0" class="user-table">
       <thead>
         <tr>
@@ -22,18 +23,41 @@
           <td>{{ user.user_id }}</td>
           <td>{{ user.user_name }}</td>
           <td>
-            <button @click="viewUser(user.user_id)" class="action-btn">查看</button>
-            <button @click="deleteUser(user.user_id)" class="action-btn">删除</button>
+            <button @click="viewUser(user.user_id)" class="action-btn view-btn">查看</button>
+            <button @click="deleteUser(user.user_id)" class="action-btn delete-btn">删除</button>
           </td>
         </tr>
       </tbody>
     </table>
     <div v-else-if="!loading && query" class="no-data">未找到匹配的用户</div>
+    
     <!-- 分页组件 -->
     <div v-if="users.length > 0" class="pagination">
       <button @click="prevPage" :disabled="currentPage === 1">上一页</button>
       <span>{{ currentPage }} / {{ totalPages }}</span>
       <button @click="nextPage" :disabled="currentPage === totalPages">下一页</button>
+    </div>
+
+    <!-- 确认删除模态框 -->
+    <div v-if="isDeleteModalVisible" class="modal-overlay">
+      <div class="modal">
+        <div class="modal-header">
+          <h3>确认删除</h3>
+        </div>
+        <div class="modal-content">
+          <p>确定要删除用户 "{{ currentDeletingUser.user_name || '此用户' }}" 吗？</p>
+        </div>
+        <div class="modal-footer">
+          <button @click="cancelDelete" class="action-btn secondary">取消</button>
+          <button 
+            @click="confirmDelete" 
+            :disabled="isDeleting" 
+            class="action-btn primary"
+          >
+            {{ isDeleting ? '删除中...' : '确认' }}
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -47,25 +71,31 @@ import SystemManagementSidebar from '../components/SystemManagementSidebar.vue';
 const router = useRouter();
 const message = inject('message');
 
+// 状态管理
 const query = ref('');
 const users = ref([]);
 const loading = ref(false);
 const currentPage = ref(1);
 const itemsPerPage = ref(10);
 
-const totalPages = computed(() => Math.ceil(users.value.length / itemsPerPage.value));
+// 删除相关状态
+const isDeleteModalVisible = ref(false);
+const currentDeletingUser = ref({});
+const isDeleting = ref(false);
 
-// 计算当前页的用户数据
+// 计算属性
+const totalPages = computed(() => Math.ceil(users.value.length / itemsPerPage.value));
 const currentPageUsers = computed(() => {
   const startIndex = (currentPage.value - 1) * itemsPerPage.value;
-  const endIndex = startIndex + itemsPerPage.value;
-  return users.value.slice(startIndex, endIndex);
+  return users.value.slice(startIndex, startIndex + itemsPerPage.value);
 });
 
+// 导航方法
 const goToAddUser = () => {
   router.push('/user/add');
 };
 
+// 搜索用户
 const searchUsers = async () => {
   if (!query.value.trim()) {
     return message.warning('请输入查询内容');
@@ -86,47 +116,66 @@ const searchUsers = async () => {
     console.error(error);
   } finally {
     loading.value = false;
+    currentPage.value = 1;
   }
-  currentPage.value = 1; // 查询后重置到第一页
 };
 
+// 查看用户详情
 const viewUser = (userId) => {
   router.push(`/user/modify/${userId}`);
 };
 
-const deleteUser = async (userId) => {
-  const confirm = await inject('dialog').confirm({
-    title: '确认删除',
-    content: '确定要删除此用户吗？',
-    positiveText: '确认',
-    negativeText: '取消'
-  });
+// 删除用户
+const deleteUser = (userId) => {
+  const userToDelete = users.value.find(user => user.user_id === userId);
+  if (userToDelete) {
+    currentDeletingUser.value = userToDelete;
+    isDeleteModalVisible.value = true;
+  }
+};
+
+// 确认删除
+const confirmDelete = async () => {
+  if (!currentDeletingUser.value.user_id) return;
   
-  if (!confirm) return;
-  
+  isDeleting.value = true;
   try {
-    await axios.delete(`/user/delete?userId=${userId}`);
+    await axios.delete(`/user/delete?userId=${currentDeletingUser.value.user_id}`);
     message.success('删除成功！');
-    searchUsers(); // 刷新列表
+    
+    // 从本地列表中移除已删除用户（优化体验）
+    users.value = users.value.filter(
+      user => user.user_id !== currentDeletingUser.value.user_id
+    );
+    
+    // 如果当前页没有数据了，跳转到上一页
+    if (currentPageUsers.value.length === 0 && currentPage.value > 1) {
+      currentPage.value--;
+    }
   } catch (error) {
     message.error('删除失败！');
     console.error(error);
+  } finally {
+    isDeleting.value = false;
+    isDeleteModalVisible.value = false;
   }
 };
 
+// 取消删除
+const cancelDelete = () => {
+  isDeleteModalVisible.value = false;
+};
+
+// 分页方法
 const prevPage = () => {
-  if (currentPage.value > 1) {
-    currentPage.value--;
-  }
+  if (currentPage.value > 1) currentPage.value--;
 };
 
 const nextPage = () => {
-  if (currentPage.value < totalPages.value) {
-    currentPage.value++;
-  }
+  if (currentPage.value < totalPages.value) currentPage.value++;
 };
 
-// 在组件挂载时获取所有用户信息
+// 初始化获取用户列表
 const getAllUsers = async () => {
   loading.value = true;
   try {
@@ -175,13 +224,15 @@ h2 {
 
 .search-bar {
   margin-bottom: 20px;
+  display: flex;
+  gap: 10px;
 }
 
 .search-bar input {
   padding: 6px 12px;
   border: 1px solid #ddd;
   border-radius: 4px;
-  margin-right: 10px;
+  flex-grow: 1;
 }
 
 .search-bar button {
@@ -200,11 +251,13 @@ h2 {
 .loading {
   margin: 16px 0;
   color: #999;
+  text-align: center;
 }
 
 .user-table {
   width: 100%;
   border-collapse: collapse;
+  margin-bottom: 20px;
 }
 
 .user-table th,
@@ -216,6 +269,7 @@ h2 {
 
 .user-table th {
   background-color: #f2f2f2;
+  font-weight: 500;
 }
 
 .user-table tr:nth-child(even) {
@@ -227,17 +281,26 @@ h2 {
 }
 
 .action-btn {
-  background-color: #007bff;
   color: white;
   border: none;
-  padding: 6px 12px;
+  padding: 4px 8px;
   border-radius: 4px;
   cursor: pointer;
   margin-right: 5px;
+  font-size: 14px;
+  transition: background-color 0.3s;
+}
+
+.action-btn.view-btn {
+  background-color: #007bff;
+}
+
+.action-btn.delete-btn {
+  background-color: #dc3545;
 }
 
 .action-btn:hover {
-  background-color: #0056b3;
+  opacity: 0.9;
 }
 
 .no-data {
@@ -249,6 +312,7 @@ h2 {
 .pagination {
   margin-top: 20px;
   text-align: center;
+  color: #333;
 }
 
 .pagination button {
@@ -259,10 +323,66 @@ h2 {
   border-radius: 4px;
   cursor: pointer;
   margin: 0 5px;
+  transition: background-color 0.3s;
 }
 
 .pagination button:disabled {
   background-color: #ccc;
   cursor: not-allowed;
+}
+
+/* 模态框样式 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal {
+  background-color: white;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  max-width: 400px;
+  width: 100%;
+  position: relative;
+}
+
+.modal-header {
+  padding: 16px;
+  border-bottom: 1px solid #ddd;
+}
+
+.modal-content {
+  padding: 16px;
+  line-height: 1.5;
+}
+
+.modal-footer {
+  padding: 16px;
+  border-top: 1px solid #ddd;
+  text-align: right;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.action-btn.secondary {
+  background-color: #6c757d;
+  color: white;
+}
+
+.action-btn.secondary:hover {
+  background-color: #495057;
+}
+
+.action-btn.primary:hover {
+  background-color: #0056b3;
 }
 </style>

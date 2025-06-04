@@ -46,16 +46,15 @@ router.post('/add', async (req, res) => {
   }
 });
 
-// 查询用户
 router.get('/query', async (req, res) => {
   const { query } = req.query;
   if (!query) {
     return res.status(400).json({ error: '请输入查询条件' });
   }
   try {
-    const sql = "SELECT u.user_id, u.username as user_name, r.RoleName as role_name FROM users u LEFT JOIN roles r ON u.role = r.RoleID WHERE u.username = ? OR u.user_id = ?";
+    const sql = "SELECT u.user_id, u.username as user_name, r.RoleName as role_name, u.create_time FROM users u LEFT JOIN roles r ON u.role = r.RoleID WHERE u.username = ? OR u.user_id = ?";
     const users = await db.async.all(sql, [query, query]);
-    res.json(users.rows);
+    res.json(users.rows); 
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Internal Server Error' });
@@ -68,22 +67,6 @@ router.get('/all', async (req, res) => {
     const sql = "SELECT u.user_id, u.username as user_name, r.RoleName as role_name FROM users u LEFT JOIN roles r ON u.role = r.RoleID";
     const users = await db.async.all(sql, []);
     res.json(users.rows);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
-
-// 获取所有用户及其角色信息
-router.get('/allWithRoles', async (req, res) => {
-  try {
-    const sql = `
-      SELECT u.user_id, u.username, r.RoleName 
-      FROM users u
-      JOIN roles r ON u.role = r.RoleID
-    `;
-    const result = await db.async.all(sql);
-    res.json(result.rows);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Internal Server Error' });
