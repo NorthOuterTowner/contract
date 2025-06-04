@@ -132,19 +132,6 @@ router.get("/checkName", async (req, res) => {
   }
 });
 
-// 获取角色已授权的功能
-router.get("/permissions", async (req, res) => {
-  const { roleId } = req.query;
-  try {
-    const sql = "SELECT * FROM RolePermissions WHERE RoleID = ?";
-    const result = await db.async.all(sql, [roleId]);
-    res.json(result.rows);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "系统异常，请稍后重试" });
-  }
-});
-
 // 更新角色信息（包含权限）
 router.put("/update", async (req, res) => {
   const { roleID, roleName, roleDescription, selectedFunctions } = req.body;
@@ -173,6 +160,19 @@ router.put("/update", async (req, res) => {
     }
 
     res.json({ message: "角色信息更新成功" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "系统异常，请稍后重试" });
+  }
+});
+
+// 获取角色已授权的功能
+router.get("/permissions", async (req, res) => {
+  const { roleId } = req.query;
+  try {
+    const sql = "SELECT * FROM RolePermissions WHERE RoleID = ?";
+    const result = await db.async.all(sql, [roleId]);
+    res.json(result.rows);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "系统异常，请稍后重试" });
