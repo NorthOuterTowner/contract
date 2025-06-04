@@ -1,4 +1,3 @@
-// backend/app.js
 const express = require('express');
 const session = require('express-session');
 const MySQLStore = require('express-mysql-session')(session);
@@ -62,6 +61,3 @@ app.use("/finalize",require("./router/finalizeRouter"));
 app.listen(PORT, () => {
   console.log(`Backend server running on http://localhost:${PORT}`);
 });
-
-
-
