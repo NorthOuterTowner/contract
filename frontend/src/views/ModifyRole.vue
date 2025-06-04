@@ -56,6 +56,10 @@
         <button @click="saveRole" v-if="isEditing" class="save-btn">
           <i class="fa fa-save"></i> 保存
         </button>
+        <!-- 新增重置按钮 -->
+        <button @click="showResetConfirm" v-if="isEditing" class="reset-btn">
+          <i class="fa fa-refresh"></i> 重置
+        </button>
         <button @click="showDeleteConfirm" class="delete-btn">
           <i class="fa fa-trash"></i> 删除
         </button>
@@ -78,6 +82,22 @@
         </div>
       </div>
     </div>
+
+    <!-- 确认重置模态框 -->
+    <div v-if="isResetConfirmVisible" class="modal-overlay">
+      <div class="modal">
+        <div class="modal-header">
+          <h3>确认重置</h3>
+        </div>
+        <div class="modal-content">
+          <p>确定要重置到未编辑前状态吗？</p>
+        </div>
+        <div class="modal-footer">
+          <button @click="cancelReset" class="action-btn secondary">取消</button>
+          <button @click="confirmReset" class="action-btn primary">确认</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -92,12 +112,15 @@ const message = inject('message');
 
 const roleId = route.params.roleId;
 const role = ref(null);
+const originalRole = ref(null); // 新增：保存原始角色信息
 const loading = ref(false);
 const isEditing = ref(false);
 const allFunctions = ref([]);
 const selectedFunctions = ref([]);
+const originalSelectedFunctions = ref([]); // 新增：保存原始选中的功能
 const topLevelFunctions = ref([]); 
 const isDeleteConfirmVisible = ref(false);
+const isResetConfirmVisible = ref(false); // 新增：确认重置模态框显示状态
 
 // 获取所有功能数据
 const getFunctions = async () => {
@@ -180,6 +203,7 @@ const getRolePermissions = async () => {
   try {
     const response = await axios.get(`/role/permissions?roleId=${roleId}`);
     selectedFunctions.value = response.data.map(item => item.FunctionID);
+    originalSelectedFunctions.value = [...selectedFunctions.value]; // 保存原始选中的功能
   } catch (error) {
     message.error('获取角色权限信息失败');
     console.error(error);
@@ -195,6 +219,7 @@ onMounted(async () => {
       router.push('/system/role');
     } else {
       role.value = response.data[0];
+      originalRole.value = { ...role.value }; // 保存原始角色信息
       await getFunctions();
       await getRolePermissions();
     }
@@ -258,6 +283,24 @@ const confirmDelete = async () => {
     console.error(error);
   }
   isDeleteConfirmVisible.value = false;
+};
+
+// 新增：显示确认重置模态框
+const showResetConfirm = () => {
+  isResetConfirmVisible.value = true;
+};
+
+// 新增：取消重置
+const cancelReset = () => {
+  isResetConfirmVisible.value = false;
+};
+
+// 新增：确认重置
+const confirmReset = () => {
+  role.value = { ...originalRole.value };
+  selectedFunctions.value = [...originalSelectedFunctions.value];
+  isEditing.value = false;
+  isResetConfirmVisible.value = false;
 };
 </script>
 
@@ -362,7 +405,7 @@ h2 {
   margin-top: 20px;
 }
 
-.edit-btn, .save-btn, .delete-btn {
+.edit-btn, .save-btn, .reset-btn, .delete-btn {
   padding: 8px 16px;
   border: none;
   border-radius: 4px;
@@ -388,6 +431,15 @@ h2 {
 
 .save-btn:hover {
   background-color: #218838;
+}
+
+.reset-btn {
+  background-color: #ffc107;
+  color: white;
+}
+
+.reset-btn:hover {
+  background-color: #e0a800;
 }
 
 .delete-btn {
@@ -467,8 +519,6 @@ h2 {
 .action-btn.secondary:hover {
   background-color: #495057;
 }
-
-
 
 .action-btn.primary:hover {
   background-color: #0056b3;

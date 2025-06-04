@@ -29,7 +29,7 @@
         <button @click="editUser" v-if="!isEditing" class="edit-btn">
           <i class="fa fa-pencil"></i> 编辑
         </button>
-        <div v-if="isEditing">
+        <div v-if="isEditing" class="editing-buttons">
           <button @click="resetUser" class="reset-btn">
             <i class="fa fa-refresh"></i> 重置
           </button>
@@ -37,6 +37,7 @@
             <i class="fa fa-save"></i> 保存
           </button>
         </div>
+        <!-- 让删除按钮在初始状态下也显示 -->
         <button @click="showDeleteConfirm" class="delete-btn">
           <i class="fa fa-trash"></i> 删除
         </button>
@@ -259,7 +260,7 @@ h2 {
   margin-top: 20px;
 }
 
-.edit-btn, .save-btn, .delete-btn {
+.edit-btn, .save-btn, .reset-btn, .delete-btn {
   padding: 8px 16px;
   border: none;
   border-radius: 4px;
@@ -279,19 +280,12 @@ h2 {
 }
 
 .reset-btn {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  margin: 0 5px;
-  transition: all 0.3s;
-  background-color: #6c757d;
+  background-color: #ffc107;
   color: white;
 }
 
 .reset-btn:hover {
-  background-color: #5a6268;
+  background-color: #e0a800;
 }
 
 .save-btn {
@@ -383,5 +377,12 @@ h2 {
 
 .action-btn.primary:hover {
   background-color: #0056b3;
+}
+
+/* 编辑状态下按钮排列样式 */
+.editing-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
 }
 </style>
