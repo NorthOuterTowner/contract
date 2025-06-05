@@ -1,6 +1,7 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
 
 //import test from '../views/test.vue';
+import { useAuthStore } from './auth'; 
 import FirstPage from '../views/FirstPage.vue';
 import Login from '../views/Login.vue';
 import Register from '../views/Register.vue';
@@ -31,19 +32,15 @@ import PermissionManagement from '../views/PermissionManagement.vue';
 import AssignPermissions from '../views/AssignPermission.vue'; 
 import SignContract from '../views/SignContract.vue';
 import SignContent from '../views/signContent.vue';
-import { compile } from 'vue';
+
 
 let routes= [
 
   
    { path:'/',redirect:'/FirstPage'},
     { path:'/FirstPage',component : FirstPage},
-   // { path:'/',redirect:'Login'},
     { path:'/login',component:Login},
-    
-    //{ path:'/',redirect:'/Register'},
     { path:'/register',component:Register},
-
 
     //{ path: '/', redirect: '/HomePage'},
     { path: '/HomePage', component :HomePage},
@@ -86,6 +83,47 @@ const router = createRouter({
   history: createWebHashHistory(),
   routes
 });
+
+// 前置路由守卫
+// router.beforeEach(async (to, from, next) => {
+//   const authStore = useAuthStore()
+  
+//   // 如果还没有初始化认证状态，则先初始化
+//   if (authStore.isLoggedIn === null) {
+//     await authStore.initAuth()
+//   }
+
+//   // 需要登录的路由保护
+//   const requiresAuth = !['/login', '/register', '/FirstPage'].includes(to.path)
+  
+//   if (requiresAuth && !authStore.isLoggedIn) {
+//     next('/login')
+//   } else {
+//     next()
+//   }
+// });
+
+// router.js（修改后）
+router.beforeEach(async (to, from, next) => {
+  const authStore = useAuthStore();
+  // 初始化认证状态（确保获取最新的登录状态）
+  await authStore.initAuth();
+
+  // 公开路由列表（无需登录）
+  const publicRoutes = ['/login', '/register', '/FirstPage'];
+  const isPublic = publicRoutes.includes(to.path);
+  
+  // 判断路由是否需要认证
+  const requiresAuth = to.meta.requiresAuth;
+  
+ // 未登录且访问非公开路由，重定向到登录页
+  if (!isPublic && !authStore.isLoggedIn) {
+    next('/login');
+  } else {
+    next();
+  }
+});
+
 
 export { router, routes };
 
