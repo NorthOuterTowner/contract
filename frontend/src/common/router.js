@@ -17,7 +17,9 @@ import FinalizeContractList from '../views/FinalizeContractList.vue';
 import content from '../views/content.vue';
 import PendingContractList from '../views/PendingContractList.vue';
 import AssignContract from '../views/AssignContract.vue';
-import QueryPage from '../views/QueryPage.vue';
+//import QueryPage from '../views/QueryPage.vue';
+import QueryContractList from '../views/QueryContractList.vue';
+import QueryContract from '../views/QueryContract.vue';
 import UserManagement from '../views/UserManagement.vue';
 import AddUser from '../views/AddUser.vue';
 import ModifyUser from '../views/ModifyUser.vue';
@@ -40,32 +42,42 @@ let routes= [
     { path:'/login',component:Login},
     { path:'/register',component:Register},
 
-    { path: '/HomePage', component :HomePage,meta: { requiresAuth: true }},
-    { path: "/approveList", component:approveList ,meta: { requiresAuth: true }},
-    { path: '/approval', component:approval ,meta: { requiresAuth: true }},
-    { path: "/DraftContract", component: DraftContract ,meta: { requiresAuth: true }},
-    { path: "/DraftContractList", component: DraftContractList,meta: { requiresAuth: true }},
-    { path: "/CoSignContract", component: CoSignContract,meta: { requiresAuth: true } },
-    { path: "/CoSignContractList", component: CoSignContractList ,meta: { requiresAuth: true }},
-    { path: "/FinalizeContract", component: FinalizeContract ,meta: { requiresAuth: true }},
-    { path: "/FinalizeContractList", component: FinalizeContractList ,meta: { requiresAuth: true }},
-    { path: '/PendingContractList',component: PendingContractList,meta: { requiresAuth: true } },
-    { path: '/allocate/:contractId',component: AssignContract ,meta: { requiresAuth: true }},
-    { path: "/approve/content",component:content,meta: { requiresAuth: true } },
-    { path: '/user', component: UserManagement,meta: { requiresAuth: true } },
-    { path: '/user/add', component: AddUser ,meta: { requiresAuth: true }},
-    { path: '/user/modify/:userId', component: ModifyUser ,meta: { requiresAuth: true }},
-    { path: '/role', component: RoleManagement,meta: { requiresAuth: true } },
-    { path: '/role/add', component: AddRole,meta: { requiresAuth: true }},
-    { path: '/role/modify/:roleId', component: ModifyRole,meta: { requiresAuth: true }},
-    { path: '/function', component: FunctionManagement,meta: { requiresAuth: true } },
-    { path: '/function/add', component: AddFunction,meta: { requiresAuth: true } },
-    { path: '/permission', component: PermissionManagement ,meta: { requiresAuth: true }},
-    { path: '/permission/assign/:userId', component: AssignPermissions,meta: { requiresAuth: true } },
-    { path: "/query", component: QueryPage,meta: { requiresAuth: true } },
-    { path: "/SignContractList", component: SignContract,meta: { requiresAuth: true }},
-    { path: "/sign/content", component: SignContent,meta: { requiresAuth: true } },
+    //{ path: '/', redirect: '/HomePage'},
+    { path: '/HomePage', component :HomePage},
+    { path: "/approveList", component:approveList },
+    { path: '/approval', component:approval },
+    { path: "/DraftContract", component: DraftContract },
+    { path: "/DraftContractList", component: DraftContractList },
+    { path: "/CoSignContract", component: CoSignContract },
+    { path: "/CoSignContract/:contractId", component: CoSignContract },
+    { path: "/CoSignContractList", component: CoSignContractList },
+    { path: "/FinalizeContract", component: FinalizeContract },
+    { path: "/FinalizeContractList", component: FinalizeContractList },
+    { path: '/PendingContractList',component: PendingContractList },
+    { path: '/allocate/:contractId',component: AssignContract },
+    { path: "/approve/content",component:content },
+    { path: '/user', component: UserManagement },
+    { path: '/user/add', component: AddUser },
+    { path: '/user/modify/:userId', component: ModifyUser },
+    { path: '/role', component: RoleManagement },
+    { path: '/role/add', component: AddRole},
+    { path: '/role/modify/:roleId', component: ModifyRole},
+    { path: '/function', component: FunctionManagement },
+    { path: '/function/add', component: AddFunction },
+    { path: '/permission', component: PermissionManagement },
+    { path: '/permission/assign/:userId', component: AssignPermissions },
+    //{ path: "/query", component: QueryPage },
+    { path: "/SignContractList", component: SignContract},
+    { path: "/sign/content", component: SignContent },
 
+    // 合同查询路由
+   { path: '/query', name: 'QueryContractList', component: QueryContractList },
+   { path: '/query/detail/:id', name: 'QueryContract', component: QueryContract },
+  
+  // 合同查询子路由
+   { path: '/query/name', component: QueryContractList },
+   { path: '/query/status', component: QueryContractList },
+   { path: '/query/advanced', component: QueryContractList }
 ]
 const router = createRouter({
   history: createWebHashHistory(),
