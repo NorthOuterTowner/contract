@@ -1,6 +1,7 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
 
 //import test from '../views/test.vue';
+import { useAuthStore } from './auth'; 
 import FirstPage from '../views/FirstPage.vue';
 import Login from '../views/Login.vue';
 import Register from '../views/Register.vue';
@@ -29,52 +30,86 @@ import PermissionManagement from '../views/PermissionManagement.vue';
 import AssignPermissions from '../views/AssignPermission.vue'; 
 import SignContract from '../views/SignContract.vue';
 import SignContent from '../views/signContent.vue';
-import { compile } from 'vue';
+
 
 let routes= [
 
   
    { path:'/',redirect:'/FirstPage'},
     { path:'/FirstPage',component : FirstPage},
-   // { path:'/',redirect:'Login'},
     { path:'/login',component:Login},
-    
-    //{ path:'/',redirect:'/Register'},
     { path:'/register',component:Register},
-
-
-    //{ path: '/', redirect: '/HomePage'},
-    { path: '/HomePage', component :HomePage},
-    { path: "/approveList", component:approveList },
-    { path: '/approval', component:approval },
-    { path: "/DraftContract", component: DraftContract },
-    { path: "/DraftContractList", component: DraftContractList },
-    { path: "/CoSignContract", component: CoSignContract },
-    { path: "/CoSignContract/:contractId", component: CoSignContract },
-    { path: "/CoSignContractList", component: CoSignContractList },
-    { path: "/FinalizeContract", component: FinalizeContract },
-    { path: "/FinalizeContractList", component: FinalizeContractList },
-    { path: '/PendingContractList',component: PendingContractList },
-    { path: '/allocate/:contractId',component: AssignContract },
-    { path: "/approve/content",component:content },
-    { path: '/user', component: UserManagement },
-    { path: '/user/add', component: AddUser },
-    { path: '/user/modify/:userId', component: ModifyUser },
-    { path: '/role', component: RoleManagement },
-    { path: '/role/add', component: AddRole},
-    { path: '/role/modify/:roleId', component: ModifyRole},
-    { path: '/function', component: FunctionManagement },
-    { path: '/function/add', component: AddFunction },
-    { path: '/permission', component: PermissionManagement },
-    { path: '/permission/assign/:userId', component: AssignPermissions },
-    { path: "/query", component: QueryPage },
-    { path: "/SignContractList", component: SignContract},
-    { path: "/sign/content", component: SignContent },
+    { path: '/HomePage', component :HomePage,meta: { requiresAuth: true }},
+    { path: "/approveList", component:approveList ,meta: { requiresAuth: true }},
+    { path: '/approval', component:approval ,meta: { requiresAuth: true }},
+    { path: "/DraftContract", component: DraftContract ,meta: { requiresAuth: true }},
+    { path: "/DraftContractList", component: DraftContractList,meta: { requiresAuth: true }},
+    { path: "/CoSignContract", component: CoSignContract,meta: { requiresAuth: true } },
+    { path: "/CoSignContractList", component: CoSignContractList ,meta: { requiresAuth: true }},
+    { path: "/FinalizeContract", component: FinalizeContract ,meta: { requiresAuth: true }},
+    { path: "/FinalizeContractList", component: FinalizeContractList ,meta: { requiresAuth: true }},
+    { path: '/PendingContractList',component: PendingContractList,meta: { requiresAuth: true } },
+    { path: '/allocate/:contractId',component: AssignContract ,meta: { requiresAuth: true }},
+    { path: "/approve/content",component:content,meta: { requiresAuth: true } },
+    { path: '/user', component: UserManagement,meta: { requiresAuth: true } },
+    { path: '/user/add', component: AddUser ,meta: { requiresAuth: true }},
+    { path: '/user/modify/:userId', component: ModifyUser ,meta: { requiresAuth: true }},
+    { path: '/role', component: RoleManagement,meta: { requiresAuth: true } },
+    { path: '/role/add', component: AddRole,meta: { requiresAuth: true }},
+    { path: '/role/modify/:roleId', component: ModifyRole,meta: { requiresAuth: true }},
+    { path: '/function', component: FunctionManagement,meta: { requiresAuth: true } },
+    { path: '/function/add', component: AddFunction,meta: { requiresAuth: true } },
+    { path: '/permission', component: PermissionManagement ,meta: { requiresAuth: true }},
+    { path: '/permission/assign/:userId', component: AssignPermissions,meta: { requiresAuth: true } },
+    { path: "/query", component: QueryPage,meta: { requiresAuth: true } },
+    { path: "/SignContractList", component: SignContract,meta: { requiresAuth: true }},
+    { path: "/sign/content", component: SignContent,meta: { requiresAuth: true } },
 ]
 const router = createRouter({
   history: createWebHashHistory(),
   routes
 });
+
+// 前置路由守卫
+// router.beforeEach(async (to, from, next) => {
+//   const authStore = useAuthStore()
+  
+//   // 如果还没有初始化认证状态，则先初始化
+//   if (authStore.isLoggedIn === null) {
+//     await authStore.initAuth()
+//   }
+
+//   // 需要登录的路由保护
+//   const requiresAuth = !['/login', '/register', '/FirstPage'].includes(to.path)
+  
+//   if (requiresAuth && !authStore.isLoggedIn) {
+//     next('/login')
+//   } else {
+//     next()
+//   }
+// });
+
+// router.js（修改后）
+router.beforeEach(async (to, from, next) => {
+  const authStore = useAuthStore();
+  // 初始化认证状态（确保获取最新的登录状态）
+  await authStore.initAuth();
+
+  // 公开路由列表（无需登录）
+  const publicRoutes = ['/login', '/register', '/FirstPage'];
+  const isPublic = publicRoutes.includes(to.path);
+  
+  // 判断路由是否需要认证
+  const requiresAuth = to.meta.requiresAuth;
+  
+ // 未登录且访问非公开路由，重定向到登录页
+  if (!isPublic && !authStore.isLoggedIn) {
+    next('/login');
+  } else {
+    next();
+  }
+});
+
 
 export { router, routes };
 
