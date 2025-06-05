@@ -16,7 +16,9 @@ import FinalizeContractList from '../views/FinalizeContractList.vue';
 import content from '../views/content.vue';
 import PendingContractList from '../views/PendingContractList.vue';
 import AssignContract from '../views/AssignContract.vue';
-import QueryPage from '../views/QueryPage.vue';
+//import QueryPage from '../views/QueryPage.vue';
+import QueryContractList from '../views/QueryContractList.vue';
+import QueryContract from '../views/QueryContract.vue';
 import UserManagement from '../views/UserManagement.vue';
 import AddUser from '../views/AddUser.vue';
 import ModifyUser from '../views/ModifyUser.vue';
@@ -67,9 +69,18 @@ let routes= [
     { path: '/function/add', component: AddFunction },
     { path: '/permission', component: PermissionManagement },
     { path: '/permission/assign/:userId', component: AssignPermissions },
-    { path: "/query", component: QueryPage },
+    //{ path: "/query", component: QueryPage },
     { path: "/SignContractList", component: SignContract},
     { path: "/sign/content", component: SignContent },
+
+    // 合同查询路由
+   { path: '/query', name: 'QueryContractList', component: QueryContractList },
+   { path: '/query/detail/:id', name: 'QueryContract', component: QueryContract },
+  
+  // 合同查询子路由
+   { path: '/query/name', component: QueryContractList },
+   { path: '/query/status', component: QueryContractList },
+   { path: '/query/advanced', component: QueryContractList }
 ]
 const router = createRouter({
   history: createWebHashHistory(),

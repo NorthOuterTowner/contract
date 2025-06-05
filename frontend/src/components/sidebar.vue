@@ -2,13 +2,29 @@
   <div class="sidebar">
     <div class="logo">合同管理系统</div>
     <ul class="menu">
+      <!-- 合同处理相关菜单 -->
       <li 
-        v-for="item in menuItems" 
+        v-for="item in processMenuItems" 
         :key="item.path"
         :class="{ active: $route.path === item.path }"
         @click="navigateTo(item.path)"
       >
         {{ item.title }}
+      </li>
+      <!-- 合同查询菜单及子菜单 -->
+      <li class="has-submenu" @click="toggleQueryMenu">
+        <span>合同查询</span>
+        <i :class="isQueryMenuOpen ? 'el-icon-arrow-up' : 'el-icon-arrow-down'"></i>
+        <ul class="submenu" v-show="isQueryMenuOpen">
+          <li 
+            v-for="subItem in querySubMenuItems" 
+            :key="subItem.path"
+            :class="{ active: $route.path === subItem.path }"
+            @click="navigateTo(subItem.path)"
+          >
+            {{ subItem.title }}
+          </li>
+        </ul>
       </li>
     </ul>
   </div>
@@ -18,26 +34,40 @@
 export default {
   data() {
     return {
-      menuItems: [
-
+      // 合同处理菜单数据：整合后，包含原有及新增的签订合同、返回主页
+      processMenuItems: [
         { title: '起草合同', path: '/DraftContractList' },
         { title: '合同会签', path: '/CoSignContractList' },
         { title: '合同定稿', path: '/FinalizeContractList' },
         { title: '待审批合同', path: '/approveList' },
         { title: '合同统计', path: '/statistics' },
+        { title: '分配合同', path: '/PendingContractList' },
         { title: '签订合同', path: '/SignContractList'},
         { title: '返回主页', path: '/HomePage'}
-      ]
-    }
+      ],
+      // 合同查询子菜单数据
+      querySubMenuItems: [
+        { title: '合同列表', path: '/query' },
+        { title: '按名称查询', path: '/query/name' },
+        { title: '按状态查询', path: '/query/status' },
+        { title: '高级查询', path: '/query/advanced' }
+      ],
+      // 控制合同查询子菜单展开收起的标识
+      isQueryMenuOpen: false 
+    };
   },
   methods: {
     navigateTo(path) {
-      if (this.$route.path !== path) {
-        this.$router.push(path)
+      if (this.$route.path!== path) {
+        this.$router.push(path);
       }
+    },
+    // 切换合同查询子菜单展开收起状态
+    toggleQueryMenu() {
+      this.isQueryMenuOpen =!this.isQueryMenuOpen;
     }
   }
-}
+};
 </script>
 
 <style scoped>
@@ -69,6 +99,9 @@ export default {
   padding: 15px 20px;
   cursor: pointer;
   transition: background-color 0.3s;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .menu li:hover {
@@ -78,5 +111,22 @@ export default {
 .menu li.active {
   background-color: rgb(85, 117, 244);
   color: white;
+}
+
+/* 子菜单样式 */
+.submenu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  background-color: #34495e;
+}
+
+.submenu li {
+  padding: 12px 30px; 
+}
+
+/* 箭头图标样式（可根据实际使用的图标库调整） */
+.menu li i {
+  font-size: 14px;
 }
 </style>
