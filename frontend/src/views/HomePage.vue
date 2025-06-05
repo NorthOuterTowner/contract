@@ -45,6 +45,23 @@
         </div>
       </div>
 
+
+
+      <div class="dropdown" @mouseleave="hideDropdown">
+        <div class="drop-trigger" @mouseover="showDropdown('basicData')">
+          基础数据管理
+          </div>
+          <div class="drop-menu"
+          v-show="activeMenu === 'basicData'">
+           
+           <div @click="go('/contractInfo')" style="color: #2c3e50;">📑 合同信息管理</div>
+          <div @click="go('/customerInfo')" style="color: #34495e;">👥 客户类型管理</div>
+          </div>
+      </div>
+
+
+
+
       <div class="dropdown" @mouseleave="hideDropdown">
         <div class="drop-trigger" @mouseover="showDropdown('system')">
           系统管理
