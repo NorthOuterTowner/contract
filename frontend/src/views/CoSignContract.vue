@@ -176,29 +176,34 @@ export default {
     };
     
     const submitDraft = async () => {
-      if (!validateForm()) return;
-      
-      submitting.value = true;
-      
-      try {
-        const res = await axios.post('/cosign/submit', {
-          contractId: contract.value.ContractID,
-          description: description.value
-        });
+  if (!validateForm()) return;
+  
+  submitting.value = true;
+  
+  try {
+    const formData = new FormData();
+    formData.append('contractId', contract.value.ContractID);
+    formData.append('description', description.value);
 
-        if (res.data.code === 200) {
-          message.info("会签意见提交成功");
-          router.push('/CoSignContractList');
-        } else {
-          message.error(res.data.msg || '提交会签失败');
-        }
-      } catch (error) {
-        console.error('提交会签失败:', error);
-        message.error("提交会签失败");
-      } finally {
-        submitting.value = false;
+    const res = await axios.post('/cosign/submit', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
       }
-    };
+    });
+
+    if (res.data.code === 200) {
+      message.info("会签意见提交成功");
+      router.push('/CoSignContractList');
+    } else {
+      message.error(res.data.msg || '提交会签失败');
+    }
+  } catch (error) {
+    console.error('提交会签失败:', error);
+    message.error("提交会签失败");
+  } finally {
+    submitting.value = false;
+  }
+};
     
     const formatDate = (dateString) => {
       return new Date(dateString).toLocaleString();

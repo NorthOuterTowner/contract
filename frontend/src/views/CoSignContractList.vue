@@ -125,9 +125,7 @@ export default {
           contract.approver = pendingRes.data.rowsApprover;
         });
         
-        // Fetch completed contracts (you'll need to implement this endpoint)
-        // const completedRes = await axios.get("/countersign/completed");
-        // this.completedContracts = completedRes.data;
+    
         
         this.loading = false;
       } catch (error) {

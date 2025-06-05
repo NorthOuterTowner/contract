@@ -53,6 +53,7 @@ let routes= [
     { path: "/CoSignContract/:contractId", component: CoSignContract },
     { path: "/CoSignContractList", component: CoSignContractList },
     { path: "/FinalizeContract", component: FinalizeContract },
+    { path: "/FinalizeContract/:contractId", component:FinalizeContract },
     { path: "/FinalizeContractList", component: FinalizeContractList },
     { path: '/PendingContractList',component: PendingContractList },
     { path: '/allocate/:contractId',component: AssignContract },
