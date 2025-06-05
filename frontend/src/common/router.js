@@ -32,7 +32,8 @@ import PermissionManagement from '../views/PermissionManagement.vue';
 import AssignPermissions from '../views/AssignPermission.vue'; 
 import SignContract from '../views/SignContract.vue';
 import SignContent from '../views/signContent.vue';
-
+import CustomerInfo from '../views/CustomerInfo.vue';
+import ContractInfo from '../views/ContractInfo.vue';
 
 let routes= [
 
@@ -77,7 +78,12 @@ let routes= [
   // 合同查询子路由
    { path: '/query/name', component: QueryContractList },
    { path: '/query/status', component: QueryContractList },
-   { path: '/query/advanced', component: QueryContractList }
+   { path: '/query/advanced', component: QueryContractList },
+
+  // 客户信息路由
+  {path: '/customerInfo', name: 'CustomerInfo', component: CustomerInfo },
+  {path: '/contractInfo', name: 'ContractInfo', component: ContractInfo }
+
 ]
 const router = createRouter({
   history: createWebHashHistory(),
