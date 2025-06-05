@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const {db} = require("../db/DBUtils");
+const multer = require("multer");
+const upload = multer();
 
 router.get("/length",async(req,res)=>{
     let {err,rows} = await db.async.all("SELECT COUNT(*) AS length FROM `contract` WHERE `Status`='待定稿' ",[]);
@@ -29,6 +31,38 @@ router.get("/list",async(req,res)=>{
             code:500,
             msg:"数据库访问失败"
         })
+    }
+});
+
+router.get("/get", async (req, res) => {
+    const contractId = req.query.id;
+
+    if (!contractId) {
+        res.send({
+            code: 400,
+            msg: "缺少合同ID"
+        });
+        return;
+    }
+
+    let { err, rows } = await db.async.all("SELECT * FROM `contract` WHERE `ContractID` = ?", [contractId]);
+
+    if (err) {
+        res.send({
+            code: 500,
+            msg: "数据库查询失败",
+            error: err
+        });
+    } else if (rows.length === 0) {
+        res.send({
+            code: 404,
+            msg: "未找到对应合同"
+        });
+    } else {
+        res.send({
+            code: 200,
+            data: rows[0]
+        });
     }
 });
 

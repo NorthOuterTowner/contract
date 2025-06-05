@@ -39,6 +39,7 @@ let routes= [
     { path:'/FirstPage',component : FirstPage},
     { path:'/login',component:Login},
     { path:'/register',component:Register},
+
     { path: '/HomePage', component :HomePage,meta: { requiresAuth: true }},
     { path: "/approveList", component:approveList ,meta: { requiresAuth: true }},
     { path: '/approval', component:approval ,meta: { requiresAuth: true }},
@@ -64,6 +65,7 @@ let routes= [
     { path: "/query", component: QueryPage,meta: { requiresAuth: true } },
     { path: "/SignContractList", component: SignContract,meta: { requiresAuth: true }},
     { path: "/sign/content", component: SignContent,meta: { requiresAuth: true } },
+
 ]
 const router = createRouter({
   history: createWebHashHistory(),
