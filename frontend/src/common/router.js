@@ -94,26 +94,6 @@ const router = createRouter({
   routes
 });
 
-// 前置路由守卫
-// router.beforeEach(async (to, from, next) => {
-//   const authStore = useAuthStore()
-  
-//   // 如果还没有初始化认证状态，则先初始化
-//   if (authStore.isLoggedIn === null) {
-//     await authStore.initAuth()
-//   }
-
-//   // 需要登录的路由保护
-//   const requiresAuth = !['/login', '/register', '/FirstPage'].includes(to.path)
-  
-//   if (requiresAuth && !authStore.isLoggedIn) {
-//     next('/login')
-//   } else {
-//     next()
-//   }
-// });
-
-// router.js（修改后）
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
   // 初始化认证状态（确保获取最新的登录状态）
@@ -126,14 +106,47 @@ router.beforeEach(async (to, from, next) => {
   // 判断路由是否需要认证
   const requiresAuth = to.meta.requiresAuth;
   
- // 未登录且访问非公开路由，重定向到登录页
+  // 未登录且访问非公开路由，重定向到登录页
   if (!isPublic && !authStore.isLoggedIn) {
     next('/login');//未登陆时跳转登录页
   } else {
-    next();
+    // 获取用户的角色和权限
+    const userRole = authStore.userRole;
+    const userPermissions = await getPermissionsByRole(userRole);
+
+    // 获取目标路由对应的功能
+    const targetFunction = await getFunctionByRoute(to.path);
+
+    // 检查用户是否有访问该功能的权限
+    if (targetFunction && !userPermissions.includes(targetFunction.FunctionID)) {
+      next('/403'); // 无权限访问，重定向到 403 页面
+    } else {
+      next();
+    }
   }
 });
 
+// 获取用户角色对应的权限
+const getPermissionsByRole = async (roleId) => {
+  try {
+    const response = await axios.get(`/role/permissions?roleId=${roleId}`);
+    return response.data.map(item => item.FunctionID);
+  } catch (error) {
+    console.error('获取角色权限失败:', error);
+    return [];
+  }
+};
+
+// 根据路由获取对应的功能
+const getFunctionByRoute = async (route) => {
+  try {
+    const response = await axios.get(`/function/query?functionRoute=${route}`);
+    return response.data.length > 0 ? response.data[0] : null;
+  } catch (error) {
+    console.error('获取功能信息失败:', error);
+    return null;
+  }
+};
 
 export { router, routes };
 
