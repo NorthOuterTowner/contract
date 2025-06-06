@@ -1,6 +1,13 @@
 <template>
   <div class="add-function-container">
-    <h2 class="page-title">添加功能</h2>
+    <div class="header-actions">
+      <button @click="goBack" class="back-btn">
+        <i class="fa fa-arrow-left"></i> 返回功能管理
+      </button>
+    </div>
+
+     <h2>添加功能</h2>
+
     <!-- 表单区域 -->
     <div class="form-section">
       <div class="input-group">
@@ -62,8 +69,10 @@
 
 <script setup>
 import { ref } from "vue";
+import { useRouter } from "vue-router";
 import axios from "axios";
 
+const router = useRouter();
 const functionId = ref("");
 const functionName = ref("");
 const functionDescription = ref("");
@@ -71,6 +80,11 @@ const parentId = ref("");
 const submitted = ref(false);
 const message = ref("");
 const isSuccess = ref(false);
+
+// 返回上一级页面
+const goBack = () => {
+  router.go(-1);
+};
 
 // 在组件挂载时获取下一个可用的功能 ID
 const getNextFunctionId = async () => {
@@ -128,9 +142,37 @@ const resetForm = () => {
   font-family: "Helvetica Neue", Arial, sans-serif;
 }
 
-.page-title {
+.header-actions {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.back-btn {
+  background-color: #6c757d;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  margin-right: 16px;
+}
+
+.back-btn:hover {
+  background-color: #5a6268;
+}
+
+.back-btn i {
+  margin-right: 8px;
+}
+
+h2 {
   font-size: 24px;
   margin-bottom: 20px;
+  text-align: center;
+  color: #333;
 }
 
 .form-section {

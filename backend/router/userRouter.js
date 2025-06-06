@@ -52,7 +52,22 @@ router.get('/query', async (req, res) => {
     return res.status(400).json({ error: '请输入查询条件' });
   }
   try {
-    const sql = "SELECT u.user_id, u.username as user_name, r.RoleName as role_name, u.create_time FROM users u LEFT JOIN roles r ON u.role = r.RoleID WHERE u.username = ? OR u.user_id = ?";
+    const sql = "SELECT u.user_id, u.username as user_name, r.RoleName as role_name, u.create_time FROM users u LEFT JOIN roles r ON u.role = r.RoleID WHERE u.username LIKE ? OR u.user_id LIKE ?";
+    const users = await db.async.all(sql, [query, query]);
+    res.json(users.rows); 
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+router.get('/queryByUsernameOrRole', async (req, res) => {
+  const { query } = req.query;
+  if (!query) {
+    return res.status(400).json({ error: '请输入查询条件' });
+  }
+  try {
+    const sql = "SELECT u.user_id, u.username as user_name, r.RoleName as role_name FROM users u LEFT JOIN roles r ON u.role = r.RoleID WHERE u.username LIKE ? OR r.RoleName LIKE ?";
     const users = await db.async.all(sql, [query, query]);
     res.json(users.rows); 
   } catch (error) {
@@ -114,6 +129,33 @@ router.put('/update', async (req, res) => {
     params.push(userId);
     await db.async.run(sql, params);
     res.json({ message: '用户信息修改成功' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+router.post('/updateRole', async (req, res) => {
+  const { userId, roleId } = req.body;
+  
+  if (!userId || !roleId) {
+    return res.status(400).json({ error: '缺少必要参数' });
+  }
+  
+  try {
+    // 检查角色是否存在
+    const checkRoleSql = "SELECT * FROM roles WHERE RoleID = ?";
+    const roleResult = await db.async.all(checkRoleSql, [roleId]);
+    
+    if (roleResult.rows.length === 0) {
+      return res.status(400).json({ error: '指定的角色不存在' });
+    }
+    
+    // 更新用户角色
+    const updateSql = "UPDATE users SET role = ? WHERE user_id = ?";
+    await db.async.run(updateSql, [roleId, userId]);
+    
+    res.json({ message: '角色更新成功' });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Internal Server Error' });

@@ -23,7 +23,8 @@ export default {
         { title: '用户管理', path: '/user' },
         { title: '角色管理', path: '/role' },
         { title: '功能管理', path: '/function' },
-        { title: '权限配置', path: '/permission' }
+        { title: '权限配置', path: '/permission' },
+        { title: '返回主页', path: '/HomePage' }
       ]
     };
   },
