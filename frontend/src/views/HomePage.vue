@@ -1,5 +1,9 @@
 <template>
   <div class="home-page">
+    <!-- 右上角用户状态 -->
+    <div class="user-status-container">
+      <UserStatus />
+    </div>
     <!-- 顶部栏 -->
     <header class="header">
       <h1 class="logo">基于Web的合同管理系统</h1>
@@ -8,23 +12,22 @@
     <!-- 功能导航菜单 -->
     <nav class="nav-bar">
       <div class="dropdown" @mouseleave="hideDropdown">
-      <div class="drop-trigger" @mouseover="showDropdown('contract')">
-        合同处理
+        <div class="drop-trigger" @mouseover="showDropdown('contract')">
+          合同处理
+        </div>
+        <div
+          class="drop-menu"
+          v-show="activeMenu === 'contract'"
+          @mouseenter="showDropdown('contract')"
+          @mouseleave="hideDropdown"
+        >
+          <div @click="go('/DraftContractList')">📝 起草合同</div>
+          <div @click="go('/CoSignContractList')">🤝 会签合同</div>
+          <div @click="go('/FinalizeContractList')">📑 定稿合同</div>
+          <div @click="go('/SignContractList')">🖊 签订合同</div>
+          <div @click="go('/approveList')">📝 审批合同</div>
+        </div>
       </div>
-      <div
-        class="drop-menu"
-        v-show="activeMenu === 'contract'"
-        @mouseenter="showDropdown('contract')"
-        @mouseleave="hideDropdown"
-      >
-        <div @click="go('/DraftContractList')">📝 起草合同</div>
-        <div @click="go('/CoSignContractList')">🤝 会签合同</div>
-        <div @click="go('/FinalizeContractList')">📑 定稿合同</div>
-        <div @click="go('/SignContractList')">🖊 签订合同</div>
-        <div @click="go('/approveList')">📝 审批合同</div>
-      </div>
-      </div>
-
 
       <div class="dropdown" @mouseleave="hideDropdown">
         <div class="drop-trigger" @mouseover="showDropdown('query')">
@@ -33,28 +36,24 @@
         <div class="drop-menu" 
           v-show="activeMenu === 'query'"
           @mouseenter="showDropdown('query')"
-          @mouseleave="hideDropdown">
+          @mouseleave="hideDropdown"
+        >
           <div @click="go('/query')">🔍 合同查询</div>
           <!--<div @click="go('/approveList')">📑 审批合同</div>-->
         </div>
       </div>
 
-
-
       <div class="dropdown" @mouseleave="hideDropdown">
         <div class="drop-trigger" @mouseover="showDropdown('basicData')">
           基础数据管理
-          </div>
-          <div class="drop-menu"
-          v-show="activeMenu === 'basicData'">
-           
-           <div @click="go('/contractInfo')" style="color: #2c3e50;">📑 合同信息管理</div>
+        </div>
+        <div class="drop-menu"
+          v-show="activeMenu === 'basicData'"
+        >
+          <div @click="go('/contractInfo')" style="color: #2c3e50;">📑 合同信息管理</div>
           <div @click="go('/customerInfo')" style="color: #34495e;">👥 客户类型管理</div>
-          </div>
+        </div>
       </div>
-
-
-
 
       <div class="dropdown" @mouseleave="hideDropdown">
         <div class="drop-trigger" @mouseover="showDropdown('system')">
@@ -63,7 +62,8 @@
         <div class="drop-menu" 
           v-show="activeMenu === 'system'"
           @mouseenter="showDropdown('system')"
-          @mouseleave="hideDropdown">
+          @mouseleave="hideDropdown"
+        >
           <div @click="go('/PendingContractList')">🗂️ 分配合同</div>
           <div @click="go('/user')">👥 用户管理</div>
           <div @click="go('/role')">🔐 角色管理</div>
@@ -99,7 +99,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
-//import UserStatus from '../components/UserStatus.vue'
+import UserStatus from '../components/UserStatus.vue';
 
 const router = useRouter()
 
@@ -144,6 +144,7 @@ onMounted(async () => {
   background-color: #f4f6f8;
   min-height: 100vh;
   padding: 20px 40px;
+  position: relative; /* 新增，使子元素可以相对于此元素定位 */
 }
 
 .header {
@@ -256,5 +257,12 @@ onMounted(async () => {
 .intro-card p {
   color: #374151;
   line-height: 1.6;
+}
+
+.user-status-container {
+  position: absolute; /* 绝对定位 */
+  top: 3rem; /* 距离顶部 1rem */
+  right: 2rem; /* 距离右侧 1rem */
+  z-index: 100; /* 设置层级，确保显示在其他元素之上 */
 }
 </style>
