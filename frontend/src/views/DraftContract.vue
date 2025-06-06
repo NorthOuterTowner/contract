@@ -3,6 +3,7 @@
     <div v-if="loading" class="loading">加载中...</div>
     <div v-else>
       <div class="back-link">
+        <router-link to="/contractInfo" class="mr-4">← 返回合同信息管理</router-link>
         <router-link to="/DraftContractList">← 返回合同列表</router-link>
       </div>
       
