@@ -1,6 +1,11 @@
 <template>
   <div class="edit-user-container">
-    <h2>用户详细信息</h2>
+    <div class="header-actions">
+      <button @click="goBack" class="back-btn">
+        <i class="fa fa-arrow-left"></i> 返回用户列表
+      </button>
+      <h2>用户详细信息</h2>
+    </div>
     <div v-if="loading" class="loading">加载中...</div>
     <div v-else-if="user">
       <div class="form-section">
@@ -80,6 +85,11 @@ const allRoles = ref([]);
 const selectedRole = ref('');
 const isDeleteConfirmVisible = ref(false);
 const originalUser = ref(null);
+
+// 返回用户列表页面
+const goBack = () => {
+  router.push('/user');
+};
 
 // 获取所有角色数据
 const getRoles = async () => {
@@ -205,10 +215,35 @@ onMounted(async () => {
   font-family: "Helvetica Neue", Arial, sans-serif;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.back-btn {
+  background-color: #6c757d;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  margin-right: 16px;
+}
+
+.back-btn:hover {
+  background-color: #5a6268;
+}
+
+.back-btn i {
+  margin-right: 8px;
+}
+
 h2 {
   font-size: 24px;
-  margin-bottom: 20px;
-  text-align: center;
+  margin: 0;
   color: #333;
 }
 

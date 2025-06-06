@@ -57,14 +57,18 @@ let routes= [
     { path: '/PendingContractList',component: PendingContractList },
     { path: '/allocate/:contractId',component: AssignContract },
     { path: "/approve/content",component:content },
+    //用户管理子路由
     { path: '/user', component: UserManagement },
     { path: '/user/add', component: AddUser },
+    //角色管理子路由
     { path: '/user/modify/:userId', component: ModifyUser },
     { path: '/role', component: RoleManagement },
     { path: '/role/add', component: AddRole},
     { path: '/role/modify/:roleId', component: ModifyRole},
+    //功能管理子路由
     { path: '/function', component: FunctionManagement },
     { path: '/function/add', component: AddFunction },
+    //权限分配子路由
     { path: '/permission', component: PermissionManagement },
     { path: '/permission/assign/:userId', component: AssignPermissions },
     //{ path: "/query", component: QueryPage },

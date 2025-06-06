@@ -4,7 +4,7 @@
     <h2>角色管理</h2>
     <button @click="goToAddRole" class="add-role-btn">添加角色</button>
     <div class="search-bar">
-      <input v-model="query" placeholder="输入角色ID或角色名查询" />
+      <input v-model="query" placeholder="输入角色名称查询" />
       <button @click="searchRoles">查询</button>
     </div>
     <div v-if="loading" class="loading">加载中...</div>
@@ -69,7 +69,7 @@ const roles = ref([]);
 const loading = ref(false);
 const currentPage = ref(1);
 const itemsPerPage = ref(10);
-const totalPages = ref(Math.ceil(roles.value.length / itemsPerPage.value));
+const totalPages = ref(0);
 
 // 计算当前页的角色数据
 const currentPageRoles = computed(() => {
@@ -84,12 +84,14 @@ const goToAddRole = () => {
 
 const searchRoles = async () => {
   if (!query.value.trim()) {
-    return message.warning('请输入查询内容');
+    // 如果查询为空，获取全部角色
+    return getAllRoles();
   }
   
   loading.value = true;
   try {
-    const response = await axios.get(`/role/query?query=${query.value}`);
+    // 修复：使用roleName参数而不是query
+    const response = await axios.get(`/role/query?roleName=${query.value}`);
     roles.value = response.data;
     
     if (response.data.length === 0) {
