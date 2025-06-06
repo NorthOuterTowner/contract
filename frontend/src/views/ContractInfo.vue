@@ -107,7 +107,21 @@ const route = useRoute();
 const router = useRouter();
 const go = (path) => router.push(path); // 路由跳转函数
 
-// 原有数据逻辑（fetchContracts、分页等）保持不变
+// 定义状态
+const searchQuery = ref('');
+const contracts = ref([]);
+const selectedContractIds = ref([]);
+const selectAll = ref(false);
+const currentPage = ref(1);
+const totalPages = ref(1);
+
+// 定义方法
+const createNewContract = () => {
+  router.push('/DraftContract');
+}
+
+
+
 </script>
 
 <style scoped>
