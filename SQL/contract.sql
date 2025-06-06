@@ -30,6 +30,8 @@ CREATE TABLE `contract` (
   `Status` enum('待起草','会签处理中','待定稿','待审批','已签订','未通过','待签订') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '待起草',
   `CreationDate` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `LastModifiedDate` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `startDate` date DEFAULT NULL,
+  `endDate` date DEFAULT NULL,
   PRIMARY KEY (`ContractID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -40,7 +42,7 @@ CREATE TABLE `contract` (
 
 LOCK TABLES `contract` WRITE;
 /*!40000 ALTER TABLE `contract` DISABLE KEYS */;
-INSERT INTO `contract` VALUES ('AI001','Resnet结构图','图为renet的模块结构','ResNet.png','已签订','2025-06-02 10:51:47','2025-06-02 11:07:06'),('SAD001','软件系统分析与设计Logo','软件系统分析与设计的Logo图标。','SADLogo.png','待签订','2025-06-02 10:53:08','2025-06-02 10:59:19');
+INSERT INTO `contract` VALUES ('AI001','Resnet结构图','图为renet的模块结构','ResNet.png','已签订','2025-06-02 10:51:47','2025-06-06 10:48:23',NULL,NULL),('SAD001','软件系统分析与设计Logo','软件系统分析与设计的Logo图标。','SADLogo.png','待审批','2025-06-02 10:53:08','2025-06-06 10:45:20',NULL,NULL);
 /*!40000 ALTER TABLE `contract` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -61,7 +63,7 @@ CREATE TABLE `contractapproval` (
   PRIMARY KEY (`ApprovalID`),
   KEY `ContractID` (`ContractID`),
   CONSTRAINT `contractapproval_ibfk_1` FOREIGN KEY (`ContractID`) REFERENCES `contract` (`ContractID`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -70,7 +72,7 @@ CREATE TABLE `contractapproval` (
 
 LOCK TABLES `contractapproval` WRITE;
 /*!40000 ALTER TABLE `contractapproval` DISABLE KEYS */;
-INSERT INTO `contractapproval` VALUES (15,'AI001','userA','审批通过','2025-06-02 03:04:13','通过'),(16,'AI001','userA','审批通过','2025-06-02 03:05:43','通过'),(17,'AI001','userA','审批通过','2025-06-02 03:06:10','好的');
+INSERT INTO `contractapproval` VALUES (15,'AI001','userA','审批通过','2025-06-02 03:04:13','通过'),(16,'AI001','userA','审批通过','2025-06-02 03:05:43','通过'),(17,'AI001','userA','审批通过','2025-06-02 03:06:10','好的'),(18,'AI001','userA','审批通过','2025-06-06 02:48:13','通过');
 /*!40000 ALTER TABLE `contractapproval` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -204,7 +206,7 @@ CREATE TABLE `contractsigning` (
   PRIMARY KEY (`SignID`),
   KEY `ContractID` (`ContractID`),
   CONSTRAINT `contractsigning_ibfk_1` FOREIGN KEY (`ContractID`) REFERENCES `contract` (`ContractID`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -213,7 +215,7 @@ CREATE TABLE `contractsigning` (
 
 LOCK TABLES `contractsigning` WRITE;
 /*!40000 ALTER TABLE `contractsigning` DISABLE KEYS */;
-INSERT INTO `contractsigning` VALUES (2,'AI001','userA','2025-06-02 03:07:06','完成'),(3,'AI001','userA','2025-06-02 03:09:00','同意');
+INSERT INTO `contractsigning` VALUES (2,'AI001','userA','2025-06-02 03:07:06','完成'),(3,'AI001','userA','2025-06-02 03:09:00','同意'),(4,'AI001','userA','2025-06-06 02:48:23','提供');
 /*!40000 ALTER TABLE `contractsigning` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -298,6 +300,7 @@ CREATE TABLE `roles` (
 
 LOCK TABLES `roles` WRITE;
 /*!40000 ALTER TABLE `roles` DISABLE KEYS */;
+INSERT INTO `roles` VALUES (1,'管理员','用于所有权限','2025-06-06 00:41:26');
 /*!40000 ALTER TABLE `roles` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -322,7 +325,7 @@ CREATE TABLE `sessions` (
 
 LOCK TABLES `sessions` WRITE;
 /*!40000 ALTER TABLE `sessions` DISABLE KEYS */;
-INSERT INTO `sessions` VALUES ('8a1XKxsduj7SqkHSnYC_S0-hS4-AKCxO',1748992899,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2025-06-03T23:20:52.833Z\",\"secure\":false,\"httpOnly\":true,\"path\":\"/\"},\"user\":{\"id\":1,\"username\":\"admin\",\"role\":2}}');
+INSERT INTO `sessions` VALUES ('BOzLYeK-bFqbVy-tlG_ycKbEcZWLnKQa',1749265579,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2025-06-07T00:49:27.842Z\",\"secure\":false,\"httpOnly\":true,\"path\":\"/\"},\"user\":{\"id\":8,\"username\":\"admin\",\"role\":1}}');
 /*!40000 ALTER TABLE `sessions` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -343,7 +346,7 @@ CREATE TABLE `users` (
   UNIQUE KEY `username` (`username`),
   KEY `fk_users_roles` (`role`),
   CONSTRAINT `fk_users_roles` FOREIGN KEY (`role`) REFERENCES `roles` (`RoleID`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户表';
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户表';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -352,6 +355,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
+INSERT INTO `users` VALUES (8,'admin','$2b$10$HrWx.yY2ioX8Lfdr2HkcwOBZsd91xuw5eZxQ2bJCk1Ga7NbiPY4AO',1,'2025-06-06 00:49:16');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -364,4 +368,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-06-04 16:51:59
+-- Dump completed on 2025-06-06 11:10:31
