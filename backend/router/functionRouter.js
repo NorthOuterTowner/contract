@@ -16,19 +16,20 @@ router.get("/getNextId", async (req, res) => {
 
 // 添加功能
 router.post("/add", async (req, res) => {
-  const { functionId, functionName, functionDescription, parentId } = req.body;
+  const { functionId, functionName, functionDescription, parentId, functionRoute } = req.body;
   if (!functionName) {
     return res.status(400).json({ error: "功能名称不能为空" });
   }
 
   try {
     const sql =
-      "INSERT INTO Functions (FunctionID, FunctionName, FunctionDescription, ParentID) VALUES (?,?,?,?)";
+      "INSERT INTO Functions (FunctionID, FunctionName, FunctionDescription, ParentID, FunctionRoute) VALUES (?,?,?,?,?)";
     await db.async.run(sql, [
       functionId,
       functionName,
       functionDescription,
       parentId,
+      functionRoute
     ]);
     res.json({ message: "功能添加成功" });
   } catch (error) {
@@ -60,7 +61,7 @@ router.get("/query", async (req, res) => {
 
 // 修改功能
 router.put("/update", async (req, res) => {
-  const { functionId, functionName, functionCode, functionDescription, parentId } = req.body;
+  const { functionId, functionName, functionCode, functionDescription, parentId, functionRoute } = req.body;
   if (!functionId) return res.status(400).json({ error: "功能ID不能为空" });
 
   try {
@@ -82,6 +83,10 @@ router.put("/update", async (req, res) => {
         sql += ", ParentID = ?";
         params.push(parentId);
       }
+      if (functionRoute) {
+        sql += ", FunctionRoute = ?";
+        params.push(functionRoute);
+      }
     } else if (functionCode) {
       sql += "FunctionCode = ?";
       params.push(functionCode);
@@ -93,6 +98,10 @@ router.put("/update", async (req, res) => {
         sql += ", ParentID = ?";
         params.push(parentId);
       }
+      if (functionRoute) {
+        sql += ", FunctionRoute = ?";
+        params.push(functionRoute);
+      }
     } else if (functionDescription) {
       sql += "FunctionDescription = ?";
       params.push(functionDescription);
@@ -100,9 +109,20 @@ router.put("/update", async (req, res) => {
         sql += ", ParentID = ?";
         params.push(parentId);
       }
+      if (functionRoute) {
+        sql += ", FunctionRoute = ?";
+        params.push(functionRoute);
+      }
     } else if (parentId !== undefined) {
       sql += "ParentID = ?";
       params.push(parentId);
+      if (functionRoute) {
+        sql += ", FunctionRoute = ?";
+        params.push(functionRoute);
+      }
+    } else if (functionRoute) {
+      sql += "FunctionRoute = ?";
+      params.push(functionRoute);
     }
     
     sql += " WHERE FunctionID = ?";

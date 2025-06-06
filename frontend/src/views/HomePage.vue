@@ -3,12 +3,6 @@
     <!-- 顶部栏 -->
     <header class="header">
       <h1 class="logo">基于Web的合同管理系统</h1>
-      <!-- <div class="user-controls">
-        <span class="welcome">欢迎您，{{ roleName }}</span>
-        <button @click="login" class="btn">登录</button>
-        <button @click="logout" class="btn">注销</button>
-      </div> -->
-     
     </header>
 
     <!-- 功能导航菜单 -->
@@ -108,13 +102,6 @@ import axios from 'axios'
 //import UserStatus from '../components/UserStatus.vue'
 
 const router = useRouter()
-//const role = ref(localStorage.getItem('role') || 'operator')
-
-// const roleName = computed(() => {
-//   if (role.value === 'admin') return '合同管理员'
-//   if (role.value === 'operator') return '合同操作员'
-//   return '游客'
-// })
 
 let activeMenu = ref('')
 let hideTimer = null
@@ -131,15 +118,6 @@ function hideDropdown() {
 function go(path) {
   router.push(path)
 }
-
-// function logout() {
-//   localStorage.removeItem('role')
-//   router.push('/login')
-// }
-
-// function login() {
-//   router.push('/login')
-// }
 
 let cosignCount = ref(0);
 let approveCount = ref(0);
