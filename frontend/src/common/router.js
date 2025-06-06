@@ -75,18 +75,18 @@ let routes= [
     { path: "/SignContractList", component: SignContract},
     { path: "/sign/content", component: SignContent },
 
-    // 合同查询路由
-   { path: '/query', name: 'QueryContractList', component: QueryContractList },
-   { path: '/query/detail/:id', name: 'QueryContract', component: QueryContract },
+      // 合同查询路由
+    { path: '/query', name: 'QueryContractList', component: QueryContractList },
+    { path: '/query/detail/:id', name: 'QueryContract', component: QueryContract },
   
-  // 合同查询子路由
-   { path: '/query/name', component: QueryContractList },
-   { path: '/query/status', component: QueryContractList },
-   { path: '/query/advanced', component: QueryContractList },
+    // 合同查询子路由
+    { path: '/query/name', component: QueryContractList },
+    { path: '/query/status', component: QueryContractList },
+    { path: '/query/advanced', component: QueryContractList },
 
-  // 客户信息路由
-  {path: '/customerInfo', name: 'CustomerInfo', component: CustomerInfo },
-  {path: '/contractInfo', name: 'ContractInfo', component: ContractInfo }
+    // 客户信息路由
+    {path: '/customerInfo', name: 'CustomerInfo', component: CustomerInfo },
+    {path: '/contractInfo', name: 'ContractInfo', component: ContractInfo }
 
 ]
 const router = createRouter({
