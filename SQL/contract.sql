@@ -1,13 +1,13 @@
--- MySQL dump 10.13  Distrib 5.7.9, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.26, for Win64 (x86_64)
 --
--- Host: localhost    Database: contract
+-- Host: localhost    Database: hwtwo
 -- ------------------------------------------------------
--- Server version	5.7.9
+-- Server version	8.0.26
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8 */;
+/*!50503 SET NAMES utf8mb4 */;
 /*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
 /*!40103 SET TIME_ZONE='+00:00' */;
 /*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
@@ -21,17 +21,15 @@
 
 DROP TABLE IF EXISTS `contract`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `contract` (
-  `ContractID` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `Title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `Description` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `Content` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `Status` enum('待起草','会签处理中','待定稿','待审批','已签订','未通过','待签订') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '待起草',
+  `ContractID` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `Title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `Description` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `Content` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `Status` enum('待起草','会签处理中','待定稿','待审批','已签订','未通过','待签订') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '待起草',
   `CreationDate` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `LastModifiedDate` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `startDate` date DEFAULT NULL,
-  `endDate` date DEFAULT NULL,
   PRIMARY KEY (`ContractID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -42,7 +40,7 @@ CREATE TABLE `contract` (
 
 LOCK TABLES `contract` WRITE;
 /*!40000 ALTER TABLE `contract` DISABLE KEYS */;
-INSERT INTO `contract` VALUES ('AI001','Resnet结构图','图为renet的模块结构','ResNet.png','已签订','2025-06-02 10:51:47','2025-06-06 10:48:23',NULL,NULL),('SAD001','软件系统分析与设计Logo','软件系统分析与设计的Logo图标。','SADLogo.png','待审批','2025-06-02 10:53:08','2025-06-06 10:45:20',NULL,NULL);
+INSERT INTO `contract` VALUES ('AI001','Resnet结构图','图为renet的模块结构','ResNet.png','已签订','2025-06-02 10:51:47','2025-06-02 11:07:06'),('SAD001','软件系统分析与设计Logo','软件系统分析与设计的Logo图标。','SADLogo.png','待签订','2025-06-02 10:53:08','2025-06-02 10:59:19');
 /*!40000 ALTER TABLE `contract` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -52,18 +50,18 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `contractapproval`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `contractapproval` (
-  `ApprovalID` int(11) NOT NULL AUTO_INCREMENT,
-  `ContractID` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `Approver` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `ApprovalDecision` enum('审批通过','审批不通过') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '审批不通过',
+  `ApprovalID` int NOT NULL AUTO_INCREMENT,
+  `ContractID` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `Approver` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `ApprovalDecision` enum('审批通过','审批不通过') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '审批不通过',
   `ApprovalDate` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `ApprovalComments` text COLLATE utf8mb4_unicode_ci,
+  `ApprovalComments` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   PRIMARY KEY (`ApprovalID`),
   KEY `ContractID` (`ContractID`),
   CONSTRAINT `contractapproval_ibfk_1` FOREIGN KEY (`ContractID`) REFERENCES `contract` (`ContractID`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -72,7 +70,7 @@ CREATE TABLE `contractapproval` (
 
 LOCK TABLES `contractapproval` WRITE;
 /*!40000 ALTER TABLE `contractapproval` DISABLE KEYS */;
-INSERT INTO `contractapproval` VALUES (15,'AI001','userA','审批通过','2025-06-02 03:04:13','通过'),(16,'AI001','userA','审批通过','2025-06-02 03:05:43','通过'),(17,'AI001','userA','审批通过','2025-06-02 03:06:10','好的'),(18,'AI001','userA','审批通过','2025-06-06 02:48:13','通过');
+INSERT INTO `contractapproval` VALUES (15,'AI001','userA','审批通过','2025-06-02 03:04:13','通过'),(16,'AI001','userA','审批通过','2025-06-02 03:05:43','通过'),(17,'AI001','userA','审批通过','2025-06-02 03:06:10','好的');
 /*!40000 ALTER TABLE `contractapproval` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -82,13 +80,13 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `contractassignment`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `contractassignment` (
-  `AssignmentID` int(11) NOT NULL AUTO_INCREMENT,
-  `ContractID` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `SignerID` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `AssignmentID` int NOT NULL AUTO_INCREMENT,
+  `ContractID` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `SignerID` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `AssignmentDate` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `comment` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `comment` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`AssignmentID`),
   KEY `ContractID` (`ContractID`),
   CONSTRAINT `contractassignment_ibfk_1` FOREIGN KEY (`ContractID`) REFERENCES `contract` (`ContractID`) ON DELETE CASCADE
@@ -110,13 +108,13 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `contractdraft`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `contractdraft` (
-  `DraftID` int(11) NOT NULL AUTO_INCREMENT,
-  `ContractID` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `DraftTitle` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `DraftContent` longtext COLLATE utf8mb4_unicode_ci,
-  `CreatedBy` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `DraftID` int NOT NULL AUTO_INCREMENT,
+  `ContractID` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `DraftTitle` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `DraftContent` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `CreatedBy` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `CreationDate` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`DraftID`),
   KEY `ContractID` (`ContractID`),
@@ -139,14 +137,14 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `contractexecution`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `contractexecution` (
-  `ExecutionID` int(11) NOT NULL AUTO_INCREMENT,
-  `ContractID` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `ExecutionID` int NOT NULL AUTO_INCREMENT,
+  `ContractID` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `ExecutionDate` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `PartiesInvolved` text COLLATE utf8mb4_unicode_ci NOT NULL,
-  `ExecutionDetails` text COLLATE utf8mb4_unicode_ci,
-  `Status` enum('已签署','未签署') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '未签署',
+  `PartiesInvolved` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `ExecutionDetails` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `Status` enum('已签署','未签署') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '未签署',
   PRIMARY KEY (`ExecutionID`),
   KEY `ContractID` (`ContractID`),
   CONSTRAINT `contractexecution_ibfk_1` FOREIGN KEY (`ContractID`) REFERENCES `contract` (`ContractID`) ON DELETE CASCADE
@@ -168,12 +166,12 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `contractfinalization`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `contractfinalization` (
-  `FinalizationID` int(11) NOT NULL AUTO_INCREMENT,
-  `ContractID` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `FinalVersionContent` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
-  `ApprovedBy` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `FinalizationID` int NOT NULL AUTO_INCREMENT,
+  `ContractID` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `FinalVersionContent` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `ApprovedBy` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `ApprovalDate` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`FinalizationID`),
   KEY `ContractID` (`ContractID`),
@@ -196,17 +194,17 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `contractsigning`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `contractsigning` (
-  `SignID` int(11) NOT NULL AUTO_INCREMENT,
-  `ContractID` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `SignerID` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `SignID` int NOT NULL AUTO_INCREMENT,
+  `ContractID` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `SignerID` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `SignDate` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `comment` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `comment` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`SignID`),
   KEY `ContractID` (`ContractID`),
   CONSTRAINT `contractsigning_ibfk_1` FOREIGN KEY (`ContractID`) REFERENCES `contract` (`ContractID`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -215,8 +213,38 @@ CREATE TABLE `contractsigning` (
 
 LOCK TABLES `contractsigning` WRITE;
 /*!40000 ALTER TABLE `contractsigning` DISABLE KEYS */;
-INSERT INTO `contractsigning` VALUES (2,'AI001','userA','2025-06-02 03:07:06','完成'),(3,'AI001','userA','2025-06-02 03:09:00','同意'),(4,'AI001','userA','2025-06-06 02:48:23','提供');
+INSERT INTO `contractsigning` VALUES (2,'AI001','userA','2025-06-02 03:07:06','完成'),(3,'AI001','userA','2025-06-02 03:09:00','同意');
 /*!40000 ALTER TABLE `contractsigning` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `customer`
+--
+
+DROP TABLE IF EXISTS `customer`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `customer` (
+  `cus_id` int NOT NULL AUTO_INCREMENT COMMENT '客户编号',
+  `cus_name` varchar(50) NOT NULL COMMENT '客户姓名',
+  `address` text NOT NULL COMMENT '地址',
+  `phone` varchar(50) NOT NULL COMMENT '电话号码',
+  `email` varchar(100) DEFAULT NULL COMMENT '邮箱',
+  `bankname` varchar(50) DEFAULT NULL COMMENT '银行名称',
+  `bankcard` varchar(50) NOT NULL COMMENT '银行卡',
+  `others` text COMMENT '备注',
+  PRIMARY KEY (`cus_id`),
+  UNIQUE KEY `phone` (`phone`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='客户信息表';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `customer`
+--
+
+LOCK TABLES `customer` WRITE;
+/*!40000 ALTER TABLE `customer` DISABLE KEYS */;
+/*!40000 ALTER TABLE `customer` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -225,12 +253,12 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `functions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `functions` (
-  `FunctionID` int(11) NOT NULL AUTO_INCREMENT,
-  `FunctionName` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `FunctionDescription` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `ParentID` int(11) DEFAULT NULL,
+  `FunctionID` int NOT NULL AUTO_INCREMENT,
+  `FunctionName` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `FunctionDescription` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ParentID` int DEFAULT NULL,
   `CreatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`FunctionID`),
   UNIQUE KEY `FunctionName` (`FunctionName`),
@@ -255,10 +283,10 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `rolepermissions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `rolepermissions` (
-  `RoleID` int(11) NOT NULL,
-  `FunctionID` int(11) NOT NULL,
+  `RoleID` int NOT NULL,
+  `FunctionID` int NOT NULL,
   `CreatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`RoleID`,`FunctionID`),
   KEY `FunctionID` (`FunctionID`),
@@ -283,15 +311,15 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `roles`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `roles` (
-  `RoleID` int(11) NOT NULL AUTO_INCREMENT,
-  `RoleName` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `RoleDescription` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `RoleID` int NOT NULL AUTO_INCREMENT,
+  `RoleName` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `RoleDescription` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `CreatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`RoleID`),
   UNIQUE KEY `RoleName` (`RoleName`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -300,7 +328,7 @@ CREATE TABLE `roles` (
 
 LOCK TABLES `roles` WRITE;
 /*!40000 ALTER TABLE `roles` DISABLE KEYS */;
-INSERT INTO `roles` VALUES (1,'管理员','用于所有权限','2025-06-06 00:41:26');
+INSERT INTO `roles` VALUES (1,'CUSTOMER','hh','2025-06-05 06:48:20'),(2,'guanliyuan','hh','2025-06-05 03:58:23');
 /*!40000 ALTER TABLE `roles` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -310,10 +338,10 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `sessions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `sessions` (
   `session_id` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
-  `expires` int(11) unsigned NOT NULL,
+  `expires` int unsigned NOT NULL,
   `data` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin,
   PRIMARY KEY (`session_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -325,7 +353,7 @@ CREATE TABLE `sessions` (
 
 LOCK TABLES `sessions` WRITE;
 /*!40000 ALTER TABLE `sessions` DISABLE KEYS */;
-INSERT INTO `sessions` VALUES ('BOzLYeK-bFqbVy-tlG_ycKbEcZWLnKQa',1749265579,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2025-06-07T00:49:27.842Z\",\"secure\":false,\"httpOnly\":true,\"path\":\"/\"},\"user\":{\"id\":8,\"username\":\"admin\",\"role\":1}}');
+INSERT INTO `sessions` VALUES ('l2uL5oX3rr86OQ6VmzbaI6nuSOJOWwlG',1749266909,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2025-06-07T03:16:16.126Z\",\"secure\":false,\"httpOnly\":true,\"path\":\"/\"},\"user\":{\"id\":2,\"username\":\"admin\",\"role\":2}}');
 /*!40000 ALTER TABLE `sessions` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -335,18 +363,18 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `users`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `users` (
-  `user_id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '用户ID',
-  `username` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '用户账号',
-  `password_hash` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '密码',
-  `role` int(11) NOT NULL COMMENT '角色ID，关联roles表的RoleID',
+  `user_id` int unsigned NOT NULL AUTO_INCREMENT COMMENT '用户ID',
+  `username` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '用户账号',
+  `password_hash` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '密码',
+  `role` int NOT NULL COMMENT '角色ID，关联roles表的RoleID',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   PRIMARY KEY (`user_id`),
   UNIQUE KEY `username` (`username`),
   KEY `fk_users_roles` (`role`),
   CONSTRAINT `fk_users_roles` FOREIGN KEY (`role`) REFERENCES `roles` (`RoleID`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户表';
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户表';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -355,7 +383,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (8,'admin','$2b$10$HrWx.yY2ioX8Lfdr2HkcwOBZsd91xuw5eZxQ2bJCk1Ga7NbiPY4AO',1,'2025-06-06 00:49:16');
+INSERT INTO `users` VALUES (2,'admin','$2b$10$KBVPfOUjg0E9W09priBBcOlmVQYGSvVEWHwDE8PpT4dggD8qc5ZVC',2,'2025-06-05 03:59:50'),(3,'xixi','$2b$10$p68ihCQkSgTjs1CwF9SpVOO639UATn/mP6eCPerEcH3.Su0FYvuES',2,'2025-06-05 04:58:02'),(4,'haha','$2b$10$K1BDFzw9m0jgAIhQCoaEgumyX.ShvJRDRdsqBKuMR0cdyT0mOn3p.',2,'2025-06-05 05:24:28'),(5,'lq','$2b$10$NqLQdRk66kU2bLxxJvXl3.DLUeKhstNyUqz8ck8FcjPvOgTanSlpG',2,'2025-06-05 06:16:14'),(6,'qq','$2b$10$xATRu0MfkJKjXW.TwpaP/eP27orumgGCsaPb6HZPjEKUtgxECsD7q',2,'2025-06-05 07:10:50'),(8,'ww','$2b$10$Ip/kKGBLBRpPNP2jVWqCvetHEh/LYek6y/ojroiXSm56gOlB.DvUe',1,'2025-06-05 07:11:18'),(10,'admin1','$2b$10$2f2sAKZJNMPkzWriSd9aDelNqDDtaKbL1q30lHDdUUjRVXOjSOJVq',1,'2025-06-05 07:30:27');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -368,4 +396,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-06-06 11:10:31
+-- Dump completed on 2025-06-06 11:44:08
