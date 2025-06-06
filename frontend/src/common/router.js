@@ -124,7 +124,7 @@ router.beforeEach(async (to, from, next) => {
   
  // 未登录且访问非公开路由，重定向到登录页
   if (!isPublic && !authStore.isLoggedIn) {
-    next('/login');
+    next('/login');//未登陆时跳转登录页
   } else {
     next();
   }
