@@ -17,8 +17,6 @@ CREATE TABLE `contract` (
   `Status` enum('待起草','会签处理中','待定稿','待审批','已签订','未通过','待签订') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '待起草',
   `CreationDate` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `LastModifiedDate` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `startDate` date,
-  `endDate` date,
   PRIMARY KEY (`ContractID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
