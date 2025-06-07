@@ -1,39 +1,21 @@
 <template>
   <div class="customer-info-page">
     <!-- 左侧导航栏 -->
-    <aside class="left-sidebar">
-      <div class="sidebar-header">
-        <h3 class="sidebar-title">基础数据管理</h3>
-      </div>
-      
-      <div class="nav-group">
-        <div 
-          class="nav-item" 
-          @click="go('/contractInfo')"
-          :class="{ active: $route.path === '/contractInfo' }"
-        >
-          <span class="nav-icon">📄</span>
-          合同信息管理
-        </div>
-        <div 
-          class="nav-item" 
-          @click="go('/customerInfo')"
-          :class="{ active: $route.path === '/customerInfo' }"
-        >
-          <span class="nav-icon">👥</span>
-          客户信息管理
-        </div>
-
-        <div 
-          class="nav-item" 
-          @click="go('/HomePage')"
-          :class="{ active: $route.path === '/HomePage' }"
-        >
-          <span class="nav-icon">🏠</span>
-          返回主页
-        </div>
-      </div>
-    </aside>
+     <div class="sidebar">
+    <div class="logo">基础数据管理</div>
+    <ul class="menu">
+      <!-- 合同处理相关菜单 -->
+      <li 
+        v-for="item in processMenuItems" 
+        :key="item.path"
+        :class="{ active: $route.path === item.path }"
+        @click="navigateTo(item.path)"
+      >
+        {{ item.title }}
+      </li>
+    </ul>
+  </div>
+  
 
     <!-- 右侧主内容区域 -->
     <main class="main-content">
@@ -190,6 +172,21 @@ import { useRouter } from 'vue-router'
 
 const router = useRouter()
 const go = (path) => router.push(path)
+
+
+
+// 导航栏菜单数据
+const processMenuItems = ref([
+  { title: '合同信息管理', path: '/ContractInfo' },
+  { title: '客户信息管理', path: '/CustomerInfo' },
+  { title: '返回主页', path: '/HomePage'}
+]);
+
+// 导航跳转方法
+const navigateTo = (path) => {
+  router.push(path);
+};
+
 
 // 状态管理
 const customers = ref([])
@@ -421,6 +418,58 @@ th:first-child, td:first-child {
 
 
 /* 左侧导航栏样式（与合同管理完全一致） */
+
+
+
+
+.sidebar {
+  width: 200px;
+  height: 100vh;
+  background-color: #2c3e50;
+  color: white;
+  position: fixed;
+  left: 0;
+  top: 0;
+}
+
+.logo {
+  padding: 20px;
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.menu li {
+  padding: 15px 20px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.menu li:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.menu li.active {
+  background-color: rgb(85, 117, 244);
+  color: white;
+}
+
+.menu li i {
+  font-size: 14px;
+}
+
+
+
 .left-sidebar {
   position: fixed;
   left: 0;
@@ -441,25 +490,6 @@ th:first-child, td:first-child {
   border-left: 4px solid white;
 }
 
-.nav-item {
-  padding: 10px 20px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  border-radius: 4px;
-  transition: background-color 0.2s;
-}
-
-.nav-item:hover,
-.nav-item.active {
-  background-color: #007bff;
-  color: white;
-}
-
-.nav-icon {
-  font-size: 1.1em;
-}
 
 /* 右侧内容区样式（复用合同管理的全局样式） */
 .main-content {
