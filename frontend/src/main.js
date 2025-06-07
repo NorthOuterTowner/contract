@@ -1,29 +1,38 @@
 import { createApp } from 'vue'
 import './style.css'
+import { createPinia } from 'pinia' // Keep this import
 import App from './App.vue'
-import {router} from './common/router' // 确保你的路由文件路径是 common/router.js
+import {router} from './common/router' 
 import {createDiscreteApi} from 'naive-ui'
 import axios from 'axios'
-import naive from 'naive-ui' // Naive UI 基础库
+import naive from 'naive-ui'
+import { useAuthStore } from './common/auth' // Keep this import
 
+
+const pinia = createPinia(); // Keep this line
 //先创建app实例
 const app = createApp(App);
 
 //设置axios默认配置
 axios.defaults.baseURL = "http://localhost:3000";
-//讲axios挂载到app的全局属性上
-app.config.globalProperties.$axios = axios;
+//axios挂载到app的全局属性上
 axios.defaults.withCredentials = true;
-
+app.config.globalProperties.$axios = axios;
 
 const {message,notification,dialog} = createDiscreteApi(["message","dialog","notification"]);
 
-
 app.provide("axios",axios);
-app.provide("message",message); // message 提示将在组件中通过 inject('message') 使用
-app.provide("dialog",dialog); // dialog 提示将在组件中通过 inject('dialog') 使用
+app.provide("message",message); 
+app.provide("dialog",dialog); 
 
+app.use(pinia); // Keep this line (use Pinia)
 app.use(router);
 app.use(naive); // 全局注册 Naive UI 组件
 
-app.mount('#app');
+// Combine the authentication initialization logic here
+// The app should only mount AFTER authentication is initialized
+const authStore = useAuthStore(pinia); // Initialize auth store
+authStore.initAuth().then(() => {
+  // Authentication state is initialized, then mount the application
+  app.mount('#app'); // Mount the app
+});

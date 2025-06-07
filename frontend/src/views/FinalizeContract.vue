@@ -1,5 +1,5 @@
 <template>
-  <div class="contract-draft">
+  <div class="contract-finalize">
     <div v-if="loading" class="loading">加载中...</div>
     <div v-else>
       <div class="back-link">
@@ -8,75 +8,65 @@
       
       <h2>合同定稿</h2>
       
-      <div class="contract-info" v-if="contract.contractID">
-      <div class="info-header">
+      <div class="contract-info" v-if="contract.ContractID">
         <h3>合同基本信息</h3>
-        <button class="download-btn" @click="downloadExistingVersion">
-          下载已有版本
-        </button>
-      </div>
         <div class="info-item">
           <label>合同名称:</label>
-          <span>{{ contract.title }}</span>
+          <span>{{ contract.Title }}</span>
         </div>
         <div class="info-item">
           <label>合同编号:</label>
-          <span>{{ contract.contractID }}</span>
+          <span>{{ contract.ContractID }}</span>
         </div>
         <div class="info-item">
           <label>创建日期:</label>
-          <span>{{ formatDate(contract.creationDate) }}</span>
+          <span>{{ formatDate(contract.CreationDate) }}</span>
         </div>
         <div class="info-item">
           <label>当前状态:</label>
-          <span>{{ contract.status }}</span>
+          <span>{{ contract.Status }}</span>
+        </div>
+        <div class="info-item" v-if="contract.FinalizedVersion">
+          <label>定稿版本:</label>
+          <span>{{ contract.FinalizedVersion }}</span>
+        </div>
+        <div class="info-item" v-if="contract.FinalizedDate">
+          <label>定稿日期:</label>
+          <span>{{ formatDate(contract.FinalizedDate) }}</span>
         </div>
       </div>
       
-      <!-- 会签意见部分 -->
-      <div class="signing-opinions">
-        <h3>会签意见</h3>
-        <div class="opinion-list">
-          <div class="opinion-item" v-for="(opinion, index) in signingOpinions" :key="index">
-            <div class="opinion-header">
-              <span class="opinion-party">{{ opinion.party }}</span>
-              <span class="opinion-date">{{ formatDate(opinion.date) }}</span>
-            </div>
-            <div class="opinion-content">
-              <textarea 
-                readonly
-                :value="opinion.content"
-                rows="3"
-                class="opinion-textarea"
-              ></textarea>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="draft-form">
+      <div class="finalize-content">
         <h3>定稿内容</h3>
-        <div class="file-upload-section">
-          <label for="file-upload" class="upload-btn">
-            上传终稿版本
-            <input 
-              id="file-upload" 
-              type="file" 
-              @change="handleFileUpload" 
-              accept=".doc,.docx,.pdf"
-              style="display: none;"
-            >
-          </label>
-          <span class="file-name" v-if="uploadedFile">
-            {{ uploadedFile.name }}
-          </span>
+        <div class="content-display" v-if="finalizedContent">
+          <pre>{{ finalizedContent }}</pre>
+        </div>
+        <div v-else class="no-content">
+          暂无定稿内容
         </div>
         
-        <div class="submit-section">
-          <button type="button" class="complete-btn" @click="completeFinalize">
-            完成
+        <div class="download-section">
+          <button 
+            type="button" 
+            class="download-btn"
+            @click="onDownload"
+            :disabled="!contract.Content"
+          >
+            下载定稿文件
           </button>
+          <span class="file-name">{{ contract.Content || '无定稿文件' }}</span>
         </div>
+      </div>
+      
+      <div class="action-buttons" v-if="contract.Status !== '已定稿'">
+        <button 
+          type="button" 
+          class="confirm-btn"
+          @click="confirmFinalize"
+          :disabled="submitting"
+        >
+          {{ submitting ? '处理中...' : '确认定稿' }}
+        </button>
       </div>
     </div>
   </div>
@@ -84,113 +74,138 @@
 
 <script>
 import { ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
+import axios from 'axios';
+import { inject } from 'vue';
 
 export default {
   setup() {
     const router = useRouter();
+    const route = useRoute();
+    const message = inject("message");
     
     const loading = ref(true);
-    const uploadedFile = ref(null);
+    const submitting = ref(false);
     
     const contract = ref({
-      contractID: '',
-      title: '',
-      status: '待定稿',
-      creationDate: new Date()
+      ContractID: '',
+      Title: '',
+      Status: '',
+      CreationDate: '',
+      Content: '',
+      FinalizedVersion: '',
+      FinalizedDate: ''
     });
     
-    // 会签意见数据
-    const signingOpinions = ref([
-      {
-        party: '技术部 - 张经理',
-        content: '经技术评估，合同中的服务器配置满足我司未来三年的业务发展需求，建议通过。',
-        date: new Date(Date.now() - 86400000) // 昨天
-      },
-      {
-        party: '财务部 - 李总监',
-        content: '合同金额在预算范围内，付款条款合理，建议财务部会签通过。但建议将付款周期从30天调整为45天。',
-        date: new Date(Date.now() - 172800000) // 前天
-      }
-    ]);
-    
+    const finalizedContent = ref('');
+
     const fetchContractInfo = async () => {
       try {
-        contract.value = {
-          contractID: 'CON' + Math.floor(Math.random() * 10000).toString().padStart(4, '0'),
-          title: '年度服务器采购合同',
-          status: '待定稿',
-          creationDate: new Date()
-        };
-        loading.value = false;
-      } catch (error) {
-        console.error('获取合同信息失败:', error);
-        loading.value = false;
-      }
-    };
-    
-    const handleFileUpload = (event) => {
-      const file = event.target.files[0];
-      if (file) {
-        // 检查文件类型
-        const validTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-        if (!validTypes.includes(file.type)) {
-          alert('请上传PDF或Word文档');
-          return;
-        }
-        
-        // 检查文件大小 (5MB以内)
-        if (file.size > 5 * 1024 * 1024) {
-          alert('文件大小不能超过5MB');
-          return;
-        }
-        
-        uploadedFile.value = file;
-      }
-    };
-    
-    const completeFinalize = () => {
-      if (!uploadedFile.value) {
-        alert('请先上传合同文件');
-        return;
-      }
-      
-      // 这里可以添加文件上传逻辑
-      alert('合同定稿完成，文件已上传: ' + uploadedFile.value.name);
-      router.push('/FinalizeContractList');
-    };
-    
-    const formatDate = (date) => {
-      return new Date(date).toLocaleString();
-    };
+        const res = await axios.get('/finalize/get', {
+          params: { id: route.params.contractId }
+        });
 
-    const downloadExistingVersion = () => {
-      // 这里添加下载逻辑
-      alert('开始下载已有版本...');
-      // 模拟下载过程
-      setTimeout(() => {
-        alert('下载完成');
-      }, 1000);
+        if (res.data.code === 200) {
+          contract.value = res.data.data;
+          // If content is in a separate field in the response
+          if (res.data.data.content) {
+            finalizedContent.value = res.data.data.content;
+          }
+        } else {
+          console.warn(res.data.msg);
+          message.error("获取定稿信息失败");
+          router.push('/FinalizeContractList');
+        }
+      } catch (error) {
+        console.error('获取定稿信息失败:', error);
+        message.error("获取定稿信息失败");
+        router.push('/FinalizeContractList');
+      } finally {
+        loading.value = false;
+      }
+    };
+    
+    const onDownload = async () => {
+      try {
+        if (!contract.value?.Content) {
+          message?.error("没有可下载的文件");
+          return;
+        }
+
+        const response = await axios.get("/download", {
+          params: { filename: contract.value.Content },
+          responseType: 'blob'
+        });
+
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        
+        const contentDisposition = response.headers['content-disposition'];
+        let filename = contract.value.Content;
+        if (contentDisposition) {
+          const filenameMatch = contentDisposition.match(/filename="?(.+?)"?$/);
+          if (filenameMatch && filenameMatch[1]) {
+            filename = filenameMatch[1];
+          }
+        }
+        
+        link.setAttribute('download', filename);
+        document.body.appendChild(link);
+        link.click();
+        
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error('下载失败:', error);
+        message?.error("文件下载失败");
+      }
+    };
+    
+    const confirmFinalize = async () => {
+      submitting.value = true;
+      
+      try {
+        const res = await axios.post('/finalize/confirm', {
+          contractId: contract.value.ContractID
+        });
+
+        if (res.data.code === 200) {
+          message.info("合同定稿成功");
+          await fetchContractInfo();
+        } else {
+          message.error(res.data.msg || '合同定稿失败');
+        }
+      } catch (error) {
+        console.error('合同定稿失败:', error);
+        message.error("合同定稿失败");
+      } finally {
+        submitting.value = false;
+      }
+    };
+    
+    const formatDate = (dateString) => {
+      if (!dateString) return '';
+      return new Date(dateString).toLocaleString();
     };
     
     fetchContractInfo();
     
     return {
       loading,
+      submitting,
       contract,
-      signingOpinions,
-      uploadedFile,
-      handleFileUpload,
-      completeFinalize,
-      formatDate,
-      downloadExistingVersion
+      finalizedContent,
+      onDownload,
+      confirmFinalize,
+      formatDate
     };
   }
 };
 </script>
 
 <style scoped>
-.contract-draft {
+.contract-finalize {
   max-width: 900px;
   margin: 20px auto;
   padding: 20px;
@@ -215,7 +230,7 @@ h2 {
   border-bottom: 1px solid #eee;
 }
 
-.contract-info, .draft-form, .signing-opinions {
+.contract-info, .finalize-content {
   background-color: #f9f9f9;
   padding: 20px;
   border-radius: 6px;
@@ -235,68 +250,43 @@ h3 {
 
 .info-item label {
   font-weight: bold;
-  min-width: 100px;
+  min-width: 120px;
   color: #666;
 }
 
-/* 会签意见样式 */
-.signing-opinions {
-  background-color: #f0f7ff;
-}
-
-.opinion-list {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.opinion-item {
-  background-color: white;
-  border-radius: 4px;
-  padding: 15px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.opinion-header {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 10px;
-  font-size: 14px;
-}
-
-.opinion-party {
-  font-weight: bold;
-  color: #333;
-}
-
-.opinion-date {
-  color: #666;
-}
-
-.opinion-textarea {
-  width: 100%;
-  padding: 10px;
+.content-display {
+  background-color: #fff;
   border: 1px solid #ddd;
   border-radius: 4px;
-  background-color: #fafafa;
-  resize: none;
-  color: #333;
-  font-size: 14px;
+  padding: 15px;
+  margin-bottom: 20px;
+  max-height: 400px;
+  overflow-y: auto;
 }
 
-/* 文件上传区域 */
-.file-upload-section {
-  display: flex;
-  align-items: center;
-  gap: 15px;
+.content-display pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  margin: 0;
+  font-family: inherit;
+  line-height: 1.5;
+}
+
+.no-content {
+  color: #999;
+  font-style: italic;
+  padding: 15px;
+  text-align: center;
+  background-color: #fff;
+  border: 1px dashed #ddd;
+  border-radius: 4px;
   margin-bottom: 20px;
 }
 
-.info-header {
+.download-section {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
+  gap: 10px;
 }
 
 .download-btn {
@@ -307,51 +297,46 @@ h3 {
   border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.3s;
-  font-size: 14px;
 }
 
 .download-btn:hover {
   background-color: #66b1ff;
 }
 
-.upload-btn {
-  padding: 10px 20px;
-  background-color: #409eff;
-  color: white;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-  display: inline-block;
-}
-
-.upload-btn:hover {
-  background-color: #66b1ff;
+.download-btn:disabled {
+  background-color: #c0c4cc;
+  cursor: not-allowed;
 }
 
 .file-name {
-  color: #333;
-  font-size: 14px;
+  color: #606266;
+  font-size: 13px;
 }
 
-/* 完成按钮区域 */
-.submit-section {
+.action-buttons {
   display: flex;
   justify-content: flex-end;
+  margin-top: 25px;
 }
 
-.complete-btn {
-  padding: 10px 30px;
+.confirm-btn {
+  padding: 10px 20px;
   background-color: #67c23a;
   color: white;
   border: none;
   border-radius: 4px;
+  font-size: 14px;
   cursor: pointer;
-  transition: background-color 0.3s;
-  font-size: 16px;
+  transition: all 0.3s;
 }
 
-.complete-btn:hover {
+.confirm-btn:hover {
   background-color: #85ce61;
+}
+
+.confirm-btn:disabled {
+  background-color: #c0c4cc;
+  cursor: not-allowed;
 }
 
 .loading {

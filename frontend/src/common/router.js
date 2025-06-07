@@ -1,6 +1,7 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
 
-// 导入所有你现有队友的视图组件 (保持不变)
+//import test from '../views/test.vue';
+import { useAuthStore } from './auth'; 
 import FirstPage from '../views/FirstPage.vue';
 import Login from '../views/Login.vue';
 import Register from '../views/Register.vue';
@@ -31,20 +32,21 @@ import AssignPermissions from '../views/AssignPermission.vue';
 import SignContract from '../views/SignContract.vue';
 import SignContent from '../views/signContent.vue';
 
-// 导入你负责的页面组件 (Naive UI 版本)
+// 统计和查询 (Naive UI 版本)
 import QueryContractList from '../views/QueryContractList.vue'; 
 import QueryContract from '../views/QueryContract.vue';       
 import ContractStatisticsPage from '../views/ContractStatisticsPage.vue'; 
 
-// 导入你模块的专用布局组件
+// 统计和查询——布局组件
 import ContractManagementLayout from '../layouts/ContractManagementLayout.vue'; 
 
 let routes = [
-    // 队友的现有路由 (保持不变)
     { path:'/',redirect:'/FirstPage'},
     { path:'/FirstPage',component : FirstPage},
     { path:'/login',component:Login},
     { path:'/register',component:Register},
+
+    //{ path: '/', redirect: '/HomePage'},
     { path: '/HomePage', component :HomePage},
     { path: "/approveList", component:approveList },
     { path: '/approval', component:approval },
@@ -71,18 +73,17 @@ let routes = [
     { path: "/SignContractList", component: SignContract},
     { path: "/sign/content", component: SignContent },
 
-    // 【关键修改】这里务必确认，旧的 /query 路由已被移除。
-    // 如果你的文件中有以下内容，请务必删除或注释掉它们：
+    // 查询和统计——移除旧的 /query 路由。
     // { path: '/query', name: 'QueryContractList', component: QueryContractList },
     // { path: '/query/detail/:id', name: 'QueryContract', component: QueryContract },
     // { path: '/query/name', component: QueryContractList },
     // { path: '/query/status', component: QueryContractList },
     // { path: '/query/advanced', component: QueryContractList }
 
-    // 【关键修改】添加你负责的模块的路由 (新的顶级路由和子路由)
+    // 查询和统计——新的顶级路由和子路由)
     { 
-        path: '/my-contract-module', // 你的模块的顶级路径
-        component: ContractManagementLayout, // 使用你的模块专用布局
+        path: '/my-contract-module', // 顶级路径
+        component: ContractManagementLayout, // 专用布局
         children: [
             { 
                 path: 'query', // 合同查询列表页 (完整路径: /my-contract-module/query)
@@ -99,7 +100,7 @@ let routes = [
                 name: 'MyModuleContractStatistics',
                 component: ContractStatisticsPage, 
             },
-            // 如果你的合同查询还有其他子路由（如按名称、按状态、高级查询），也添加到这里并更新路径
+            // 其他子路由（如按名称、按状态、高级查询），也添加到这里并更新路径。目前暂时弃用
             { path: 'query/name', component: QueryContractList }, 
             { path: 'query/status', component: QueryContractList },
             { path: 'query/advanced', component: QueryContractList }
@@ -112,4 +113,47 @@ const router = createRouter({
     routes
 });
 
+// 前置路由守卫
+// router.beforeEach(async (to, from, next) => {
+//   const authStore = useAuthStore()
+  
+//   // 如果还没有初始化认证状态，则先初始化
+//   if (authStore.isLoggedIn === null) {
+//     await authStore.initAuth()
+//   }
+
+//   // 需要登录的路由保护
+//   const requiresAuth = !['/login', '/register', '/FirstPage'].includes(to.path)
+  
+//   if (requiresAuth && !authStore.isLoggedIn) {
+//     next('/login')
+//   } else {
+//     next()
+//   }
+// });
+
+// router.js（修改后）
+router.beforeEach(async (to, from, next) => {
+  const authStore = useAuthStore();
+  // 初始化认证状态（确保获取最新的登录状态）
+  await authStore.initAuth();
+
+  // 公开路由列表（无需登录）
+  const publicRoutes = ['/login', '/register', '/FirstPage'];
+  const isPublic = publicRoutes.includes(to.path);
+  
+  // 判断路由是否需要认证
+  const requiresAuth = to.meta.requiresAuth;
+  
+ // 未登录且访问非公开路由，重定向到登录页
+  if (!isPublic && !authStore.isLoggedIn) {
+    next('/login');
+  } else {
+    next();
+  }
+});
+
+
 export { router, routes };
+
+
