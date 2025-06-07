@@ -6,6 +6,8 @@ import FirstPage from '../views/FirstPage.vue';
 import Login from '../views/Login.vue';
 import Register from '../views/Register.vue';
 import HomePage from '../views/HomePage.vue';
+
+// 导入其他页面组件
 import approveList from '../views/approveList.vue';
 import approval from '../views/approval.vue';
 import DraftContract from '../views/DraftContract.vue';
@@ -17,9 +19,6 @@ import FinalizeContractList from '../views/FinalizeContractList.vue';
 import content from '../views/content.vue';
 import PendingContractList from '../views/PendingContractList.vue';
 import AssignContract from '../views/AssignContract.vue';
-//import QueryPage from '../views/QueryPage.vue';
-import QueryContractList from '../views/QueryContractList.vue';
-import QueryContract from '../views/QueryContract.vue';
 import UserManagement from '../views/UserManagement.vue';
 import AddUser from '../views/AddUser.vue';
 import ModifyUser from '../views/ModifyUser.vue';
@@ -32,13 +31,20 @@ import PermissionManagement from '../views/PermissionManagement.vue';
 import AssignPermissions from '../views/AssignPermission.vue'; 
 import SignContract from '../views/SignContract.vue';
 import SignContent from '../views/signContent.vue';
+
 import CustomerInfo from '../views/CustomerInfo.vue';
 import ContractInfo from '../views/ContractInfo.vue';
 
-let routes= [
+// 统计和查询 (Naive UI 版本)
+import QueryContractList from '../views/QueryContractList.vue'; 
+import QueryContract from '../views/QueryContract.vue';       
+import ContractStatisticsPage from '../views/ContractStatisticsPage.vue'; 
 
-  
-   { path:'/',redirect:'/FirstPage'},
+// 统计和查询——布局组件
+import ContractManagementLayout from '../layouts/ContractManagementLayout.vue'; 
+
+let routes = [
+    { path:'/',redirect:'/FirstPage'},
     { path:'/FirstPage',component : FirstPage},
     { path:'/login',component:Login},
     { path:'/register',component:Register},
@@ -71,18 +77,44 @@ let routes= [
     //权限分配子路由
     { path: '/permission', component: PermissionManagement },
     { path: '/permission/assign/:userId', component: AssignPermissions },
-    //{ path: "/query", component: QueryPage },
     { path: "/SignContractList", component: SignContract},
     { path: "/sign/content", component: SignContent },
 
-      // 合同查询路由
-    { path: '/query', name: 'QueryContractList', component: QueryContractList },
-    { path: '/query/detail/:id', name: 'QueryContract', component: QueryContract },
-  
-    // 合同查询子路由
-    { path: '/query/name', component: QueryContractList },
-    { path: '/query/status', component: QueryContractList },
-    { path: '/query/advanced', component: QueryContractList },
+    // 查询和统计——移除旧的 /query 路由。
+    // { path: '/query', name: 'QueryContractList', component: QueryContractList },
+    // { path: '/query/detail/:id', name: 'QueryContract', component: QueryContract },
+    // { path: '/query/name', component: QueryContractList },
+    // { path: '/query/status', component: QueryContractList },
+    // { path: '/query/advanced', component: QueryContractList }
+
+    // 查询和统计——新的顶级路由和子路由)
+    { 
+        path: '/my-contract-module', // 顶级路径
+        component: ContractManagementLayout, // 专用布局
+        children: [
+            { 
+                path: 'query', // 合同查询列表页 (完整路径: /my-contract-module/query)
+                name: 'MyModuleContractQueryList', 
+                component: QueryContractList, 
+            },
+            { 
+                path: 'query/detail/:id', // 合同查询详情页 (完整路径: /my-contract-module/query/detail/:id)
+                name: 'MyModuleContractQueryDetail', 
+                component: QueryContract, 
+            },
+            {
+                path: 'statistics', // 合同统计页 (完整路径: /my-contract-module/statistics)
+                name: 'MyModuleContractStatistics',
+                component: ContractStatisticsPage, 
+            },
+            // 其他子路由（如按名称、按状态、高级查询），也添加到这里并更新路径。目前暂时弃用
+            { path: 'query/name', component: QueryContractList }, 
+            { path: 'query/status', component: QueryContractList },
+            { path: 'query/advanced', component: QueryContractList }
+        ]
+    }
+];
+
 
     // 客户信息路由
     {path: '/customerInfo', name: 'CustomerInfo', component: CustomerInfo },
@@ -90,8 +122,8 @@ let routes= [
 
 ]
 const router = createRouter({
-  history: createWebHashHistory(),
-  routes
+    history: createWebHashHistory(), 
+    routes
 });
 
 router.beforeEach(async (to, from, next) => {
@@ -149,4 +181,5 @@ const getFunctionByRoute = async (route) => {
 };
 
 export { router, routes };
+
 
