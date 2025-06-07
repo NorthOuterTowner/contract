@@ -2,7 +2,8 @@
   <div class="user-status">
     <span v-if="authStore.isLoggedIn" class="status-row">
       <span class="welcome-text">欢迎，</span>
-      <span class="username">{{ authStore.user.username }}</span>
+      <!-- 显示角色名和用户名 -->
+      <span class="username">{{ getRoleName(authStore.user.role) }} {{ authStore.user.username }}</span>
       <span class="separator">|</span>
       <button @click="logout" class="logout-btn">注销</button>
     </span>
@@ -15,9 +16,28 @@
 <script setup>
 import { useAuthStore } from '../common/auth';
 import { useRouter } from 'vue-router';
+import axios from 'axios';
+import { ref, onMounted } from 'vue';
 
 const authStore = useAuthStore();
 const router = useRouter();
+const roles = ref([]);
+
+// 获取所有角色信息
+const getAllRoles = async () => {
+  try {
+    const response = await axios.get('/role/all');
+    roles.value = response.data;
+  } catch (error) {
+    console.error('获取角色列表失败！', error);
+  }
+};
+
+// 根据角色 ID 获取角色名称
+const getRoleName = (roleId) => {
+  const role = roles.value.find(role => role.RoleID === roleId);
+  return role ? role.RoleName : '未知角色';
+};
 
 const logout = async () => {
   await authStore.logout();
@@ -27,6 +47,10 @@ const logout = async () => {
 const login = () => {
   router.push('/login');
 };
+
+onMounted(async () => {
+  await getAllRoles();
+});
 </script>
 
 <style scoped>

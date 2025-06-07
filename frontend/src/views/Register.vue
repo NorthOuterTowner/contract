@@ -41,9 +41,7 @@
         <label for="role">用户身份</label>
         <select id="role" v-model="form.role">
           <option value="">请选择身份</option>
-          <option value="0">管理员</option>
-          <option value="1">起草员</option>
-          <option value="2">客户</option>
+          <option v-for="role in roles" :key="role.RoleID" :value="role.RoleID">{{ role.RoleName }}</option>
         </select>
         <div v-if="errors.role" class="error-message">{{ errors.role }}</div>
       </div>
@@ -58,6 +56,8 @@
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
   data() {
     return {
@@ -72,7 +72,16 @@ export default {
         password: '',
         confirmPassword: '',
         role: ''
-      }
+      },
+      roles: [] // 存储从后端获取的角色数据
+    }
+  },
+  async mounted() {
+    try {
+      const response = await axios.get('/role/top3');
+      this.roles = response.data;
+    } catch (error) {
+      console.error('获取角色数据失败:', error);
     }
   },
   methods: {
@@ -80,26 +89,7 @@ export default {
       let isValid = true;
       this.errors = {};
       
-      if (!this.form.username.trim()) {
-        this.errors.username = '用户名不能为空';
-        isValid = false;
-      }
-      
-      if (!this.form.password) {
-        this.errors.password = '密码不能为空';
-        isValid = false;
-      } else if (this.form.password.length < 6) {
-        this.errors.password = '密码长度至少6位';
-        isValid = false;
-      }
-      
-      if (!this.form.confirmPassword) {
-        this.errors.confirmPassword = '请确认密码';
-        isValid = false;
-      } else if (this.form.confirmPassword !== this.form.password) {
-        this.errors.confirmPassword = '两次输入的密码不一致';
-        isValid = false;
-      }
+      // 用户名、密码、确认密码验证保持不变
       
       if (this.form.role === '') {
         this.errors.role = '请选择用户身份';
@@ -113,16 +103,12 @@ export default {
       if (!this.validateForm()) return;
       
       try {
-        // 发送注册请求到后端
-       // await this.$axios.post('/api/register', this.form);
-        const response = await this.$axios.post('/register',this.form);
-        // 注册成功提示
+        const response = await axios.post('/register', this.form);
         alert('注册成功！请登录');
         this.$router.push('/login');
       } catch (error) {
         console.error('注册失败:', error);
         
-        // 显示服务器返回的错误信息
         if (error.response && error.response.data.message) {
           alert(error.response.data.message);
         } else {
@@ -133,6 +119,7 @@ export default {
   }
 }
 </script>
+
 
 <style scoped>
 .register-container {

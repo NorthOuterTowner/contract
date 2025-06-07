@@ -1,13 +1,14 @@
 <template>
   <div class="home-page">
+
+    <!-- 右上角用户状态 -->
+    <div class="user-status-container">
+      <UserStatus />
+    </div>
+    <!-- 顶部栏 -->
+
     <header class="header">
       <h1 class="logo">基于Web的合同管理系统</h1>
-      <!-- <div class="user-controls">
-        <span class="welcome">欢迎您，{{ roleName }}</span>
-        <button @click="login" class="btn">登录</button>
-        <button @click="logout" class="btn">注销</button>
-      </div> -->
-     
     </header>
 
     <nav class="nav-bar">
@@ -36,9 +37,23 @@
         <div class="drop-menu"
           v-show="activeMenu === 'query'"
           @mouseenter="showDropdown('query')"
+
           @mouseleave="hideDropdown">
           <div @click="go('/my-contract-module/query')">🔍 合同查询</div>
           <div @click="go('/my-contract-module/statistics')">📊 合同统计</div>
+
+        </div>
+      </div>
+
+      <div class="dropdown" @mouseleave="hideDropdown">
+        <div class="drop-trigger" @mouseover="showDropdown('basicData')">
+          基础数据管理
+        </div>
+        <div class="drop-menu"
+          v-show="activeMenu === 'basicData'"
+        >
+          <div @click="go('/contractInfo')" style="color: #2c3e50;">📑 合同信息管理</div>
+          <div @click="go('/customerInfo')" style="color: #34495e;">👥 客户类型管理</div>
         </div>
       </div>
 
@@ -49,7 +64,8 @@
         <div class="drop-menu"
           v-show="activeMenu === 'system'"
           @mouseenter="showDropdown('system')"
-          @mouseleave="hideDropdown">
+          @mouseleave="hideDropdown"
+        >
           <div @click="go('/PendingContractList')">🗂️ 分配合同</div>
           <div @click="go('/user')">👥 用户管理</div>
           <div @click="go('/role')">🔐 角色管理</div>
@@ -83,16 +99,9 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
-//import UserStatus from '../components/UserStatus.vue'
+import UserStatus from '../components/UserStatus.vue';
 
 const router = useRouter()
-//const role = ref(localStorage.getItem('role') || 'operator')
-
-// const roleName = computed(() => {
-//   if (role.value === 'admin') return '合同管理员'
-//   if (role.value === 'operator') return '合同操作员'
-//   return '游客'
-// })
 
 let activeMenu = ref('')
 let hideTimer = null
@@ -109,15 +118,6 @@ function hideDropdown() {
 function go(path) {
   router.push(path)
 }
-
-// function logout() {
-//   localStorage.removeItem('role')
-//   router.push('/login')
-// }
-
-// function login() {
-//   router.push('/login')
-// }
 
 let cosignCount = ref(0);
 let approveCount = ref(0);
@@ -145,6 +145,7 @@ onMounted(async () => {
   background-color: #f4f6f8;
   min-height: 100vh;
   padding: 20px 40px;
+  position: relative; /* 新增，使子元素可以相对于此元素定位 */
 }
 
 .header {
@@ -255,5 +256,12 @@ onMounted(async () => {
 .intro-card p {
   color: #374151;
   line-height: 1.6;
+}
+
+.user-status-container {
+  position: absolute; /* 绝对定位 */
+  top: 3rem; /* 距离顶部 1rem */
+  right: 2rem; /* 距离右侧 1rem */
+  z-index: 100; /* 设置层级，确保显示在其他元素之上 */
 }
 </style>

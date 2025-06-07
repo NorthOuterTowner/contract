@@ -1,16 +1,20 @@
 <template>
   <div class="add-user-container">
-    <h2 class="page-title">添加用户</h2>
+    <div class="header-actions">
+      <button @click="goBack" class="back-btn">
+        <i class="fa fa-arrow-left"></i> 返回用户管理
+      </button>
+    </div>
+    <h2>添加用户</h2>
     <!-- 表单区域 -->
     <div class="form-section">
-      <div class="input-group">
-        <label class="form-label">用户 ID：</label>
-        <div class="input-wrapper">
-          <input v-model="userId" type="text" readonly />
-        </div>
+      <h3 class="section-title">基本信息</h3>
+      <div class="form-item">
+        <label>用户 ID：</label>
+        <input v-model="userId" type="text" readonly />
       </div>
-      <div class="input-group">
-        <label class="form-label">用户名：</label>
+      <div class="form-item">
+        <label>用户名：</label>
         <div class="input-wrapper">
           <input
             v-model="userName"
@@ -24,8 +28,8 @@
           </div>
         </div>
       </div>
-      <div class="input-group">
-        <label class="form-label">密码：</label>
+      <div class="form-item">
+        <label>密码：</label>
         <div class="input-wrapper">
           <input
             v-model="password"
@@ -42,8 +46,8 @@
           </div>
         </div>
       </div>
-      <div class="input-group">
-        <label class="form-label">确认密码：</label>
+      <div class="form-item">
+        <label>确认密码：</label>
         <div class="input-wrapper">
           <input
             v-model="confirmPassword"
@@ -57,8 +61,8 @@
           </div>
         </div>
       </div>
-      <div class="input-group">
-        <label class="form-label">角色：</label>
+      <div class="form-item">
+        <label>角色：</label>
         <div class="input-wrapper">
           <select v-model="selectedRole">
             <option v-for="role in roles" :key="role.RoleID" :value="role.RoleID">{{ role.RoleName }}</option>
@@ -70,7 +74,12 @@
       </div>
     </div>
     <div class="button-group">
-      <button @click="addUser" class="primary-btn">保存</button>
+      <button @click="addUser" class="save-btn">
+        <i class="fa fa-save"></i> 保存
+      </button>
+      <button @click="resetForm" class="reset-btn">
+        <i class="fa fa-refresh"></i> 重置
+      </button>
     </div>
   </div>
 </template>
@@ -90,6 +99,12 @@ const confirmPassword = ref('');
 const selectedRole = ref('');
 const roles = ref([]);
 const submitted = ref(false);
+const originalForm = ref(null);
+
+// 返回用户管理页面
+const goBack = () => {
+  router.push('/user');
+};
 
 // 在组件挂载时获取下一个可用的 ID
 const getNextUserId = async () => {
@@ -112,9 +127,20 @@ const fetchAllRoles = async () => {
   }
 };
 
-onMounted(() => {
-  getNextUserId();
-  fetchAllRoles();
+onMounted(async () => {
+  try {
+    await getNextUserId();
+    await fetchAllRoles();
+    // 保存原始表单状态
+    originalForm.value = {
+      userName: '',
+      password: '',
+      confirmPassword: '',
+      selectedRole: ''
+    };
+  } catch (error) {
+    console.error('初始化数据失败:', error);
+  }
 });
 
 const addUser = async () => {
@@ -161,51 +187,116 @@ const addUser = async () => {
     }
   }
 };
+
+// 重置表单
+const resetForm = () => {
+  if (!originalForm.value) return;
+  
+  userName.value = originalForm.value.userName;
+  password.value = originalForm.value.password;
+  confirmPassword.value = originalForm.value.confirmPassword;
+  selectedRole.value = originalForm.value.selectedRole;
+  submitted.value = false;
+    
+    // 重新获取用户ID
+    getNextUserId();
+};
 </script>
 
 <style scoped>
 .add-user-container {
-  max-width: 600px;
+  max-width: 800px;
   margin: 40px auto;
   padding: 0 20px;
   font-family: "Helvetica Neue", Arial, sans-serif;
 }
 
-.page-title {
+.header-actions {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.back-btn {
+  background-color: #6c757d;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  margin-right: 16px;
+}
+
+.back-btn:hover {
+  background-color: #5a6268;
+}
+
+.back-btn i {
+  margin-right: 8px;
+}
+
+h2 {
   font-size: 24px;
   margin-bottom: 20px;
+  text-align: center;
+  color: #333;
 }
 
 .form-section {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 20px;
   margin-bottom: 20px;
 }
 
-.input-group {
-  margin-bottom: 16px;
+.section-title {
+  font-size: 18px;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+  color: #555;
 }
 
-.form-label {
-  display: inline-block;
+.form-item {
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+}
+
+.form-item label {
   width: 120px;
-  margin-bottom: 8px;
+  font-weight: 500;
+  color: #666;
 }
 
 .input-wrapper {
   display: flex;
   align-items: center;
+  flex: 1;
 }
 
 .input-wrapper input,
 .input-wrapper select {
-  padding: 6px 12px;
+  padding: 8px 12px;
   border: 1px solid #ddd;
   border-radius: 4px;
-  flex: 1;
+  width: 100%;
+  transition: border-color 0.3s;
+}
+
+.input-wrapper input:focus,
+.input-wrapper select:focus {
+  outline: none;
+  border-color: #007bff;
 }
 
 .error-tooltip {
   color: red;
   margin-left: 10px;
+  white-space: nowrap;
 }
 
 .button-group {
@@ -215,18 +306,37 @@ const addUser = async () => {
   margin: 30px 0;
 }
 
-.primary-btn {
-  background-color: #007bff;
-  color: white;
-  padding: 12px 24px;
+.save-btn, .reset-btn {
+  padding: 8px 16px;
   border: none;
-  border-radius: 8px;
-  font-size: 16px;
+  border-radius: 4px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  font-size: 14px;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.primary-btn:hover {
-  background-color: #0056b3;
+.save-btn {
+  background-color: #28a745;
+  color: white;
+}
+
+.save-btn:hover {
+  background-color: #218838;
+}
+
+.reset-btn {
+  background-color: #dc3545;
+  color: white;
+}
+
+.reset-btn:hover {
+  background-color: #c82333;
+}
+
+.save-btn i, .reset-btn i {
+  margin-right: 8px;
 }
 </style>

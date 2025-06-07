@@ -1,5 +1,10 @@
 <template>
   <div class="modify-role-container">
+    <div class="header-actions">
+      <button @click="goBack" class="back-btn">
+        <i class="fa fa-arrow-left"></i> 返回角色管理
+      </button>
+    </div>
     <h2>角色详细信息</h2>
     <div v-if="loading" class="loading">加载中...</div>
     <div v-else-if="role">
@@ -112,15 +117,20 @@ const message = inject('message');
 
 const roleId = route.params.roleId;
 const role = ref(null);
-const originalRole = ref(null); // 新增：保存原始角色信息
+const originalRole = ref(null); // 保存原始角色信息
 const loading = ref(false);
 const isEditing = ref(false);
 const allFunctions = ref([]);
 const selectedFunctions = ref([]);
-const originalSelectedFunctions = ref([]); // 新增：保存原始选中的功能
+const originalSelectedFunctions = ref([]); // 保存原始选中的功能
 const topLevelFunctions = ref([]); 
 const isDeleteConfirmVisible = ref(false);
-const isResetConfirmVisible = ref(false); // 新增：确认重置模态框显示状态
+const isResetConfirmVisible = ref(false); // 确认重置模态框显示状态
+
+// 返回角色管理页面
+const goBack = () => {
+  router.push('/role');
+};
 
 // 获取所有功能数据
 const getFunctions = async () => {
@@ -216,7 +226,7 @@ onMounted(async () => {
     const response = await axios.get(`/role/query?roleID=${roleId}`);
     if (response.data.length === 0) {
       message.error('角色不存在');
-      router.push('/system/role');
+      router.push('/role');
     } else {
       role.value = response.data[0];
       originalRole.value = { ...role.value }; // 保存原始角色信息
@@ -225,7 +235,7 @@ onMounted(async () => {
     }
   } catch (error) {
     message.error('获取角色信息失败');
-    router.push('/system/role');
+    router.push('/role');
   } finally {
     loading.value = false;
   }
@@ -285,17 +295,17 @@ const confirmDelete = async () => {
   isDeleteConfirmVisible.value = false;
 };
 
-// 新增：显示确认重置模态框
+// 显示确认重置模态框
 const showResetConfirm = () => {
   isResetConfirmVisible.value = true;
 };
 
-// 新增：取消重置
+// 取消重置
 const cancelReset = () => {
   isResetConfirmVisible.value = false;
 };
 
-// 新增：确认重置
+// 确认重置
 const confirmReset = () => {
   role.value = { ...originalRole.value };
   selectedFunctions.value = [...originalSelectedFunctions.value];
@@ -312,10 +322,35 @@ const confirmReset = () => {
   font-family: "Helvetica Neue", Arial, sans-serif;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.back-btn {
+  background-color: #6c757d;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  margin-right: 16px;
+}
+
+.back-btn:hover {
+  background-color: #5a6268;
+}
+
+.back-btn i {
+  margin-right: 8px;
+}
+
 h2 {
   font-size: 24px;
-  margin-bottom: 20px;
-  text-align: center;
+  margin: 0;
   color: #333;
 }
 

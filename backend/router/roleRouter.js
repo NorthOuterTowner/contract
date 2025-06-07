@@ -113,6 +113,18 @@ router.get("/all", async (req, res) => {
   }
 });
 
+// 获取前三个角色(用于注册)
+router.get("/top3", async (req, res) => {
+  try {
+    const sql = "SELECT RoleID, RoleName FROM Roles LIMIT 3";
+    const result = await db.async.all(sql, []);
+    res.json(result.rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "系统异常，请稍后重试" });
+  }
+});
+
 // 检查角色名是否存在
 router.get("/checkName", async (req, res) => {
   const { roleName, roleID } = req.query;
