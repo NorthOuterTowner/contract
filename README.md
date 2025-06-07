@@ -16,7 +16,7 @@ mysqldump -u [username] -p [database_name] > [database_name.sql]
 
 ### 2. 安装依赖
 使用`npm install [xxx]`命令安装依赖包。  
-前端需要安装的依赖有`axios` , `vue-router` ,  `pinia`,  `pdf-lib` 。  
+前端需要安装的依赖有`axios` , `vue-router` ,  `pinia`,  `pdf-lib`,`charts`(强大的数据可视化图表库，用于合同统计页面) 。  
 此外还需要安装 Naive-UI 的 Vue 3 组件库`naive-ui`,与其他依赖安装方式略有不同，使用如下语句进行安装。  
 ```bash
 npm i -D naive-ui

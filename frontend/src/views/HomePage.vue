@@ -1,6 +1,5 @@
 <template>
   <div class="home-page">
-    <!-- 顶部栏 -->
     <header class="header">
       <h1 class="logo">基于Web的合同管理系统</h1>
       <div class="user-controls">
@@ -10,37 +9,35 @@
       </div>
     </header>
 
-    <!-- 功能导航菜单 -->
     <nav class="nav-bar">
       <div class="dropdown" @mouseleave="hideDropdown">
-      <div class="drop-trigger" @mouseover="showDropdown('contract')">
-        合同处理
+        <div class="drop-trigger" @mouseover="showDropdown('contract')">
+          合同处理
+        </div>
+        <div
+          class="drop-menu"
+          v-show="activeMenu === 'contract'"
+          @mouseenter="showDropdown('contract')"
+          @mouseleave="hideDropdown"
+        >
+          <div @click="go('/DraftContractList')">📝 起草合同</div>
+          <div @click="go('/CoSignContractList')">🤝 会签合同</div>
+          <div @click="go('/FinalizeContractList')">📑 定稿合同</div>
+          <div @click="go('/SignContractList')">🖊 签订合同</div>
+          <div @click="go('/approveList')">📝 审批合同</div>
+        </div>
       </div>
-      <div
-        class="drop-menu"
-        v-show="activeMenu === 'contract'"
-        @mouseenter="showDropdown('contract')"
-        @mouseleave="hideDropdown"
-      >
-        <div @click="go('/DraftContractList')">📝 起草合同</div>
-        <div @click="go('/CoSignContractList')">🤝 会签合同</div>
-        <div @click="go('/FinalizeContractList')">📑 定稿合同</div>
-        <div @click="go('/SignContractList')">🖊 签订合同</div>
-        <div @click="go('/approveList')">📝 审批合同</div>
-      </div>
-      </div>
-
 
       <div class="dropdown" @mouseleave="hideDropdown">
         <div class="drop-trigger" @mouseover="showDropdown('query')">
           信息查询
         </div>
-        <div class="drop-menu" 
+        <div class="drop-menu"
           v-show="activeMenu === 'query'"
           @mouseenter="showDropdown('query')"
           @mouseleave="hideDropdown">
-          <div @click="go('/query')">🔍 合同查询</div>
-          <!--<div @click="go('/approveList')">📑 审批合同</div>-->
+          <div @click="go('/my-contract-module/query')">🔍 合同查询</div>
+          <div @click="go('/my-contract-module/statistics')">📊 合同统计</div>
         </div>
       </div>
 
@@ -48,7 +45,7 @@
         <div class="drop-trigger" @mouseover="showDropdown('system')">
           系统管理
         </div>
-        <div class="drop-menu" 
+        <div class="drop-menu"
           v-show="activeMenu === 'system'"
           @mouseenter="showDropdown('system')"
           @mouseleave="hideDropdown">
@@ -61,7 +58,6 @@
       </div>
     </nav>
 
-    <!-- 提示卡片 -->
     <div class="notification-card" v-if="cosignCount > 0" @click="go('/CoSignContractList')">
       🛎️ 当前有 {{ cosignCount }} 份合同待会签，点击跳转 →
     </div>
@@ -72,7 +68,6 @@
       🛎️ 当前有 {{ signCount }} 份合同待签订，点击跳转 →
     </div>
 
-    <!-- 系统介绍卡片 -->
     <section class="intro-card">
       <h2>欢迎使用合同管理系统</h2>
       <p>
@@ -142,6 +137,7 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+/* 所有样式都保持不变，与你最初提供的 HomePage.vue 样式完全一致 */
 .home-page {
   font-family: Arial, sans-serif;
   background-color: #f4f6f8;
@@ -192,7 +188,6 @@ onMounted(async () => {
   margin-top: 30px;
   border-bottom: 1px solid #cbd5e1;
   padding-bottom: 10px;
-  /*font-size: 1.5em;*/
 }
 
 .dropdown {
@@ -220,7 +215,6 @@ onMounted(async () => {
   padding: 10px 15px;
   cursor: pointer;
   white-space: nowrap;
-  
 }
 
 .drop-menu div:hover {
