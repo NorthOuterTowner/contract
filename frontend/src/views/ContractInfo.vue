@@ -1,39 +1,20 @@
 <template>
   <div class="contract-info-page">
     <!-- 左侧导航栏 -->
-    <aside class="left-sidebar">
-      <div class="sidebar-header">
-        <h3 class="sidebar-title">基础数据管理</h3>
-      </div>
-      
-      <div class="nav-group">
-        <div 
-          class="nav-item" 
-          @click="go('/contractInfo')"
-          :class="{ active: $route.path === '/contractInfo' }"
-        >
-          <span class="nav-icon">📄</span>
-          合同信息管理
-        </div>
-        <div 
-          class="nav-item" 
-          @click="go('/customerInfo')"
-          :class="{ active: $route.path === '/customerInfo' }"
-        >
-          <span class="nav-icon">👥</span>
-          客户信息管理
-        </div>
-
-        <div 
-          class="nav-item" 
-          @click="go('/HomePage')"
-          :class="{ active: $route.path === '/HomePage' }"
-        >
-          <span class="nav-icon">🏠</span>
-          返回主页
-        </div>
-      </div>
-    </aside>
+     <div class="sidebar">
+    <div class="logo">基础数据管理</div>
+    <ul class="menu">
+      <!-- 合同处理相关菜单 -->
+      <li 
+        v-for="item in processMenuItems" 
+        :key="item.path"
+        :class="{ active: $route.path === item.path }"
+        @click="navigateTo(item.path)"
+      >
+        {{ item.title }}
+      </li>
+    </ul>
+  </div>
 
     <!-- 右侧主内容区域（调整后） -->
     <main class="main-content">
@@ -69,6 +50,7 @@
               <th>合同编号</th>
               <th>合同名称</th>
               <th>签订日期</th>
+              <th>合同状态</th>
               <th>操作</th>
             </tr>
           </thead>
@@ -103,9 +85,22 @@ import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
 
+
 const route = useRoute();
 const router = useRouter();
 const go = (path) => router.push(path); // 路由跳转函数
+
+// 导航栏菜单数据
+const processMenuItems = ref([
+  { title: '合同信息管理', path: '/ContractInfo' },
+  { title: '客户信息管理', path: '/CustomerInfo' },
+  { title: '返回主页', path: '/HomePage'}
+]);
+
+// 导航跳转方法
+const navigateTo = (path) => {
+  router.push(path);
+};
 
 // 定义状态
 const searchQuery = ref('');
@@ -172,6 +167,55 @@ const createNewContract = () => {
   color: white;
 }
 
+
+
+.sidebar {
+  width: 200px;
+  height: 100vh;
+  background-color: #2c3e50;
+  color: white;
+  position: fixed;
+  left: 0;
+  top: 0;
+}
+
+.logo {
+  padding: 20px;
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.menu li {
+  padding: 15px 20px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.menu li:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.menu li.active {
+  background-color: rgb(85, 117, 244);
+  color: white;
+}
+
+.menu li i {
+  font-size: 14px;
+}
+
+
 /* ------------------------- 表格新增复选框样式 ------------------------- */
 th:first-child, td:first-child {
   padding-left: 20px;
@@ -180,54 +224,10 @@ th:first-child, td:first-child {
 }
 
 
-.left-sidebar {
-  position: fixed;
-  left: 0;
-  top: 0;
-  width: 200px; /* 宽度调整为200px */
-  height: 100vh;
-  background-color: #2c3e50; 
-  border-right: 1px solid #e9ecef;
-  padding: 20px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
-}
 
-.sidebar-header {
-  margin-bottom: 30px;
-}
 
-.sidebar-title {
-  font-size: 1.25em; /* 20px */
-  color: white;
-  font-weight: 600;
-  padding-left: 12px;
-  border-left: 4px solid #2c3e50; 
-}
 
-.nav-group {
-  margin-top: 20px;
-}
 
-.nav-item {
-  padding: 12px 20px; /* 增大内边距 */
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 12px; /* 图标与文字间距 */
-  border-radius: 4px;
-  transition: background-color 0.2s;
-  font-size: 16px; /* 统一字体大小 */
-}
-
-.nav-item:hover,
-.nav-item.active {
-  background-color: #007bff; /* 浅蓝hover色 */
-  color: white; 
-}
-
-.nav-icon {
-  font-size: 1.1em; /* 调整图标大小 */
-}
 
 /* ------------------------- 右侧内容区样式（统一后） ------------------------- */
 .main-content {
