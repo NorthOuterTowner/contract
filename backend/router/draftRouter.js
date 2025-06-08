@@ -46,7 +46,7 @@ router.post('/savedraft', upload.single('content'), async (req, res) => {
   } : null);
 
   try {
-    const { contractID, title, description, creationDate } = req.body;
+    const { contractID, title, description, creationDate, startDate, endDate } = req.body;
     
     // 处理文件名编码
     const contentFileName = req.file 
@@ -54,10 +54,10 @@ router.post('/savedraft', upload.single('content'), async (req, res) => {
       : null;
 
     // 验证必填字段
-    if (!contractID || !title) {
+    if (!contractID || !title || !startDate || !endDate) {
       return res.status(400).json({
         code: 400,
-        msg: '合同编号和标题不能为空'
+        msg: '合同编号、标题和生效起止时间不能为空'
       });
     }
 
@@ -66,6 +66,24 @@ router.post('/savedraft', upload.single('content'), async (req, res) => {
       return res.status(400).json({
         code: 400,
         msg: '合同编号不能超过10个字符'
+      });
+    }
+
+    // 验证日期有效性
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      return res.status(400).json({
+        code: 400,
+        msg: '无效的日期格式'
+      });
+    }
+    
+    if (start > end) {
+      return res.status(400).json({
+        code: 400,
+        msg: '结束日期不能早于开始日期'
       });
     }
 
@@ -80,6 +98,22 @@ router.post('/savedraft', upload.single('content'), async (req, res) => {
       formattedDate = new Date().toISOString().slice(0, 19).replace('T', ' ');
     }
 
+    // 格式化生效起止日期
+    const formatDateForSQL = (dateStr) => {
+  try {
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) {
+      throw new Error('Invalid date');
+    }
+    return date.toISOString().split('T')[0]; // YYYY-MM-DD
+  } catch (e) {
+    console.error('日期格式化错误:', e);
+    return null;
+  }
+};
+
+const formattedStartDate = formatDateForSQL(startDate);
+const formattedEndDate = formatDateForSQL(endDate);
     // 检查合同编号是否已存在
     const checkSql = 'SELECT 1 FROM `contract` WHERE `ContractID` = ? LIMIT 1';
     const { err: checkErr, rows: checkRows } = await db.async.all(checkSql, [contractID]);
@@ -101,8 +135,8 @@ router.post('/savedraft', upload.single('content'), async (req, res) => {
     // 插入新合同记录
     const insertSql = `
       INSERT INTO \`contract\` 
-      (ContractID, Title, Description, Content, Status, CreationDate, LastModifiedDate) 
-      VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+      (ContractID, Title, Description, Content, Status, CreationDate, LastModifiedDate, StartDate, EndDate) 
+      VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP,?,?)
     `;
     
     const { err: insertErr } = await db.async.run(insertSql, [
@@ -111,7 +145,9 @@ router.post('/savedraft', upload.single('content'), async (req, res) => {
       description || null,  // 允许description为空
       contentFileName,
       '会签处理中',
-      formattedDate
+      formattedDate,
+      formattedStartDate,
+      formattedEndDate
     ]);
     
     if (insertErr) {
@@ -121,31 +157,29 @@ router.post('/savedraft', upload.single('content'), async (req, res) => {
     
     await db.async.run('COMMIT');
 
+    await db.async.run('START TRANSACTION');
 
-   await db.async.run('START TRANSACTION');
-
-    // 插入新合同记录
+    // 插入新合同草稿记录
     const insertDraftSql = `
-        INSERT INTO \`contractdraft\` 
-        (ContractID, DraftTitle, DraftContent, CreatedBy, CreationDate) 
-        VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
-      `;
+      INSERT INTO \`contractdraft\` 
+      (ContractID, DraftTitle, DraftContent, CreatedBy, CreationDate) 
+      VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+    `;
       
-      const { err: insertDraftErr } = await db.async.run(insertDraftSql, [
-        contractID,
-        title,
-        description || null,
-        'lrz',
-
-        
-      ]);
+    const { err: insertDraftErr } = await db.async.run(insertDraftSql, [
+      contractID,
+      title,
+      description || null,
+      'lrz',
+      formattedStartDate,
+      formattedEndDate
+    ]);
       
-      if (insertDraftErr) {
-        throw new Error(`草稿表插入失败: ${insertDraftErr.message}`);
-      }
+    if (insertDraftErr) {
+      throw new Error(`草稿表插入失败: ${insertDraftErr.message}`);
+    }
     
-     await db.async.run('COMMIT');
-
+    await db.async.run('COMMIT');
 
     // 返回成功响应
     return res.status(200).json({
@@ -156,8 +190,10 @@ router.post('/savedraft', upload.single('content'), async (req, res) => {
         title,
         description,
         creationDate: formattedDate,
+        startDate: formattedStartDate,
+        endDate: formattedEndDate,
         fileName: contentFileName,
-        fileUrl: contentFileName ? `/uploads/contracts/${encodeURIComponent(contentFileName)}` : null
+        fileUrl: contentFileName ? `/files/${encodeURIComponent(contentFileName)}` : null
       }
     });
 
