@@ -5,7 +5,14 @@
     <hr />
     <h3>待分配合同列表</h3>
     <div class="search-bar">
-      <input v-model="searchQuery" placeholder="输入合同编号、合同名称或状态查询" />
+      <input v-model="searchQuery.contractId" placeholder="输入合同编号查询" />
+      <input v-model="searchQuery.title" placeholder="输入合同名称查询" />
+      <select v-model="searchQuery.status">
+        <option value="">所有状态</option>
+        <option value="会签处理中">会签处理中</option>
+        <option value="待审批">待审批</option>
+        <option value="待签订">待签订</option>
+      </select>
       <button @click="searchContracts">查询</button>
     </div>
     <div v-if="loading" class="loading">加载中...</div>
@@ -29,7 +36,7 @@
         </tr>
       </tbody>
     </table>
-    <div v-else-if="!loading && searchQuery" class="no-data">未找到匹配的合同</div>
+    <div v-else-if="!loading && (searchQuery.contractId || searchQuery.title || searchQuery.status)" class="no-data">未找到匹配的合同</div>
     <!-- 分页组件 -->
     <div v-if="contracts.length > 0" class="pagination">
       <button @click="prevPage" :disabled="currentPage === 1">上一页</button>
@@ -48,7 +55,11 @@ import SystemManagementSidebar from '../components/SystemManagementSidebar.vue';
 const router = useRouter();
 const message = inject('message');
 
-const searchQuery = ref('');
+const searchQuery = ref({
+  contractId: '',
+  title: '',
+  status: ''
+});
 const contracts = ref([]);
 const loading = ref(false);
 const currentPage = ref(1);
@@ -63,16 +74,26 @@ const currentPageContracts = computed(() => {
 });
 
 const searchContracts = async () => {
-  if (!searchQuery.value.trim()) {
+  if (!searchQuery.value.contractId.trim() && !searchQuery.value.title.trim() && !searchQuery.value.status) {
     // 如果查询为空，获取全部合同
     return getAllContracts();
   }
   
   loading.value = true;
   try {
-    let url = '/contract/query?';
-    // 可以根据需求添加更多的查询条件判断
-    url += `query=${searchQuery.value}`;
+    let url = '/assign/search?';
+    const queryParams = [];
+    if (searchQuery.value.contractId) {
+      queryParams.push(`contractId=${searchQuery.value.contractId}`);
+    }
+    if (searchQuery.value.title) {
+      queryParams.push(`title=${searchQuery.value.title}`);
+    }
+    if (searchQuery.value.status) {
+      queryParams.push(`status=${searchQuery.value.status}`);
+    }
+    url += queryParams.join('&');
+
     const response = await axios.get(url);
     contracts.value = response.data;
     
@@ -150,7 +171,8 @@ h3 {
     gap: 10px;
 }
 
-.search-bar input {
+.search-bar input,
+.search-bar select {
     padding: 6px 12px;
     border: 1px solid #ddd;
     border-radius: 4px;

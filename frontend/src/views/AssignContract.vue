@@ -42,16 +42,18 @@
           <li
             v-for="person in availableCoSigners"
             :key="person.id"
-            @click="selectPerson(person, 'left', 'coSigners')"
+            @click="canEditCoSigners ? selectPerson(person, 'left', 'coSigners') : null"
             :class="{ 'selected-person': isPersonSelected(person, 'left', 'coSigners') }"
+            :style="{ cursor: canEditCoSigners ? 'pointer' : 'not-allowed' }"
+            :disabled="!canEditCoSigners"
           >
             {{ person.name }}
           </li>
         </ul>
       </div>
       <div class="buttons">
-        <button class="move-button" @click="moveToRight('coSigners')">>> </button>
-        <button class="move-button" @click="moveToLeft('coSigners')"><< </button>
+        <button class="move-button" @click="canEditCoSigners ? moveToRight('coSigners') : null" :disabled="!canEditCoSigners">>> </button>
+        <button class="move-button" @click="canEditCoSigners ? moveToLeft('coSigners') : null" :disabled="!canEditCoSigners"><< </button>
       </div>
       <div class="list">
         <p class="list-label">已分配人员列表：</p>
@@ -59,15 +61,17 @@
           <li
             v-for="person in assignedCoSigners"
             :key="person.id"
-            @click="selectPerson(person, 'right', 'coSigners')"
+            @click="canEditCoSigners ? selectPerson(person, 'right', 'coSigners') : null"
             :class="{ 'selected-person': isPersonSelected(person, 'right', 'coSigners') }"
+            :style="{ cursor: canEditCoSigners ? 'pointer' : 'not-allowed' }"
+            :disabled="!canEditCoSigners"
           >
             {{ person.name }}
           </li>
         </ul>
       </div>
     </div>
-    <p v-if="assignedCoSigners.length < 2" class="error-message">会签人数必须大于 2</p>
+    <p v-if="assignedCoSigners.length < 2" class="error-message">会签人数必须大于等于 2</p>
 
     <!-- 分配审批人部分 -->
     <h3>分配审批人</h3>
@@ -78,16 +82,18 @@
           <li
             v-for="person in availableApprovers"
             :key="person.id"
-            @click="selectPerson(person, 'left', 'approvers')"
+            @click="canEditApprovers ? selectPerson(person, 'left', 'approvers') : null"
             :class="{ 'selected-person': isPersonSelected(person, 'left', 'approvers') }"
+            :style="{ cursor: canEditApprovers ? 'pointer' : 'not-allowed' }"
+            :disabled="!canEditApprovers"
           >
             {{ person.name }}
           </li>
         </ul>
       </div>
       <div class="buttons">
-        <button class="move-button" @click="moveToRight('approvers')">>> </button>
-        <button class="move-button" @click="moveToLeft('approvers')"><< </button>
+        <button class="move-button" @click="canEditApprovers ? moveToRight('approvers') : null" :disabled="!canEditApprovers">>> </button>
+        <button class="move-button" @click="canEditApprovers ? moveToLeft('approvers') : null" :disabled="!canEditApprovers"><< </button>
       </div>
       <div class="list">
         <p class="list-label">已分配人员列表：</p>
@@ -95,15 +101,17 @@
           <li
             v-for="person in assignedApprovers"
             :key="person.id"
-            @click="selectPerson(person, 'right', 'approvers')"
+            @click="canEditApprovers ? selectPerson(person, 'right', 'approvers') : null"
             :class="{ 'selected-person': isPersonSelected(person, 'right', 'approvers') }"
+            :style="{ cursor: canEditApprovers ? 'pointer' : 'not-allowed' }"
+            :disabled="!canEditApprovers"
           >
             {{ person.name }}
           </li>
         </ul>
       </div>
     </div>
-    <p v-if="assignedApprovers.length > 1" class="error-message">审批人只能为 1 人</p>
+    <p v-if="assignedApprovers.length !== 1" class="error-message">审批人只能为 1 人</p>
 
     <!-- 分配签订人部分 -->
     <h3>分配签订人</h3>
@@ -139,10 +147,10 @@
         </ul>
       </div>
     </div>
-    <p v-if="assignedSigners.length > 1" class="error-message">签订人只能为 1 人</p>
+    <p v-if="assignedSigners.length !== 1" class="error-message">签订人只能为 1 人</p>
 
     <div class="form-actions">
-      <button class="submit-button" @click="submitAllocation">提交分配</button>
+      <button class="submit-button" @click="submitAllocation" :disabled="!isAllocationValid">提交分配</button>
       <button class="reset-button" @click="resetAllocation">重置分配</button>
     </div>
   </div>
@@ -191,6 +199,15 @@ const selectedPerson = ref(null);
 const selectedList = ref(null);
 const selectedType = ref(null);
 
+// 根据合同状态判断是否可编辑
+const canEditCoSigners = computed(() => {
+  return contractStatus.value === '会签处理中';
+});
+
+const canEditApprovers = computed(() => {
+  return ['会签处理中', '待审批'].includes(contractStatus.value);
+});
+
 const fetchUsers = async () => {
   try {
     const response = await axios.get("/user/role2-users");
@@ -212,6 +229,21 @@ const fetchContractInfo = async () => {
     contractTitle.value = contract.Title;
     contractStatus.value = contract.Status;
     contractCreationDate.value = contract.CreationDate;
+
+    const { coSigners, approvers, signers } = contract.assignmentInfo;
+
+    // 初始化会签人分配信息
+    assignedCoSigners.value = availableCoSigners.value.filter(user => coSigners.includes(user.id));
+    availableCoSigners.value = availableCoSigners.value.filter(user => !coSigners.includes(user.id));
+
+    // 初始化审批人分配信息
+    assignedApprovers.value = availableApprovers.value.filter(user => approvers.includes(user.id));
+    availableApprovers.value = availableApprovers.value.filter(user => !approvers.includes(user.id));
+
+    // 初始化签订人分配信息
+    assignedSigners.value = availableSigners.value.filter(user => signers.includes(user.id));
+    availableSigners.value = availableSigners.value.filter(user => !signers.includes(user.id));
+
   } catch (error) {
     console.error("获取合同信息失败:", error);
   }
@@ -291,9 +323,18 @@ const moveToLeft = (type) => {
   }
 };
 
+// 验证分配是否有效
+const isAllocationValid = computed(() => {
+  return assignedCoSigners.value.length >= 2 && assignedApprovers.value.length === 1 && assignedSigners.value.length === 1;
+});
+
 const submitAllocation = async () => {
+  if (!isAllocationValid.value) {
+    alert('会签人数必须大于等于 2，审批人只能为 1 人，签订人只能为 1 人，请检查分配信息。');
+    return;
+  }
   try {
-    const operatorUserId = authStore.user?.id;; // 获取操作员 ID
+    const operatorUserId = authStore.user?.id; // 获取操作员 ID
     if (!operatorUserId) {
       console.error('未获取到操作员 ID');
       alert('未获取到操作员 ID，请重新登录');
@@ -301,8 +342,8 @@ const submitAllocation = async () => {
     }
     const response = await axios.post("/assign/contract-assignment", {
       contractId: router.currentRoute.value.params.contractId,
-      signerId: assignedSigners.value[0].id,
-      approverId: assignedApprovers.value[0].id,
+      signerId: assignedSigners.value[0]?.id,
+      approverId: assignedApprovers.value[0]?.id,
       executorId: assignedCoSigners.value.map(person => person.id).join(','),
       operatorUserId // 添加操作员 ID 到请求体
     });

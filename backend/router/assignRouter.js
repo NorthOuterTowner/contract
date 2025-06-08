@@ -16,17 +16,42 @@ router.get('/all', async (req, res) => {
   }
 });
 
-// 获取指定合同的信息
+// 获取指定合同的信息及分配信息
 router.get('/contract/:contractId', async (req, res) => {
   const contractId = req.params.contractId;
   try {
-    const sql = "SELECT * FROM `contract` WHERE `ContractID` = ?";
-    const { rows } = await db.async.all(sql, [contractId]);
-    if (rows.length > 0) {
-      res.json(rows[0]);
-    } else {
-      res.status(404).json({ error: 'Contract not found' });
+    // 获取合同信息
+    const contractSql = "SELECT * FROM `contract` WHERE `ContractID` = ?";
+    const { rows: contractRows } = await db.async.all(contractSql, [contractId]);
+    if (contractRows.length === 0) {
+      return res.status(404).json({ error: 'Contract not found' });
     }
+    const contract = contractRows[0];
+
+    // 获取合同分配信息
+    const assignmentSql = "SELECT RoleType, AssigneeUserID FROM contractassignment WHERE ContractID = ?";
+    const { rows: assignmentRows } = await db.async.all(assignmentSql, [contractId]);
+
+    const assignmentInfo = {
+      coSigners: [],
+      approvers: [],
+      signers: []
+    };
+
+    assignmentRows.forEach(row => {
+      if (row.RoleType === '会签人') {
+        assignmentInfo.coSigners.push(row.AssigneeUserID);
+      } else if (row.RoleType === '审批人') {
+        assignmentInfo.approvers.push(row.AssigneeUserID);
+      } else if (row.RoleType === '签订人') {
+        assignmentInfo.signers.push(row.AssigneeUserID);
+      }
+    });
+
+    res.json({
+      ...contract,
+      assignmentInfo
+    });
   } catch (error) {
     console.error('获取合同信息时出错:', error);
     res.status(500).json({ error: 'Internal Server Error' });
@@ -43,6 +68,10 @@ router.post('/contract-assignment', async (req, res) => {
   };
 
   try {
+    // 先删除该合同的所有分配信息
+    const deleteSql = "DELETE FROM contractassignment WHERE ContractID = ?";
+    await db.async.run(deleteSql, [contractId]);
+
     for (const [roleType, ids] of Object.entries(assigneeIds)) {
       for (const assigneeUserId of ids) {
         const sql = `
@@ -55,6 +84,36 @@ router.post('/contract-assignment', async (req, res) => {
     res.json({ message: '合同分配成功' });
   } catch (error) {
     console.error('合同分配时出错:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// 新增：根据合同编号、合同名称和合同状态查询合同列表
+router.get('/search', async (req, res) => {
+  const { contractId, title, status } = req.query;
+  let sql = "SELECT * FROM `contract` WHERE 1=1";
+  const params = [];
+
+  if (contractId) {
+    sql += " AND `ContractID` = ?";
+    params.push(contractId);
+  }
+
+  if (title) {
+    sql += " AND `Title` LIKE ?";
+    params.push(`%${title}%`);
+  }
+
+  if (status) {
+    sql += " AND `Status` = ?";
+    params.push(status);
+  }
+
+  try {
+    const { rows } = await db.async.all(sql, params);
+    res.json(rows);
+  } catch (error) {
+    console.error('搜索合同列表时出错:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
