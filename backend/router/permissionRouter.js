@@ -9,7 +9,7 @@ router.get("/checkPermission", async (req, res) => {
         // 查询用户角色
         const userRoleSql = "SELECT role FROM users WHERE user_id = ?";
         const userRoleResult = await db.async.all(userRoleSql, [userId]);
-        console.log('userRoleResult:', userRoleResult); // 添加调试信息
+        //console.log('userRoleResult:', userRoleResult); // 添加调试信息
         if (userRoleResult.rows.length === 0) {
             console.error('未找到用户角色信息');
             return res.status(404).json({ error: "未找到用户角色信息" });
@@ -24,7 +24,7 @@ router.get("/checkPermission", async (req, res) => {
             WHERE rp.RoleID = ?
         `;
         const rolePermissionsResult = await db.async.all(rolePermissionsSql, [roleId]);
-        console.log('rolePermissionsResult:', rolePermissionsResult); // 添加调试信息
+        //console.log('rolePermissionsResult:', rolePermissionsResult); // 添加调试信息
         const allowedRoutes = rolePermissionsResult.rows.map(row => row.Route);
 
         if (route === '*') {
@@ -34,13 +34,18 @@ router.get("/checkPermission", async (req, res) => {
         // 检查请求的路由是否在允许的路由列表中，支持正则匹配
         const hasPermission = allowedRoutes.some(allowedRoute => {
             // 将路由转换为正则表达式
-            const regexRoute = allowedRoute.replace(/:userId/g, '\\d+').replace(/:contractId/g, '\\d+').replace(/:roleId/g, '\\d+').replace(/:functionId/g, '\\d+');
-            const routeRegex = new RegExp(`^${regexRoute}$`);
-            return routeRegex.test(route);
+        const regexRoute = allowedRoute
+        .replace(/:userId/g, '\\d+')
+        .replace(/:contractId/g, '[^/]{1,10}') // 匹配不超过 10 个非斜杠字符
+        .replace(/:roleId/g, '\\d+')
+        .replace(/:functionId/g, '\\d+');
+              
+        const routeRegex = new RegExp(`^${regexRoute}$`);
+        return routeRegex.test(route);
         });
 
-        console.log('allowedRoutes:', allowedRoutes); // 添加调试信息
-        console.log('hasPermission:', hasPermission); // 添加调试信息
+        //console.log('allowedRoutes:', allowedRoutes); // 添加调试信息
+        //console.log('hasPermission:', hasPermission); // 添加调试信息
         res.json({ hasPermission });
     } catch (error) {
         console.error(error);

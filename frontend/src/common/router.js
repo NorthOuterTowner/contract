@@ -144,7 +144,7 @@ router.beforeEach(async (to, from, next) => {
   await authStore.initAuth();
 
   // 公开路由列表（无需登录）
-  const publicRoutes = ['/login', '/register', '/FirstPage', '/', '/HomePage'];
+  const publicRoutes = ['/login', '/register', '/FirstPage', '/', '/HomePage',];
   const isPublic = publicRoutes.includes(to.path);
 
   // 如果是公开路由，直接放行
@@ -167,7 +167,12 @@ router.beforeEach(async (to, from, next) => {
       const accessibleRoutes = await getUserAccessibleRoutes(userId);
       const hasPermission = accessibleRoutes.some(allowedRoute => {
         // 将路由转换为正则表达式
-        const regexRoute = allowedRoute.replace(/:userId/g, '\\d+').replace(/:contractId/g, '\\d+').replace(/:roleId/g, '\\d+').replace(/:functionId/g, '\\d+');
+        const regexRoute = allowedRoute        
+        .replace(/:userId/g, '\\d+')
+        .replace(/:contractId/g, '[^/]{1,10}') // 匹配不超过 10 个非斜杠字符
+        .replace(/:roleId/g, '\\d+')
+        .replace(/:functionId/g, '\\d+');
+              
         const routeRegex = new RegExp(`^${regexRoute}$`);
         return routeRegex.test(to.path);
       });
