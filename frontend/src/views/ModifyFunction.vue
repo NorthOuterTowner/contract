@@ -144,8 +144,8 @@ const getFunctionInfo = async () => {
   try {
     // 修改查询功能信息的请求参数
     const [functionResponse, routesResponse] = await Promise.all([
-      axios.get(`/function/query?functionId=${functionId.value}`),
-      axios.get(`/function/queryRoutes/${functionId.value}`)
+      axios.get(`/function/query?functionId=${parseInt(functionId.value)}`),
+      axios.get(`/function/queryRoutes/${parseInt(functionId.value)}`)
     ]);
 
     // 过滤出正确的功能信息

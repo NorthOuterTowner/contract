@@ -57,6 +57,7 @@
           <h3>确认删除</h3>
         </div>
         <div class="modal-content">
+          <p v-if="userId === authStore.currentUser.id">不能删除自己！</p>
           <p>确定要删除此用户吗？</p>
         </div>
         <div class="modal-footer">
@@ -72,10 +73,12 @@
 import { ref, inject, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import axios from 'axios';
+import { useAuthStore } from '../common/auth';
 
 const router = useRouter();
 const route = useRoute();
 const message = inject('message');
+const authStore = useAuthStore();
 
 const userId = route.params.userId;
 const user = ref(null);
@@ -186,6 +189,10 @@ const cancelDelete = () => {
 };
 
 const confirmDelete = async () => {
+  if (userId === authStore.user?.id) {
+    message.error('不能删除自己！');
+    return;
+  }
   try {
     await axios.delete(`/user/delete?userId=${userId}`);
     message.success('删除成功！');
