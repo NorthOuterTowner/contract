@@ -2,47 +2,59 @@ const express = require("express");
 const router = express.Router();
 const { db } = require("../db/DBUtils");
 
-// 获取待分配合同列表
-router.get('/pending-contracts', async (req, res) => {
+// 获取所有状态为会签处理中或待审批或待签订的合同列表
+router.get('/all', async (req, res) => {
   try {
-    const sql = "SELECT * FROM Contract WHERE Status = '待起草'";
+    // 修改 SQL 查询语句，使用 IN 关键字筛选状态
+    const sql = "SELECT * FROM `contract` WHERE `Status` IN ('会签处理中', '待审批', '待签订')";
     const { rows } = await db.async.all(sql, []);
+    // console.log('查询到的合同列表:', rows); // 打印查询结果，方便调试
     res.json(rows);
   } catch (error) {
-    console.error(error);
+    console.error('获取合同列表时出错:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
-// 获取合同基本信息和用户列表信息
-router.get('/contract-assignment/:contractId', async (req, res) => {
-  const { contractId } = req.params;
+// 获取指定合同的信息
+router.get('/contract/:contractId', async (req, res) => {
+  const contractId = req.params.contractId;
   try {
-    const contractInfoSql = "SELECT * FROM Contract WHERE ContractID = ?";
-    const userListSql = "SELECT user_id, username FROM Users";
-    const [contractInfo, userList] = await Promise.all([
-      db.async.all(contractInfoSql, [contractId]),
-      db.async.all(userListSql, [])
-    ]);
-    res.json({ contractInfo: contractInfo.rows[0], userList: userList.rows });
+    const sql = "SELECT * FROM `contract` WHERE `ContractID` = ?";
+    const { rows } = await db.async.all(sql, [contractId]);
+    if (rows.length > 0) {
+      res.json(rows[0]);
+    } else {
+      res.status(404).json({ error: 'Contract not found' });
+    }
   } catch (error) {
-    console.error(error);
+    console.error('获取合同信息时出错:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
-// 保存合同分配信息
+// 处理合同分配请求
 router.post('/contract-assignment', async (req, res) => {
-  const { contractId, signerId, approverId, executorId } = req.body;
-  if (!contractId || !signerId || !approverId || !executorId) {
-    return res.status(400).json({ error: '会签、审批、签订人员需全部指定' });
-  }
+  const { contractId, signerId, approverId, executorId, operatorUserId } = req.body;
+  const assigneeIds = {
+    会签人: executorId.split(',').map(Number),
+    审批人: [approverId],
+    签订人: [signerId]
+  };
+
   try {
-    const sql = "INSERT INTO ContractAssignment (ContractID, SignerID, ApproverID, ExecutorID) VALUES (?,?,?,?)";
-    await db.async.run(sql, [contractId, signerId, approverId, executorId]);
+    for (const [roleType, ids] of Object.entries(assigneeIds)) {
+      for (const assigneeUserId of ids) {
+        const sql = `
+          INSERT INTO contractassignment (ContractID, RoleType, AssigneeUserID, OperatorUserID)
+          VALUES (?,?,?,?)
+        `;
+        await db.async.run(sql, [contractId, roleType, assigneeUserId, operatorUserId]);
+      }
+    }
     res.json({ message: '合同分配成功' });
   } catch (error) {
-    console.error(error);
+    console.error('合同分配时出错:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });

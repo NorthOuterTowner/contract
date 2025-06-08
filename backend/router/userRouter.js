@@ -88,6 +88,18 @@ router.get('/all', async (req, res) => {
   }
 });
 
+// 获取 role 为 2 的用户列表
+router.get("/role2-users", async (req, res) => {
+  try {
+    const sql = "SELECT user_id as id, username as name FROM users WHERE role = 2";
+    const { rows } = await db.async.all(sql, []);
+    res.json(rows);
+  } catch (error) {
+    console.error("获取用户列表时出错:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 // 修改用户信息
 router.put('/update', async (req, res) => {
   const { userId, userName, password, roleId } = req.body;
