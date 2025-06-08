@@ -142,7 +142,7 @@
     <p v-if="assignedSigners.length > 1" class="error-message">签订人只能为 1 人</p>
 
     <div class="form-actions">
-      <button class="submit-button" @click="submitAllocation" :disabled="!isAllocationValid">提交分配</button>
+      <button class="submit-button" @click="submitAllocation">提交分配</button>
       <button class="reset-button" @click="resetAllocation">重置分配</button>
     </div>
   </div>
@@ -190,11 +190,6 @@ const assignedSigners = ref([]);
 const selectedPerson = ref(null);
 const selectedList = ref(null);
 const selectedType = ref(null);
-
-// 计算分配是否有效
-const isAllocationValid = computed(() => {
-  return assignedCoSigners.value.length > 2 && assignedApprovers.value.length === 1 && assignedSigners.value.length === 1;
-});
 
 const fetchUsers = async () => {
   try {
@@ -297,9 +292,6 @@ const moveToLeft = (type) => {
 };
 
 const submitAllocation = async () => {
-  // if (!isAllocationValid.value) {
-  //   return;
-  // }
   try {
     const operatorUserId = authStore.user?.id;; // 获取操作员 ID
     if (!operatorUserId) {
