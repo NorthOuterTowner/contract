@@ -4,7 +4,7 @@
     <h2>功能管理</h2>
     <button @click="goToAddFunction" class="add-function-btn">添加功能</button>
     <div class="search-bar">
-      <input v-model="functionName" placeholder="输入功能名称查询" />
+      <input v-model="query" placeholder="输入功能 ID 或功能名称查询" />
       <button @click="searchFunctions">查询</button>
     </div>
     <div v-if="loading" class="loading">加载中...</div>
@@ -31,7 +31,7 @@
         </tr>
       </tbody>
     </table>
-    <div v-else-if="!loading && functionName" class="no-data">未找到匹配的功能</div>
+    <div v-else-if="!loading && query" class="no-data">未找到匹配的功能</div>
     <!-- 分页组件 -->
     <div v-if="functions.length > 0" class="pagination">
       <button @click="prevPage" :disabled="currentPage === 1">上一页</button>
@@ -66,7 +66,7 @@ import SystemManagementSidebar from '../components/SystemManagementSidebar.vue';
 const router = useRouter();
 const message = inject('message');
 
-const functionName = ref('');
+const query = ref('');
 const functions = ref([]);
 const loading = ref(false);
 const currentPage = ref(1);
@@ -88,7 +88,14 @@ const goToAddFunction = () => {
 const searchFunctions = async () => {
   loading.value = true;
   try {
-    const response = await axios.get(`/function/query?functionName=${functionName.value}`);
+    let response;
+    if (/^\d+$/.test(query.value)) {
+      // 如果输入是纯数字，按功能 ID 查询
+      response = await axios.get(`/function/query?functionId=${query.value}`);
+    } else {
+      // 否则按功能名称查询
+      response = await axios.get(`/function/query?functionName=${query.value}`);
+    }
     functions.value = response.data;
 
     if (response.data.length === 0) {
