@@ -24,7 +24,8 @@
           <td>{{ user.user_name }}</td>
           <td>
             <button @click="viewUser(user.user_id)" class="action-btn view-btn">查看</button>
-            <button @click="deleteUser(user.user_id)" :disabled="!hasDeletePermission" class="action-btn delete-btn">删除</button>
+            <!-- 移除权限禁用逻辑 -->
+            <button @click="deleteUser(user.user_id)" class="action-btn delete-btn">删除</button>
           </td>
         </tr>
       </tbody>
@@ -49,9 +50,10 @@
         </div>
         <div class="modal-footer">
           <button @click="cancelDelete" class="action-btn secondary">取消</button>
+          <!-- 移除权限禁用逻辑 -->
           <button 
             @click="confirmDelete" 
-            :disabled="isDeleting || !hasDeletePermission" 
+            :disabled="isDeleting" 
             class="action-btn primary"
           >
             {{ isDeleting ? '删除中...' : '确认' }}
@@ -71,7 +73,6 @@ import { useAuthStore } from '../common/auth';
 
 const router = useRouter();
 const message = inject('message');
-const authStore = useAuthStore();
 
 // 状态管理
 const query = ref('');
@@ -84,7 +85,8 @@ const itemsPerPage = ref(10);
 const isDeleteModalVisible = ref(false);
 const currentDeletingUser = ref({});
 const isDeleting = ref(false);
-const hasDeletePermission = ref(false);
+// 移除权限相关状态
+// const hasDeletePermission = ref(false);
 
 // 计算属性
 const totalPages = computed(() => Math.ceil(users.value.length / itemsPerPage.value));
@@ -193,28 +195,8 @@ const getAllUsers = async () => {
   }
 };
 
-// 获取用户权限
-const fetchUserPermissions = async () => {
-  const userId = authStore.user?.id;
-  if (userId) {
-    try {
-      const response = await axios.get("/permission/checkPermission", {
-        params: {
-          userId,
-          route: '*'
-        }
-      });
-      const allowedFunctionIds = response.data.allowedFunctionIds || [];
-      hasDeletePermission.value = allowedFunctionIds.includes(22);
-    } catch (error) {
-      console.error("获取用户权限失败:", error);
-    }
-  }
-};
-
 onMounted(async () => {
   await getAllUsers();
-  await fetchUserPermissions();
 });
 </script>
 

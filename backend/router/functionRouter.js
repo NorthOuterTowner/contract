@@ -16,20 +16,19 @@ router.get("/getNextId", async (req, res) => {
 
 // 添加功能
 router.post("/add", async (req, res) => {
-  const { functionId, functionName, functionDescription, parentId, functionRoute } = req.body;
+  const { functionId, functionName, functionDescription, parentId } = req.body;
   if (!functionName) {
     return res.status(400).json({ error: "功能名称不能为空" });
   }
 
   try {
     const sql =
-      "INSERT INTO Functions (FunctionID, FunctionName, FunctionDescription, ParentID, FunctionRoute) VALUES (?,?,?,?,?)";
+      "INSERT INTO Functions (FunctionID, FunctionName, FunctionDescription, ParentID) VALUES (?,?,?,?)";
     await db.async.run(sql, [
       functionId,
       functionName,
       functionDescription,
-      parentId,
-      functionRoute
+      parentId
     ]);
     res.json({ message: "功能添加成功" });
   } catch (error) {
@@ -61,7 +60,7 @@ router.get("/query", async (req, res) => {
 
 // 修改功能
 router.put("/update", async (req, res) => {
-  const { functionId, functionName, functionCode, functionDescription, parentId, functionRoute } = req.body;
+  const { functionId, functionName, functionDescription, parentId } = req.body;
   if (!functionId) return res.status(400).json({ error: "功能ID不能为空" });
 
   try {
@@ -71,10 +70,6 @@ router.put("/update", async (req, res) => {
     if (functionName) {
       sql += "FunctionName = ?";
       params.push(functionName);
-      if (functionCode) {
-        sql += ", FunctionCode = ?";
-        params.push(functionCode);
-      }
       if (functionDescription) {
         sql += ", FunctionDescription = ?";
         params.push(functionDescription);
@@ -82,25 +77,6 @@ router.put("/update", async (req, res) => {
       if (parentId !== undefined) {
         sql += ", ParentID = ?";
         params.push(parentId);
-      }
-      if (functionRoute) {
-        sql += ", FunctionRoute = ?";
-        params.push(functionRoute);
-      }
-    } else if (functionCode) {
-      sql += "FunctionCode = ?";
-      params.push(functionCode);
-      if (functionDescription) {
-        sql += ", FunctionDescription = ?";
-        params.push(functionDescription);
-      }
-      if (parentId !== undefined) {
-        sql += ", ParentID = ?";
-        params.push(parentId);
-      }
-      if (functionRoute) {
-        sql += ", FunctionRoute = ?";
-        params.push(functionRoute);
       }
     } else if (functionDescription) {
       sql += "FunctionDescription = ?";
@@ -109,20 +85,9 @@ router.put("/update", async (req, res) => {
         sql += ", ParentID = ?";
         params.push(parentId);
       }
-      if (functionRoute) {
-        sql += ", FunctionRoute = ?";
-        params.push(functionRoute);
-      }
     } else if (parentId !== undefined) {
       sql += "ParentID = ?";
       params.push(parentId);
-      if (functionRoute) {
-        sql += ", FunctionRoute = ?";
-        params.push(functionRoute);
-      }
-    } else if (functionRoute) {
-      sql += "FunctionRoute = ?";
-      params.push(functionRoute);
     }
     
     sql += " WHERE FunctionID = ?";
@@ -154,6 +119,12 @@ router.delete("/delete", async (req, res) => {
       [functionId]
     );
     
+    // 删除关联的路由
+    await db.async.run(
+      "DELETE FROM functionroutes WHERE FunctionID = ?",
+      [functionId]
+    );
+    
     res.json({ message: "功能删除成功" });
   } catch (error) {
     console.error(error);
@@ -166,6 +137,54 @@ router.get("/all", async (req, res) => {
   try {
     const functions = await db.async.all("SELECT * FROM Functions", []);
     res.json(functions.rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "系统异常，请稍后重试" });
+  }
+});
+
+// 添加功能路由
+router.post("/addRoute", async (req, res) => {
+  const { functionId, route } = req.body;
+  if (!functionId || !route) {
+    return res.status(400).json({ error: "功能ID和路由不能为空" });
+  }
+
+  try {
+    const sql = "INSERT INTO functionroutes (FunctionID, Route) VALUES (?,?)";
+    await db.async.run(sql, [functionId, route]);
+    res.json({ message: "功能路由添加成功" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "系统异常，请稍后重试" });
+  }
+});
+
+// 查询功能路由
+router.get("/queryRoutes/:functionId", async (req, res) => {
+  const { functionId } = req.params;
+  
+  try {
+    const sql = "SELECT * FROM functionroutes WHERE FunctionID = ?";
+    const routes = await db.async.all(sql, [functionId]);
+    res.json(routes.rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "系统异常，请稍后重试" });
+  }
+});
+
+// 删除功能路由
+router.delete("/deleteRoute", async (req, res) => {
+  const { functionId, route } = req.query;
+  if (!functionId || !route) {
+    return res.status(400).json({ error: "功能ID和路由不能为空" });
+  }
+
+  try {
+    const sql = "DELETE FROM functionroutes WHERE FunctionID = ? AND Route = ?";
+    await db.async.run(sql, [functionId, route]);
+    res.json({ message: "功能路由删除成功" });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "系统异常，请稍后重试" });

@@ -18,14 +18,14 @@ router.get("/checkPermission", async (req, res) => {
 
         // 查询该角色拥有的功能路由
         const rolePermissionsSql = `
-            SELECT f.FunctionRoute 
+            SELECT fr.Route 
             FROM RolePermissions rp
-            JOIN Functions f ON rp.FunctionID = f.FunctionID
+            JOIN functionroutes fr ON rp.FunctionID = fr.FunctionID
             WHERE rp.RoleID = ?
         `;
         const rolePermissionsResult = await db.async.all(rolePermissionsSql, [roleId]);
         console.log('rolePermissionsResult:', rolePermissionsResult); // 添加调试信息
-        const allowedRoutes = rolePermissionsResult.rows.map(row => row.FunctionRoute);
+        const allowedRoutes = rolePermissionsResult.rows.map(row => row.Route);
 
         if (route === '*') {
             return res.json({ allowedRoutes });
