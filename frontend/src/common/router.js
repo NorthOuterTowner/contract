@@ -112,15 +112,11 @@ let routes = [
             { path: 'query/status', component: QueryContractList },
             { path: 'query/advanced', component: QueryContractList }
         ]
-    }
-];
-
-
+    },
     // 客户信息路由
     {path: '/customerInfo', name: 'CustomerInfo', component: CustomerInfo },
     {path: '/contractInfo', name: 'ContractInfo', component: ContractInfo }
-
-]
+];
 const router = createRouter({
     history: createWebHashHistory(), 
     routes
