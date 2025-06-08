@@ -81,19 +81,28 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `contractassignment`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `contractassignment` (
-  `AssignmentID` int(11) NOT NULL AUTO_INCREMENT,
-  `ContractID` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `SignerID` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `AssignmentDate` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `comment` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `AssignmentID` INT(11) NOT NULL AUTO_INCREMENT COMMENT '分配记录唯一标识',
+  `ContractID` VARCHAR(10) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '合同编号（关联contract表ContractID，对应需求中合同编号）',
+  `RoleType` VARCHAR(20) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '分配角色：会签人、审批人、签订人（对应需求中的三类流程角色）',
+  `AssigneeUserID` INT(10) UNSIGNED NOT NULL COMMENT '被分配用户ID（关联users表user_id，需为合同操作员或管理员）',
+  `OperatorUserID` INT(10) UNSIGNED NOT NULL COMMENT '操作人用户ID（关联users表user_id，需为管理员角色）',
+  `AssignmentDate` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '分配时间（自动填充当前时间）',
+  `AssignmentComment` VARCHAR(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '分配备注（如特殊流程说明）',
   PRIMARY KEY (`AssignmentID`),
-  KEY `ContractID` (`ContractID`),
-  CONSTRAINT `contractassignment_ibfk_1` FOREIGN KEY (`ContractID`) REFERENCES `contract` (`ContractID`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+  -- 外键约束：关联合同表
+  KEY `fk_contractassignment_contract` (`ContractID`),
+  CONSTRAINT `fk_contractassignment_contract` FOREIGN KEY (`ContractID`) REFERENCES `contract` (`ContractID`) ON DELETE CASCADE,
+  -- 外键约束：关联被分配用户（合同操作员/管理员）
+  KEY `fk_contractassignment_assignee` (`AssigneeUserID`),
+  CONSTRAINT `fk_contractassignment_assignee` FOREIGN KEY (`AssigneeUserID`) REFERENCES `users` (`user_id`),
+  -- 外键约束：关联操作人（管理员）
+  KEY `fk_contractassignment_operator` (`OperatorUserID`),
+  CONSTRAINT `fk_contractassignment_operator` FOREIGN KEY (`OperatorUserID`) REFERENCES `users` (`user_id`),
+  -- 检查角色类型合法性（基于需求中的三类角色）
+  CHECK (`RoleType` IN ('会签人', '审批人', '签订人'))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='合同分配记录表（记录会签、审批、签订人员分配信息）';
 
 --
 -- Dumping data for table `contractassignment`
