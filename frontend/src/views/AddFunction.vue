@@ -6,7 +6,7 @@
       </button>
     </div>
 
-     <h2>添加功能</h2>
+    <h2>添加功能</h2>
 
     <!-- 表单区域 -->
     <div class="form-section">
@@ -52,6 +52,16 @@
           />
         </div>
       </div>
+      <div class="input-group">
+        <label class="form-label">功能路由：</label>
+        <div class="input-wrapper">
+          <input
+            v-model="functionRoute"
+            type="text"
+            placeholder="请输入功能路由"
+          />
+        </div>
+      </div>
     </div>
     <!-- 操作按钮区域 -->
     <div class="button-group">
@@ -77,6 +87,7 @@ const functionId = ref("");
 const functionName = ref("");
 const functionDescription = ref("");
 const parentId = ref("");
+const functionRoute = ref("");
 const submitted = ref(false);
 const message = ref("");
 const isSuccess = ref(false);
@@ -114,6 +125,7 @@ const handleSubmit = async () => {
       functionName: functionName.value,
       functionDescription: functionDescription.value,
       parentId: parentId.value || null,
+      functionRoute: functionRoute.value
     });
     message.value = "添加成功！";
     isSuccess.value = true;
@@ -129,6 +141,7 @@ const resetForm = () => {
   functionName.value = "";
   functionDescription.value = "";
   parentId.value = "";
+  functionRoute.value = "";
   submitted.value = false;
   getNextFunctionId();
 };

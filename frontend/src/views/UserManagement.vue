@@ -24,7 +24,7 @@
           <td>{{ user.user_name }}</td>
           <td>
             <button @click="viewUser(user.user_id)" class="action-btn view-btn">查看</button>
-            <button @click="deleteUser(user.user_id)" class="action-btn delete-btn">删除</button>
+            <button @click="deleteUser(user.user_id)" :disabled="!hasDeletePermission" class="action-btn delete-btn">删除</button>
           </td>
         </tr>
       </tbody>
@@ -51,7 +51,7 @@
           <button @click="cancelDelete" class="action-btn secondary">取消</button>
           <button 
             @click="confirmDelete" 
-            :disabled="isDeleting" 
+            :disabled="isDeleting || !hasDeletePermission" 
             class="action-btn primary"
           >
             {{ isDeleting ? '删除中...' : '确认' }}
@@ -67,9 +67,11 @@ import { ref, inject, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 import SystemManagementSidebar from '../components/SystemManagementSidebar.vue';
+import { useAuthStore } from '../common/auth';
 
 const router = useRouter();
 const message = inject('message');
+const authStore = useAuthStore();
 
 // 状态管理
 const query = ref('');
@@ -82,6 +84,7 @@ const itemsPerPage = ref(10);
 const isDeleteModalVisible = ref(false);
 const currentDeletingUser = ref({});
 const isDeleting = ref(false);
+const hasDeletePermission = ref(false);
 
 // 计算属性
 const totalPages = computed(() => Math.ceil(users.value.length / itemsPerPage.value));
@@ -190,12 +193,33 @@ const getAllUsers = async () => {
   }
 };
 
-onMounted(() => {
-  getAllUsers();
+// 获取用户权限
+const fetchUserPermissions = async () => {
+  const userId = authStore.user?.id;
+  if (userId) {
+    try {
+      const response = await axios.get("/permission/checkPermission", {
+        params: {
+          userId,
+          route: '*'
+        }
+      });
+      const allowedFunctionIds = response.data.allowedFunctionIds || [];
+      hasDeletePermission.value = allowedFunctionIds.includes(22);
+    } catch (error) {
+      console.error("获取用户权限失败:", error);
+    }
+  }
+};
+
+onMounted(async () => {
+  await getAllUsers();
+  await fetchUserPermissions();
 });
 </script>
 
 <style scoped>
+/* 样式部分保持不变 */
 .user-management {
   max-width: 1000px;
   margin: 40px auto;

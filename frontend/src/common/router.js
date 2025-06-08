@@ -1,6 +1,5 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
-
-//import test from '../views/test.vue';
+import axios from "axios";
 import { useAuthStore } from './auth'; 
 import FirstPage from '../views/FirstPage.vue';
 import Login from '../views/Login.vue';
@@ -34,93 +33,105 @@ import SignContent from '../views/signContent.vue';
 
 import CustomerInfo from '../views/CustomerInfo.vue';
 import ContractInfo from '../views/ContractInfo.vue';
-
 // 统计和查询 (Naive UI 版本)
 import QueryContractList from '../views/QueryContractList.vue'; 
 import QueryContract from '../views/QueryContract.vue';       
 import ContractStatisticsPage from '../views/ContractStatisticsPage.vue'; 
-
 // 统计和查询——布局组件
 import ContractManagementLayout from '../layouts/ContractManagementLayout.vue'; 
 
-let routes = [
-    { path:'/',redirect:'/FirstPage'},
-    { path:'/FirstPage',component : FirstPage},
-    { path:'/login',component:Login},
-    { path:'/register',component:Register},
-
-    //{ path: '/', redirect: '/HomePage'},
-    { path: '/HomePage', component :HomePage},
-    { path: "/approveList", component:approveList },
-    { path: '/approval', component:approval },
-    { path: "/DraftContract", component: DraftContract },
-    { path: "/DraftContractList", component: DraftContractList },
-    { path: "/CoSignContract", component: CoSignContract },
-    { path: "/CoSignContract/:contractId", component: CoSignContract },
-    { path: "/CoSignContractList", component: CoSignContractList },
-    { path: "/FinalizeContract", component: FinalizeContract },
-    { path: "/FinalizeContractList", component: FinalizeContractList },
-    { path: '/PendingContractList',component: PendingContractList },
-    { path: '/allocate/:contractId',component: AssignContract },
-    { path: "/approve/content",component:content },
-    //用户管理子路由
-    { path: '/user', component: UserManagement },
-    { path: '/user/add', component: AddUser },
-    //角色管理子路由
-    { path: '/user/modify/:userId', component: ModifyUser },
-    { path: '/role', component: RoleManagement },
-    { path: '/role/add', component: AddRole},
-    { path: '/role/modify/:roleId', component: ModifyRole},
-    //功能管理子路由
-    { path: '/function', component: FunctionManagement },
-    { path: '/function/add', component: AddFunction },
-    //权限分配子路由
-    { path: '/permission', component: PermissionManagement },
-    { path: '/permission/assign/:userId', component: AssignPermissions },
-    { path: "/SignContractList", component: SignContract},
-    { path: "/sign/content", component: SignContent },
-
-    // 查询和统计——移除旧的 /query 路由。
-    // { path: '/query', name: 'QueryContractList', component: QueryContractList },
-    // { path: '/query/detail/:id', name: 'QueryContract', component: QueryContract },
-    // { path: '/query/name', component: QueryContractList },
-    // { path: '/query/status', component: QueryContractList },
-    // { path: '/query/advanced', component: QueryContractList }
-
-    // 查询和统计——新的顶级路由和子路由)
-    { 
-        path: '/my-contract-module', // 顶级路径
-        component: ContractManagementLayout, // 专用布局
-        children: [
-            { 
-                path: 'query', // 合同查询列表页 (完整路径: /my-contract-module/query)
-                name: 'MyModuleContractQueryList', 
-                component: QueryContractList, 
-            },
-            { 
-                path: 'query/detail/:id', // 合同查询详情页 (完整路径: /my-contract-module/query/detail/:id)
-                name: 'MyModuleContractQueryDetail', 
-                component: QueryContract, 
-            },
-            {
-                path: 'statistics', // 合同统计页 (完整路径: /my-contract-module/statistics)
-                name: 'MyModuleContractStatistics',
-                component: ContractStatisticsPage, 
-            },
-            // 其他子路由（如按名称、按状态、高级查询），也添加到这里并更新路径。目前暂时弃用
-            { path: 'query/name', component: QueryContractList }, 
-            { path: 'query/status', component: QueryContractList },
-            { path: 'query/advanced', component: QueryContractList }
-        ]
-    },
-    // 客户信息路由
-    {path: '/customerInfo', name: 'CustomerInfo', component: CustomerInfo },
-    {path: '/contractInfo', name: 'ContractInfo', component: ContractInfo }
+let routes= [
+  // 公共路由
+  { path:'/', redirect: '/FirstPage' },
+  { path:'/FirstPage', component: FirstPage },
+  { path:'/login', component: Login },
+  { path:'/register', component: Register },
+  { path: '/HomePage', component: HomePage },
+  // 审批合同
+  { path: "/approveList", component: approveList },
+  { path: '/approval', component: approval },
+  { path: "/approve/content", component: content },
+  // 起草合同
+  { path: "/DraftContract", component: DraftContract },
+  { path: "/DraftContractList", component: DraftContractList },
+  // 会签合同
+  { path: "/CoSignContract", component: CoSignContract },
+  { path: "/CoSignContract/:contractId", component: CoSignContract },
+  { path: "/CoSignContractList", component: CoSignContractList },
+  // 定稿合同
+  { path: "/FinalizeContract", component: FinalizeContract },
+  { path: "/FinalizeContractList", component: FinalizeContractList },
+  // 分配合同
+  { path: '/PendingContractList', component: PendingContractList },
+  { path: '/allocate/:contractId', component: AssignContract },
+  // 用户管理
+  { path: '/user', component: UserManagement },
+  { path: '/user/add', component: AddUser },
+  { path: '/user/modify/:userId', component: ModifyUser },
+  // 角色管理
+  { path: '/role', component: RoleManagement },
+  { path: '/role/add', component: AddRole },
+  { path: '/role/modify/:roleId', component: ModifyRole },
+  // 功能管理
+  { path: '/function', component: FunctionManagement },
+  { path: '/function/add', component: AddFunction },
+  // 权限分配
+  { path: '/permission', component: PermissionManagement },
+  { path: '/permission/assign/:userId', component: AssignPermissions },
+  // 签订合同
+  { path: "/SignContractList", component: SignContract },
+  { path: "/sign/content", component: SignContent },
+  // 合同查询
+  { 
+      path: '/my-contract-module', // 顶级路径
+      component: ContractManagementLayout, // 专用布局
+      children: [
+          { 
+              path: 'query', // 合同查询列表页 (完整路径: /my-contract-module/query)
+              name: 'MyModuleContractQueryList', 
+              component: QueryContractList, 
+          },
+          { 
+              path: 'query/detail/:id', // 合同查询详情页 (完整路径: /my-contract-module/query/detail/:id)
+              name: 'MyModuleContractQueryDetail', 
+              component: QueryContract, 
+          },
+          {
+              path: 'statistics', // 合同统计页 (完整路径: /my-contract-module/statistics)
+              name: 'MyModuleContractStatistics',
+              component: ContractStatisticsPage, 
+          },
+          // 其他子路由（如按名称、按状态、高级查询），也添加到这里并更新路径。目前暂时弃用
+          { path: 'query/name', component: QueryContractList }, 
+          { path: 'query/status', component: QueryContractList },
+          { path: 'query/advanced', component: QueryContractList }
+      ]
+  },
+  // 客户信息
+  { path: '/customerInfo', name: 'CustomerInfo', component: CustomerInfo },
+  { path: '/contractInfo', name: 'ContractInfo', component: ContractInfo },
 ];
+
 const router = createRouter({
     history: createWebHashHistory(), 
     routes
 });
+
+// 获取用户所有可访问的路由
+const getUserAccessibleRoutes = async (userId) => {
+  try {
+    const response = await axios.get("/permission/checkPermission", {
+      params: {
+        userId,
+        route: '*' // 表示获取所有可访问路由
+      }
+    });
+    return response.data.allowedRoutes || [];
+  } catch (error) {
+    console.error("获取用户可访问路由失败:", error);
+    return [];
+  }
+};
 
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
@@ -128,54 +139,50 @@ router.beforeEach(async (to, from, next) => {
   await authStore.initAuth();
 
   // 公开路由列表（无需登录）
-  const publicRoutes = ['/login', '/register', '/FirstPage'];
+  const publicRoutes = ['/login', '/register', '/FirstPage', '/', '/HomePage'];
   const isPublic = publicRoutes.includes(to.path);
-  
-  // 判断路由是否需要认证
-  const requiresAuth = to.meta.requiresAuth;
-  
+
+  // 如果是公开路由，直接放行
+  if (isPublic) {
+    console.log(`访问公开路由 ${to.path}，直接放行`);
+    next();
+    return;
+  }
+
   // 未登录且访问非公开路由，重定向到登录页
   if (!isPublic && !authStore.isLoggedIn) {
-    next('/login');//未登陆时跳转登录页
-  } else {
-    // 获取用户的角色和权限
-    const userRole = authStore.userRole;
-    const userPermissions = await getPermissionsByRole(userRole);
+    next('/login'); // 未登录时跳转登录页
+    return;
+  }
 
-    // 获取目标路由对应的功能
-    const targetFunction = await getFunctionByRoute(to.path);
-
-    // 检查用户是否有访问该功能的权限
-    if (targetFunction && !userPermissions.includes(targetFunction.FunctionID)) {
-      next('/403'); // 无权限访问，重定向到 403 页面
-    } else {
-      next();
+  const userId = authStore.user?.id;
+  console.log('userId:', userId);
+  if (userId) {
+    try {
+      const accessibleRoutes = await getUserAccessibleRoutes(userId);
+      const hasPermission = accessibleRoutes.some(allowedRoute => {
+        // 将路由转换为正则表达式
+        const regexRoute = allowedRoute.replace(/:userId/g, '\\d+').replace(/:contractId/g, '\\d+').replace(/:roleId/g, '\\d+');
+        const routeRegex = new RegExp(`^${regexRoute}$`);
+        return routeRegex.test(to.path);
+      });
+      console.log('hasPermission:', hasPermission);
+      if (hasPermission) {
+        next();
+      } else {
+        // 没有权限，弹框提示
+        window.alert('您没有权限访问该页面');
+        next(false); // 阻止路由跳转
+      }
+    } catch (error) {
+      console.error("检查权限失败:", error);
+      window.alert('检查权限失败，请稍后重试');
+      next(false); // 阻止路由跳转
     }
+  } else {
+    // 如果 userId 为空，重定向到登录页
+    next('/login');
   }
 });
 
-// 获取用户角色对应的权限
-const getPermissionsByRole = async (roleId) => {
-  try {
-    const response = await axios.get(`/role/permissions?roleId=${roleId}`);
-    return response.data.map(item => item.FunctionID);
-  } catch (error) {
-    console.error('获取角色权限失败:', error);
-    return [];
-  }
-};
-
-// 根据路由获取对应的功能
-const getFunctionByRoute = async (route) => {
-  try {
-    const response = await axios.get(`/function/query?functionRoute=${route}`);
-    return response.data.length > 0 ? response.data[0] : null;
-  } catch (error) {
-    console.error('获取功能信息失败:', error);
-    return null;
-  }
-};
-
 export { router, routes };
-
-
