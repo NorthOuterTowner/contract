@@ -71,6 +71,35 @@
             <span class="error" v-if="errors.description">{{ errors.description }}</span>
           </div>
           
+          <!-- 新增生效起止时间 -->
+          <div class="form-group">
+            <label>合同生效时间:</label>
+            <div class="date-range">
+              <div class="date-input">
+                <label for="startDate">开始日期:</label>
+                <input 
+                  type="date" 
+                  id="startDate" 
+                  v-model="contract.startDate" 
+                  required
+                  :min="minStartDate"
+                />
+                <span class="error" v-if="errors.startDate">{{ errors.startDate }}</span>
+              </div>
+              <div class="date-input">
+                <label for="endDate">结束日期:</label>
+                <input 
+                  type="date" 
+                  id="endDate" 
+                  v-model="contract.endDate" 
+                  required
+                  :min="contract.startDate || minStartDate"
+                />
+                <span class="error" v-if="errors.endDate">{{ errors.endDate }}</span>
+              </div>
+            </div>
+          </div>
+          
           <div class="form-group">
             <div class="upload-section">
               <input 
@@ -107,7 +136,7 @@
 
 <script>
 import axios from 'axios';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 
 export default {
@@ -125,7 +154,9 @@ export default {
       title: '',
       description: '',
       status: '待起草',
-      creationDate: new Date()
+      creationDate: new Date(),
+      startDate: '',
+      endDate: ''
     });
     
     const draft = ref({
@@ -136,7 +167,15 @@ export default {
     const errors = ref({
       draftTitle: '',
       contractNumber: '',
-      description: ''
+      description: '',
+      startDate: '',
+      endDate: ''
+    });
+    
+    // 计算最小开始日期（今天）
+    const minStartDate = computed(() => {
+      const today = new Date();
+      return today.toISOString().split('T')[0];
     });
     
     const triggerFileInput = () => {
@@ -164,6 +203,29 @@ export default {
       return true;
     };
     
+    const validateDates = () => {
+      let isValid = true;
+      
+      if (!contract.value.startDate) {
+        errors.value.startDate = '请选择开始日期';
+        isValid = false;
+      } else {
+        errors.value.startDate = '';
+      }
+      
+      if (!contract.value.endDate) {
+        errors.value.endDate = '请选择结束日期';
+        isValid = false;
+      } else if (contract.value.startDate && contract.value.endDate < contract.value.startDate) {
+        errors.value.endDate = '结束日期不能早于开始日期';
+        isValid = false;
+      } else {
+        errors.value.endDate = '';
+      }
+      
+      return isValid;
+    };
+    
     const fetchContractInfo = async () => {
       try {
         contract.value = {
@@ -171,7 +233,9 @@ export default {
           title: '新合同',
           description: '',
           status: '待起草',
-          creationDate: new Date()
+          creationDate: new Date(),
+          startDate: '',
+          endDate: ''
         };
         loading.value = false;
       } catch (error) {
@@ -207,6 +271,10 @@ export default {
         errors.value.description = '';
       }
       
+      if (!validateDates()) {
+        isValid = false;
+      }
+      
       return isValid;
     };
     
@@ -221,6 +289,8 @@ export default {
         formData.append('title', draft.value.draftTitle);
         formData.append('description', contract.value.description);
         formData.append('creationDate', contract.value.creationDate.toISOString());
+        formData.append('startDate', contract.value.startDate);
+        formData.append('endDate', contract.value.endDate);
         formData.append('status', '待起草');
         
         if (fileInput.value.files[0]) {
@@ -262,6 +332,7 @@ export default {
       draft,
       errors,
       fileInput,
+      minStartDate,
       triggerFileInput,
       handleFileUpload,
       validateContractNumber,
@@ -334,7 +405,8 @@ h3 {
 }
 
 input[type="text"],
-textarea {
+textarea,
+input[type="date"] {
   width: 100%;
   padding: 10px;
   border: 1px solid #ddd;
@@ -344,7 +416,8 @@ textarea {
 }
 
 input[type="text"]:focus,
-textarea:focus {
+textarea:focus,
+input[type="date"]:focus {
   border-color: #409eff;
   outline: none;
 }
@@ -432,5 +505,21 @@ button:disabled {
   text-align: center;
   padding: 50px;
   color: #666;
+}
+
+.date-range {
+  display: flex;
+  gap: 20px;
+}
+
+.date-input {
+  flex: 1;
+}
+
+.date-input label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: normal;
+  color: #555;
 }
 </style>
