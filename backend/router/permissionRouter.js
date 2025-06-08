@@ -34,7 +34,7 @@ router.get("/checkPermission", async (req, res) => {
         // 检查请求的路由是否在允许的路由列表中，支持正则匹配
         const hasPermission = allowedRoutes.some(allowedRoute => {
             // 将路由转换为正则表达式
-            const regexRoute = allowedRoute.replace(/:userId/g, '\\d+').replace(/:contractId/g, '\\d+').replace(/:roleId/g, '\\d+');
+            const regexRoute = allowedRoute.replace(/:userId/g, '\\d+').replace(/:contractId/g, '\\d+').replace(/:roleId/g, '\\d+').replace(/:functionId/g, '\\d+');
             const routeRegex = new RegExp(`^${regexRoute}$`);
             return routeRegex.test(route);
         });

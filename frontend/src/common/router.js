@@ -1,12 +1,12 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
 import axios from "axios";
 import { useAuthStore } from './auth'; 
+import { createDiscreteApi } from 'naive-ui';
+
 import FirstPage from '../views/FirstPage.vue';
 import Login from '../views/Login.vue';
 import Register from '../views/Register.vue';
 import HomePage from '../views/HomePage.vue';
-
-// 导入其他页面组件
 import approveList from '../views/approveList.vue';
 import approval from '../views/approval.vue';
 import DraftContract from '../views/DraftContract.vue';
@@ -26,6 +26,7 @@ import AddRole from '../views/AddRole.vue';
 import ModifyRole from '../views/ModifyRole.vue';
 import FunctionManagement from '../views/FunctionManagement.vue';
 import AddFunction from '../views/AddFunction.vue';
+import ModifyFunction from '../views/ModifyFunction.vue';
 import PermissionManagement from '../views/PermissionManagement.vue';
 import AssignPermissions from '../views/AssignPermission.vue'; 
 import SignContract from '../views/SignContract.vue';
@@ -75,6 +76,7 @@ let routes= [
   // 功能管理
   { path: '/function', component: FunctionManagement },
   { path: '/function/add', component: AddFunction },
+  { path: '/function/modify/:functionId', component: ModifyFunction },
   // 权限分配
   { path: '/permission', component: PermissionManagement },
   { path: '/permission/assign/:userId', component: AssignPermissions },
@@ -116,6 +118,9 @@ const router = createRouter({
     history: createWebHashHistory(), 
     routes
 });
+
+// 创建 message 实例
+const { message } = createDiscreteApi(["message"]);
 
 // 获取用户所有可访问的路由
 const getUserAccessibleRoutes = async (userId) => {
@@ -162,7 +167,7 @@ router.beforeEach(async (to, from, next) => {
       const accessibleRoutes = await getUserAccessibleRoutes(userId);
       const hasPermission = accessibleRoutes.some(allowedRoute => {
         // 将路由转换为正则表达式
-        const regexRoute = allowedRoute.replace(/:userId/g, '\\d+').replace(/:contractId/g, '\\d+').replace(/:roleId/g, '\\d+');
+        const regexRoute = allowedRoute.replace(/:userId/g, '\\d+').replace(/:contractId/g, '\\d+').replace(/:roleId/g, '\\d+').replace(/:functionId/g, '\\d+');
         const routeRegex = new RegExp(`^${regexRoute}$`);
         return routeRegex.test(to.path);
       });
@@ -171,12 +176,12 @@ router.beforeEach(async (to, from, next) => {
         next();
       } else {
         // 没有权限，弹框提示
-        window.alert('您没有权限访问该页面');
+        message.error('您没有权限访问该页面');
         next(false); // 阻止路由跳转
       }
     } catch (error) {
       console.error("检查权限失败:", error);
-      window.alert('检查权限失败，请稍后重试');
+      message.error('检查权限失败，请稍后重试');
       next(false); // 阻止路由跳转
     }
   } else {
