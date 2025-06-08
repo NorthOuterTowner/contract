@@ -61,6 +61,7 @@ let routes= [
   { path: "/CoSignContractList", component: CoSignContractList },
   // 定稿合同
   { path: "/FinalizeContract", component: FinalizeContract },
+  { path: "/FinalizeContract/:contractId", component: FinalizeContract },
   { path: "/FinalizeContractList", component: FinalizeContractList },
   // 分配合同
   { path: '/PendingContractList', component: PendingContractList },
