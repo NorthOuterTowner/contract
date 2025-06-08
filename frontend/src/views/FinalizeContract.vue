@@ -56,6 +56,25 @@
           </button>
           <span class="file-name">{{ contract.Content || '无定稿文件' }}</span>
         </div>
+
+        <div class="upload-section">
+          <input 
+            type="file" 
+            id="updateFileInput" 
+            ref="updateFileInput"
+            style="display: none"
+            @change="handleFileChange"
+            accept=".pdf,.doc,.docx,.txt"
+          />
+          <button 
+            type="button" 
+            class="upload-btn"
+            @click="triggerFileInput"
+          >
+            选择文件
+          </button>
+          <span v-if="fileName" class="file-info">已选择: {{ fileName }}</span>
+        </div>
       </div>
       
       <div class="action-buttons" v-if="contract.Status !== '已定稿'">
@@ -63,7 +82,7 @@
           type="button" 
           class="confirm-btn"
           @click="confirmFinalize"
-          :disabled="submitting"
+          :disabled="submitting || !selectedFile"
         >
           {{ submitting ? '处理中...' : '确认定稿' }}
         </button>
@@ -83,10 +102,11 @@ export default {
     const router = useRouter();
     const route = useRoute();
     const message = inject("message");
-    
     const loading = ref(true);
     const submitting = ref(false);
-    
+    const updateFileInput = ref(null);
+    const fileName = ref('');
+    const selectedFile = ref(null);
     const contract = ref({
       ContractID: '',
       Title: '',
@@ -107,7 +127,6 @@ export default {
 
         if (res.data.code === 200) {
           contract.value = res.data.data;
-          // If content is in a separate field in the response
           if (res.data.data.content) {
             finalizedContent.value = res.data.data.content;
           }
@@ -163,16 +182,31 @@ export default {
     };
     
     const confirmFinalize = async () => {
+      if (!selectedFile.value) {
+        message.error("请先选择定稿文件");
+        return;
+      }
+
       submitting.value = true;
       
       try {
-        const res = await axios.post('/finalize/confirm', {
-          contractId: contract.value.ContractID
+        const formData = new FormData();
+        formData.append('file', selectedFile.value);
+        formData.append('contractId', contract.value.ContractID);
+        
+        const res = await axios.post('/finalize/save', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
         });
 
         if (res.data.code === 200) {
-          message.info("合同定稿成功");
+          message.success("合同定稿成功");
           await fetchContractInfo();
+          // 清空已选文件
+          selectedFile.value = null;
+          fileName.value = '';
+          updateFileInput.value.value = '';
         } else {
           message.error(res.data.msg || '合同定稿失败');
         }
@@ -189,6 +223,32 @@ export default {
       return new Date(dateString).toLocaleString();
     };
     
+    const triggerFileInput = () => {
+      updateFileInput.value.click();
+    };
+
+    const handleFileChange = (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      // 验证文件类型
+      const allowedTypes = ['application/pdf', 'application/msword', 
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'];
+      if (!allowedTypes.includes(file.type) && !file.name.match(/\.(pdf|docx?|txt)$/i)) {
+        message.error('只支持PDF、Word和TXT文档');
+        return;
+      }
+      
+      // 验证文件大小 (50MB以内)
+      if (file.size > 50 * 1024 * 1024) {
+        message.error('文件大小不能超过50MB');
+        return;
+      }
+      
+      fileName.value = file.name;
+      selectedFile.value = file;
+    };
+    
     fetchContractInfo();
     
     return {
@@ -196,9 +256,14 @@ export default {
       submitting,
       contract,
       finalizedContent,
+      updateFileInput,
+      fileName,
+      selectedFile,
       onDownload,
       confirmFinalize,
-      formatDate
+      formatDate,
+      triggerFileInput,
+      handleFileChange
     };
   }
 };
@@ -212,6 +277,32 @@ export default {
   background-color: #fff;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.upload-section {
+  margin-top: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.upload-btn {
+  padding: 8px 15px;
+  background-color: #e6a23c;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.upload-btn:hover {
+  background-color: #ebb563;
+}
+
+.file-info {
+  color: #606266;
+  font-size: 13px;
 }
 
 .back-link {
