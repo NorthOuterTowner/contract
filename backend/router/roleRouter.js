@@ -163,7 +163,7 @@ router.get("/top3", async (req, res) => {
     try {
         await startTransaction();
         // 使用共享锁，防止其他事务在当前事务期间修改 Roles 表
-        const sql = "SELECT RoleID, RoleName FROM Roles LIMIT 3 FOR SHARE";
+        const sql = "SELECT RoleID, RoleName FROM Roles LIMIT 3";
         const result = await db.async.all(sql, []);
         await commitTransaction();
         res.json(result.rows);

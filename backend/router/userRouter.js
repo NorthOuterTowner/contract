@@ -23,7 +23,7 @@ router.get('/getNextId', async (req, res) => {
   try {
     await startTransaction();
     // 使用共享锁
-    const sql = "SELECT IFNULL(MAX(user_id), 0) + 1 as nextId FROM users FOR SHARE";
+    const sql = "SELECT IFNULL(MAX(user_id), 0) + 1 as nextId FROM users";
     const result = await db.async.all(sql, []);
     await commitTransaction();
     res.json({ nextId: result.rows[0].nextId });
@@ -78,7 +78,7 @@ router.get('/query', async (req, res) => {
   try {
     await startTransaction();
     // 使用共享锁
-    const sql = "SELECT u.user_id, u.username as user_name, r.RoleName as role_name, u.create_time FROM users u LEFT JOIN roles r ON u.role = r.RoleID WHERE u.username LIKE ? OR u.user_id LIKE ? FOR SHARE";
+    const sql = "SELECT u.user_id, u.username as user_name, r.RoleName as role_name, u.create_time FROM users u LEFT JOIN roles r ON u.role = r.RoleID WHERE u.username LIKE ? OR u.user_id LIKE ? ";
     const users = await db.async.all(sql, [query, query]);
     await commitTransaction();
     res.json(users.rows); 
@@ -97,7 +97,7 @@ router.get('/queryByUsernameOrRole', async (req, res) => {
   try {
     await startTransaction();
     // 使用共享锁
-    const sql = "SELECT u.user_id, u.username as user_name, r.RoleName as role_name FROM users u LEFT JOIN roles r ON u.role = r.RoleID WHERE u.username LIKE ? OR r.RoleName LIKE ? FOR SHARE";
+    const sql = "SELECT u.user_id, u.username as user_name, r.RoleName as role_name FROM users u LEFT JOIN roles r ON u.role = r.RoleID WHERE u.username LIKE ? OR r.RoleName LIKE ?";
     const users = await db.async.all(sql, [query, query]);
     await commitTransaction();
     res.json(users.rows); 
@@ -113,7 +113,7 @@ router.get('/all', async (req, res) => {
   try {
     await startTransaction();
     // 使用共享锁
-    const sql = "SELECT u.user_id, u.username as user_name, r.RoleName as role_name FROM users u LEFT JOIN roles r ON u.role = r.RoleID FOR SHARE";
+    const sql = "SELECT u.user_id, u.username as user_name, r.RoleName as role_name FROM users u LEFT JOIN roles r ON u.role = r.RoleID ";
     const users = await db.async.all(sql, []);
     await commitTransaction();
     res.json(users.rows);
@@ -129,7 +129,7 @@ router.get("/role2-users", async (req, res) => {
   try {
     await startTransaction();
     // 使用共享锁
-    const sql = "SELECT user_id as id, username as name FROM users WHERE role = 2 FOR SHARE";
+    const sql = "SELECT user_id as id, username as name FROM users WHERE role = 2 ";
     const { rows } = await db.async.all(sql, []);
     await commitTransaction();
     res.json(rows);
@@ -204,7 +204,7 @@ router.post('/updateRole', async (req, res) => {
   try {
     await startTransaction();
     // 检查角色是否存在，使用共享锁
-    const checkRoleSql = "SELECT * FROM roles WHERE RoleID = ? FOR SHARE";
+    const checkRoleSql = "SELECT * FROM roles WHERE RoleID = ?";
     const roleResult = await db.async.all(checkRoleSql, [roleId]);
     
     if (roleResult.rows.length === 0) {
