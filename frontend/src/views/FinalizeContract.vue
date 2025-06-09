@@ -41,8 +41,21 @@
         <div class="content-display" v-if="finalizedContent">
           <pre>{{ finalizedContent }}</pre>
         </div>
-        <div v-else class="no-content">
-          暂无定稿内容
+        <div v-else>
+          <div class="signature-comments">
+            <h4>会签意见列表</h4>
+            <div class="comment-list">
+              <div class="comment-item" v-for="(comment, index) in signatureComments" :key="index">
+                <div class="comment-header">
+                  <span class="comment-party">会签方: {{ comment.SignerID }}</span>
+                  <span class="comment-date">{{ formatDate(comment.SignDate) }}</span>
+                </div>
+                <div class="comment-content">
+                  {{ comment.comment }}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
         
         <div class="download-section">
@@ -52,7 +65,7 @@
             @click="onDownload"
             :disabled="!contract.Content"
           >
-            下载定稿文件
+            下载初稿文件
           </button>
           <span class="file-name">{{ contract.Content || '无定稿文件' }}</span>
         </div>
@@ -71,7 +84,7 @@
             class="upload-btn"
             @click="triggerFileInput"
           >
-            选择文件
+            上传定稿文件
           </button>
           <span v-if="fileName" class="file-info">已选择: {{ fileName }}</span>
         </div>
@@ -118,9 +131,11 @@ export default {
     });
     
     const finalizedContent = ref('');
+    const signatureComments = ref([]);
 
     const fetchContractInfo = async () => {
       try {
+        // 获取合同基本信息
         const res = await axios.get('/finalize/get', {
           params: { id: route.params.contractId }
         });
@@ -135,12 +150,33 @@ export default {
           message.error("获取定稿信息失败");
           router.push('/FinalizeContractList');
         }
+
+        // 获取会签意见
+        await fetchCosignComments();
       } catch (error) {
         console.error('获取定稿信息失败:', error);
         message.error("获取定稿信息失败");
         router.push('/FinalizeContractList');
       } finally {
         loading.value = false;
+      }
+    };
+    
+    const fetchCosignComments = async () => {
+      try {
+        const res = await axios.get('/finalize/cosign', {
+          params: { contractId: route.params.contractId }
+        });
+
+        if (res.data.code === 200) {
+          signatureComments.value = res.data.data || [];
+        } else {
+          console.warn('获取会签意见失败:', res.data.msg);
+          message.error("获取会签意见失败");
+        }
+      } catch (error) {
+        console.error('获取会签意见失败:', error);
+        message.error("获取会签意见失败");
       }
     };
     
@@ -207,6 +243,7 @@ export default {
           selectedFile.value = null;
           fileName.value = '';
           updateFileInput.value.value = '';
+          router.push('/FinalizeContractList');
         } else {
           message.error(res.data.msg || '合同定稿失败');
         }
@@ -256,6 +293,7 @@ export default {
       submitting,
       contract,
       finalizedContent,
+      signatureComments,
       updateFileInput,
       fileName,
       selectedFile,
@@ -270,6 +308,7 @@ export default {
 </script>
 
 <style scoped>
+/* 样式保持不变，与之前相同 */
 .contract-finalize {
   max-width: 900px;
   margin: 20px auto;
@@ -363,15 +402,70 @@ h3 {
   line-height: 1.5;
 }
 
-.no-content {
-  color: #999;
-  font-style: italic;
-  padding: 15px;
-  text-align: center;
+.signature-comments {
   background-color: #fff;
-  border: 1px dashed #ddd;
+  border: 1px solid #ddd;
   border-radius: 4px;
-  margin-bottom: 20px;
+  padding: 15px;
+}
+
+.signature-comments h4 {
+  margin-top: 0;
+  color: #555;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.comment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.comment-item {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 15px;
+}
+
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+.comment-party {
+  font-weight: bold;
+  color: #2d3748;
+}
+
+.comment-date {
+  color: #718096;
+}
+
+.comment-content {
+  background-color: white;
+  padding: 12px;
+  border-radius: 4px;
+  border-left: 3px solid #4299e1;
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+
+.comment-status {
+  font-size: 13px;
+  text-align: right;
+  font-weight: bold;
+}
+
+.comment-status.approved {
+  color: #38a169;
+}
+
+.comment-status.rejected {
+  color: #e53e3e;
 }
 
 .download-section {
