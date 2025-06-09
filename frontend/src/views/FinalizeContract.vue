@@ -47,13 +47,12 @@
             <div class="comment-list">
               <div class="comment-item" v-for="(comment, index) in signatureComments" :key="index">
                 <div class="comment-header">
-                  <span class="comment-party">会签方: {{ comment.party }}</span>
-                  <span class="comment-date">{{ comment.date }}</span>
+                  <span class="comment-party">会签方: {{ comment.SignerID }}</span>
+                  <span class="comment-date">{{ formatDate(comment.SignDate) }}</span>
                 </div>
                 <div class="comment-content">
-                  {{ comment.content }}
+                  {{ comment.comment }}
                 </div>
-                
               </div>
             </div>
           </div>
@@ -132,31 +131,11 @@ export default {
     });
     
     const finalizedContent = ref('');
-    
-    // 模拟会签意见数据
-    const signatureComments = ref([
-      {
-        party: "法务部",
-        date: "2023-05-15",
-        content: "合同条款符合公司法律要求，建议在违约责任条款中增加具体赔偿金额的计算方式。",
-        
-      },
-      {
-        party: "财务部",
-        date: "2023-05-16",
-        content: "付款条件中首付款比例建议从30%提高到40%，以降低公司财务风险。",
-        
-      },
-      {
-        party: "技术部",
-        date: "2023-05-17",
-        content: "技术规格部分需要更新最新版本的标准，建议参考ISO 9001:2023标准。",
-        
-      }
-    ]);
+    const signatureComments = ref([]);
 
     const fetchContractInfo = async () => {
       try {
+        // 获取合同基本信息
         const res = await axios.get('/finalize/get', {
           params: { id: route.params.contractId }
         });
@@ -171,12 +150,33 @@ export default {
           message.error("获取定稿信息失败");
           router.push('/FinalizeContractList');
         }
+
+        // 获取会签意见
+        await fetchCosignComments();
       } catch (error) {
         console.error('获取定稿信息失败:', error);
         message.error("获取定稿信息失败");
         router.push('/FinalizeContractList');
       } finally {
         loading.value = false;
+      }
+    };
+    
+    const fetchCosignComments = async () => {
+      try {
+        const res = await axios.get('/finalize/cosign', {
+          params: { contractId: route.params.contractId }
+        });
+
+        if (res.data.code === 200) {
+          signatureComments.value = res.data.data || [];
+        } else {
+          console.warn('获取会签意见失败:', res.data.msg);
+          message.error("获取会签意见失败");
+        }
+      } catch (error) {
+        console.error('获取会签意见失败:', error);
+        message.error("获取会签意见失败");
       }
     };
     
@@ -243,6 +243,7 @@ export default {
           selectedFile.value = null;
           fileName.value = '';
           updateFileInput.value.value = '';
+          router.push('/FinalizeContractList');
         } else {
           message.error(res.data.msg || '合同定稿失败');
         }
@@ -307,6 +308,7 @@ export default {
 </script>
 
 <style scoped>
+/* 样式保持不变，与之前相同 */
 .contract-finalize {
   max-width: 900px;
   margin: 20px auto;
