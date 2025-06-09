@@ -352,6 +352,7 @@ INSERT INTO `functionroutes` (`FunctionID`, `Route`, `CreatedAt`) VALUES
 (8, '/DraftContractList', '2025-06-07 01:40:33'),
 (9, '/FinalizeContract', '2025-06-07 01:40:33'),
 (9, '/FinalizeContractList', '2025-06-07 01:40:33'),
+(9, '/FinalizeContract/[^/]{1,10}', '2025-06-07 01:40:33'),
 (10, '/my-contract-module', '2025-06-07 01:40:33'),
 (10, '/my-contract-module/query', '2025-06-07 01:40:33'),
 (10, '/my-contract-module/query/detail/[^/]{1,10}', '2025-06-07 01:40:33'),
