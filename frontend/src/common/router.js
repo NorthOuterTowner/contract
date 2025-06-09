@@ -108,9 +108,9 @@ let routes = [
                 component: ContractStatisticsPage, 
             },
             // 其他子路由（如按名称、按状态、高级查询），也添加到这里并更新路径。目前暂时弃用
-            { path: 'query/name', component: QueryContractList }, 
-            { path: 'query/status', component: QueryContractList },
-            { path: 'query/advanced', component: QueryContractList }
+            //{ path: 'query/name', component: QueryContractList }, 
+            //{ path: 'query/status', component: QueryContractList },
+            //{ path: 'query/advanced', component: QueryContractList }
         ]
     }
 ];

@@ -34,7 +34,7 @@
               <span class="label">最后修改:</span>
               <span class="value">{{ contract.LastModifiedDate || 'N/A' }}</span>
             </div>
-          </n-gi>
+            </n-gi>
         </n-grid>
         <div class="detail-item full-width">
             <span class="label">合同简要描述:</span>
@@ -62,9 +62,7 @@
             :title="draft.DraftTitle"
             :content="`由 ${draft.CreatedBy} 于 ${draft.CreationDate} 创建`"
             :time="draft.CreationDate"
-          >
-            <n-button text type="primary" size="small" @click="viewDraftContent(draft.DraftContent)">查看草稿内容</n-button>
-          </n-timeline-item>
+          />
         </n-timeline>
         <div v-else class="no-data">
           暂无草稿信息。
@@ -78,10 +76,8 @@
             v-for="(signing, index) in contract.signings"
             :key="index"
             :type="'success'"
-            :title="signing.Signer"
-            :content="signing.ModificationSuggestions || '无修改建议'"
-            :time="signing.SigningDate"
-          />
+            :title="signing.SignerID" :content="signing.ModificationSuggestions || '无修改建议'"
+            :time="signing.SignDate" />
         </n-timeline>
         <div v-else class="no-data">
           暂无会签信息。
@@ -114,8 +110,7 @@
             v-for="(approval, index) in contract.approvals"
             :key="index"
             :type="approval.ApprovalDecision === '审批通过' ? 'success' : 'error'"
-            :title="`审批人：${approval.Approver} (${approval.ApprovalDecision})`"
-            :content="approval.ApprovalComments || '无审批意见'"
+            :title="`审批人：${approval.ApproverID} (${approval.ApprovalDecision})`" :content="approval.ApprovalComments || '无审批意见'"
             :time="approval.ApprovalDate"
           />
         </n-timeline>
@@ -129,8 +124,7 @@
         <n-button @click="submitForCosign" style="margin-left: 8px;" :disabled="!canSubmitForCosign(contract.Status)">提交会签</n-button>
         <n-button @click="submitForApproval" style="margin-left: 8px;" :disabled="!canSubmitForApproval(contract.Status)">提交审批</n-button>
         <n-button type="success" @click="finalizeContract" style="margin-left: 8px;" :disabled="!canFinalize(contract.Status)">定稿合同</n-button>
-        <n-button type="success" @click="signContract" style="margin-left: 8px;" :disabled="!canSign(contract.Status)">签订合同</n-button>
-        <n-button @click="printContract" style="margin-left: 8px;">打印</n-button>
+        <n-button type="success" @click="signContract" style="margin-left: 8px;" :disabled="!canSign(contract.Status)">签订合同</n-button> <n-button @click="printContract" style="margin-left: 8px;">打印</n-button>
         <n-button type="error" @click="voidContract" :disabled="!canVoid(contract.Status)" style="margin-left: 8px;">作废合同</n-button>
       </div>
     </n-card>
@@ -139,7 +133,7 @@
 
 <script setup>
 import { ref, onMounted, watch, inject } from 'vue';
-import { useRoute, useRouter } from 'vue-router'; // Corrected import
+import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
 // 引入 Naive UI 组件
 import { NCard, NGrid, NGi, NButton, NTag, NTimeline, NTimelineItem, NCollapse, NCollapseItem, NScrollbar } from 'naive-ui';
@@ -176,6 +170,7 @@ function editContract() { message.info(`模拟：编辑合同 ID: ${contract.val
 function submitForCosign() { message.info(`模拟：提交合同 ID: ${contract.value.ContractID} 会签`); }
 function submitForApproval() { message.info(`模拟：提交合同 ID: ${contract.value.ContractID} 审批`); }
 function finalizeContract() { message.info(`模拟：定稿合同 ID: ${contract.value.ContractID}`); }
+// 【修正点】提示信息改为“签订”
 function signContract() { message.info(`模拟：签订合同 ID: ${contract.value.ContractID}`); }
 function printContract() { window.print(); message.success('正在准备打印...'); }
 function voidContract() {
@@ -216,7 +211,7 @@ async function downloadAttachment(file) {
   catch (error) { console.error('下载失败:', error); message.error('下载附件失败，请稍后重试！'); }
 }
 
-// Naive UI 的 Tag 类型
+// Naive UI 的 Tag 类型 (用于详情页状态标签的颜色)
 function getStatusTagType(status) {
   switch (status) {
     case '已签订': return 'success';
@@ -225,23 +220,26 @@ function getStatusTagType(status) {
     case '待签订': return 'warning';
     case '待定稿': return 'info';
     case '待起草': return 'default';
-    case '已作废': return 'error';
-    case '已过期': return 'error';
+    case '未通过': return 'error';
+    // 未来可能添加的状态，先注释保留：
+    // case '已作废': return 'error'; 
+    // case '已过期': return 'error'; 
     default: return 'default';
   }
 }
 
+// 获取显示文本 (用于详情页状态标签的文字)
 function getStatusText(status) {
-  return status;
+  return status; // 直接返回数据库中的状态文本
 }
 
-// 根据合同状态判断操作按钮是否可用
+// 根据合同状态判断操作按钮是否可用 (根据数据库 ENUM 实际值判断)
 function canEdit(status) { return ['待起草', '会签处理中', '待定稿', '待审批'].includes(status); }
 function canSubmitForCosign(status) { return ['待起草'].includes(status); }
 function canSubmitForApproval(status) { return ['待起草'].includes(status); }
 function canFinalize(status) { return ['会签处理中', '待审批'].includes(status); }
 function canSign(status) { return ['待签订'].includes(status); }
-function canVoid(status) { return !['已作废', '已签订', '已过期'].includes(status); }
+function canVoid(status) { return !['已作废', '已签订', '未通过'].includes(status); } // 这里的 '已作废' 也要和数据库保持一致
 </script>
 
 <style scoped>
@@ -266,7 +264,7 @@ function canVoid(status) { return !['已作废', '已签订', '已过期'].inclu
   border-bottom: 2px solid #409EFF; display: inline-block;
 }
 /* 自定义图标样式 */
-/* 注意：这里使用的图标类 icon-paperclip, icon-history, icon-document 需要自行实现其 CSS 样式 */
+/* 注意：这里使用的图标类 icon-paperclip, icon-history, icon-document 需要你自行实现其 CSS 样式 */
 .detail-section h3 .icon-paperclip::before { content: '📎'; margin-left: 8px; }
 .detail-section h3 .icon-history::before { content: '⏱️'; margin-left: 8px; }
 
