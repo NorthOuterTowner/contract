@@ -41,8 +41,22 @@
         <div class="content-display" v-if="finalizedContent">
           <pre>{{ finalizedContent }}</pre>
         </div>
-        <div v-else class="no-content">
-          暂无定稿内容
+        <div v-else>
+          <div class="signature-comments">
+            <h4>会签意见列表</h4>
+            <div class="comment-list">
+              <div class="comment-item" v-for="(comment, index) in signatureComments" :key="index">
+                <div class="comment-header">
+                  <span class="comment-party">会签方: {{ comment.party }}</span>
+                  <span class="comment-date">{{ comment.date }}</span>
+                </div>
+                <div class="comment-content">
+                  {{ comment.content }}
+                </div>
+                
+              </div>
+            </div>
+          </div>
         </div>
         
         <div class="download-section">
@@ -52,7 +66,7 @@
             @click="onDownload"
             :disabled="!contract.Content"
           >
-            下载定稿文件
+            下载初稿文件
           </button>
           <span class="file-name">{{ contract.Content || '无定稿文件' }}</span>
         </div>
@@ -71,7 +85,7 @@
             class="upload-btn"
             @click="triggerFileInput"
           >
-            选择文件
+            上传定稿文件
           </button>
           <span v-if="fileName" class="file-info">已选择: {{ fileName }}</span>
         </div>
@@ -118,6 +132,28 @@ export default {
     });
     
     const finalizedContent = ref('');
+    
+    // 模拟会签意见数据
+    const signatureComments = ref([
+      {
+        party: "法务部",
+        date: "2023-05-15",
+        content: "合同条款符合公司法律要求，建议在违约责任条款中增加具体赔偿金额的计算方式。",
+        
+      },
+      {
+        party: "财务部",
+        date: "2023-05-16",
+        content: "付款条件中首付款比例建议从30%提高到40%，以降低公司财务风险。",
+        
+      },
+      {
+        party: "技术部",
+        date: "2023-05-17",
+        content: "技术规格部分需要更新最新版本的标准，建议参考ISO 9001:2023标准。",
+        
+      }
+    ]);
 
     const fetchContractInfo = async () => {
       try {
@@ -256,6 +292,7 @@ export default {
       submitting,
       contract,
       finalizedContent,
+      signatureComments,
       updateFileInput,
       fileName,
       selectedFile,
@@ -363,15 +400,70 @@ h3 {
   line-height: 1.5;
 }
 
-.no-content {
-  color: #999;
-  font-style: italic;
-  padding: 15px;
-  text-align: center;
+.signature-comments {
   background-color: #fff;
-  border: 1px dashed #ddd;
+  border: 1px solid #ddd;
   border-radius: 4px;
-  margin-bottom: 20px;
+  padding: 15px;
+}
+
+.signature-comments h4 {
+  margin-top: 0;
+  color: #555;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.comment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.comment-item {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 15px;
+}
+
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+.comment-party {
+  font-weight: bold;
+  color: #2d3748;
+}
+
+.comment-date {
+  color: #718096;
+}
+
+.comment-content {
+  background-color: white;
+  padding: 12px;
+  border-radius: 4px;
+  border-left: 3px solid #4299e1;
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+
+.comment-status {
+  font-size: 13px;
+  text-align: right;
+  font-weight: bold;
+}
+
+.comment-status.approved {
+  color: #38a169;
+}
+
+.comment-status.rejected {
+  color: #e53e3e;
 }
 
 .download-section {
