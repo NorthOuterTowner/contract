@@ -6,7 +6,7 @@
       </button>
     </div>
 
-     <h2>添加功能</h2>
+    <h2>添加功能</h2>
 
     <!-- 表单区域 -->
     <div class="form-section">
@@ -52,6 +52,19 @@
           />
         </div>
       </div>
+      <!-- 路由输入区域 -->
+      <div class="input-group">
+        <label class="form-label">功能路由：</label>
+        <div v-for="(route, index) in functionRoutes" :key="index" class="input-wrapper route-input-wrapper">
+          <input
+            v-model="functionRoutes[index]"
+            type="text"
+            placeholder="请输入功能路由"
+          />
+          <button v-if="functionRoutes.length > 1" @click="removeRoute(index)">删除</button>
+        </div>
+        <button @click="addRoute">添加路由</button>
+      </div>
     </div>
     <!-- 操作按钮区域 -->
     <div class="button-group">
@@ -77,6 +90,7 @@ const functionId = ref("");
 const functionName = ref("");
 const functionDescription = ref("");
 const parentId = ref("");
+const functionRoutes = ref([""]); // 初始一个路由输入框
 const submitted = ref(false);
 const message = ref("");
 const isSuccess = ref(false);
@@ -100,6 +114,16 @@ const getNextFunctionId = async () => {
 
 getNextFunctionId();
 
+// 添加路由输入框
+const addRoute = () => {
+  functionRoutes.value.push("");
+};
+
+// 删除路由输入框
+const removeRoute = (index) => {
+  functionRoutes.value.splice(index, 1);
+};
+
 const handleSubmit = async () => {
   submitted.value = true;
   if (!functionName.value) {
@@ -109,15 +133,19 @@ const handleSubmit = async () => {
   }
 
   try {
-    await axios.post("/function/add", {
+    // 添加功能
+    const addFunctionResponse = await axios.post("/function/add", {
       functionId: functionId.value,
       functionName: functionName.value,
       functionDescription: functionDescription.value,
       parentId: parentId.value || null,
+      functionRoutes: functionRoutes.value.filter(route => route) // 过滤掉空路由
     });
+
     message.value = "添加成功！";
     isSuccess.value = true;
-    resetForm();
+    // 添加成功后返回功能管理页面
+    router.push('/function');
   } catch (error) {
     message.value = "添加失败！请检查输入或联系管理员";
     isSuccess.value = false;
@@ -129,6 +157,7 @@ const resetForm = () => {
   functionName.value = "";
   functionDescription.value = "";
   parentId.value = "";
+  functionRoutes.value = [""];
   submitted.value = false;
   getNextFunctionId();
 };
@@ -136,7 +165,7 @@ const resetForm = () => {
 
 <style scoped>
 .add-function-container {
-  max-width: 600px;
+  max-width: 800px;
   margin: 40px auto;
   padding: 0 20px;
   font-family: "Helvetica Neue", Arial, sans-serif;
@@ -176,35 +205,54 @@ h2 {
 }
 
 .form-section {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 20px;
   margin-bottom: 20px;
 }
 
 .input-group {
-  margin-bottom: 16px;
+  margin-bottom: 15px;
+  display: flex;
+  flex-direction: column; /* 修改为垂直布局 */
+  align-items: flex-start;
 }
 
 .form-label {
-  display: inline-block;
   width: 120px;
-  margin-bottom: 8px;
+  font-weight: 500;
+  color: #666;
+  display: block;
+  margin-bottom: 5px;
 }
 
 .input-wrapper {
   display: flex;
   align-items: center;
+  width: 100%;
+  margin-bottom: 10px;
 }
 
 .input-wrapper input,
 .input-wrapper textarea {
-  padding: 6px 12px;
+  padding: 8px 12px;
   border: 1px solid #ddd;
   border-radius: 4px;
-  flex: 1;
+  width: 100%;
+  transition: border-color 0.3s;
+}
+
+.input-wrapper input:focus,
+.input-wrapper textarea:focus {
+  outline: none;
+  border-color: #007bff;
 }
 
 .error-tooltip {
   color: red;
   margin-left: 10px;
+  white-space: nowrap;
 }
 
 .button-group {
@@ -214,15 +262,22 @@ h2 {
   margin: 30px 0;
 }
 
+.primary-btn,
+.secondary-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .primary-btn {
   background-color: #007bff;
   color: white;
-  padding: 12px 24px;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
 }
 
 .primary-btn:hover {
@@ -232,33 +287,31 @@ h2 {
 .secondary-btn {
   background-color: #6c757d;
   color: white;
-  padding: 12px 24px;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
 }
 
 .secondary-btn:hover {
-  background-color: #495057;
+  background-color: #5a6268;
 }
 
 .message-box {
   margin-top: 20px;
-  padding: 12px 16px;
-  border-radius: 6px;
   text-align: center;
-  font-size: 16px;
 }
 
 .success-msg {
-  background-color: #d4edda;
-  color: #155724;
+  color: green;
 }
 
 .error-msg {
-  background-color: #f8d7da;
-  color: #721c24;
+  color: red;
+}
+
+.route-input-wrapper {
+  flex-direction: column; /* 路由输入框垂直布局 */
+  align-items: flex-start;
+}
+
+.route-input-wrapper input {
+  margin-bottom: 5px;
 }
 </style>

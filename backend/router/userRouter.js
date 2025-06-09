@@ -3,13 +3,32 @@ const router = express.Router();
 const { db } = require("../db/DBUtils");
 const bcrypt = require("bcryptjs");
 
+// 开始事务
+const startTransaction = async () => {
+  await db.async.run("BEGIN");
+};
+
+// 提交事务
+const commitTransaction = async () => {
+  await db.async.run("COMMIT");
+};
+
+// 回滚事务
+const rollbackTransaction = async () => {
+  await db.async.run("ROLLBACK");
+};
+
 // 获取下一个可用的用户 ID
 router.get('/getNextId', async (req, res) => {
   try {
+    await startTransaction();
+    // 使用共享锁
     const sql = "SELECT IFNULL(MAX(user_id), 0) + 1 as nextId FROM users";
     const result = await db.async.all(sql, []);
+    await commitTransaction();
     res.json({ nextId: result.rows[0].nextId });
   } catch (error) {
+    await rollbackTransaction();
     console.error(error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
@@ -22,14 +41,17 @@ router.post('/add', async (req, res) => {
     return res.status(400).json({ error: '用户 ID、用户名、密码和角色 ID 为必填项' });
   }
   try {
-    // 检查 ID 和用户名是否重复
-    const checkSql = "SELECT * FROM users WHERE username = ? OR user_id = ?";
+    await startTransaction();
+    // 检查 ID 和用户名是否重复，使用排他锁
+    const checkSql = "SELECT * FROM users WHERE username = ? OR user_id = ?  ";
     const existingUser = await db.async.all(checkSql, [userId, userId]);
     if (existingUser.rows.length > 0) {
+      await rollbackTransaction();
       return res.status(400).json({ error: '用户 ID 已存在' });
     }
     const existingUserName = await db.async.all(checkSql, [userName, userName]);
     if (existingUserName.rows.length > 0) {
+      await rollbackTransaction();
       return res.status(400).json({ error: '用户名已存在' });
     }
 
@@ -39,8 +61,10 @@ router.post('/add', async (req, res) => {
 
     const addSql = "INSERT INTO users (user_id, username, password_hash, role) VALUES (?,?,?,?)";
     await db.async.run(addSql, [userId, userName, hashedPassword, roleId]);
+    await commitTransaction();
     res.json({ message: '用户添加成功' });
   } catch (error) {
+    await rollbackTransaction();
     console.error(error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
@@ -52,10 +76,14 @@ router.get('/query', async (req, res) => {
     return res.status(400).json({ error: '请输入查询条件' });
   }
   try {
-    const sql = "SELECT u.user_id, u.username as user_name, r.RoleName as role_name, u.create_time FROM users u LEFT JOIN roles r ON u.role = r.RoleID WHERE u.username LIKE ? OR u.user_id LIKE ?";
+    await startTransaction();
+    // 使用共享锁
+    const sql = "SELECT u.user_id, u.username as user_name, r.RoleName as role_name, u.create_time FROM users u LEFT JOIN roles r ON u.role = r.RoleID WHERE u.username LIKE ? OR u.user_id LIKE ? ";
     const users = await db.async.all(sql, [query, query]);
+    await commitTransaction();
     res.json(users.rows); 
   } catch (error) {
+    await rollbackTransaction();
     console.error(error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
@@ -67,10 +95,14 @@ router.get('/queryByUsernameOrRole', async (req, res) => {
     return res.status(400).json({ error: '请输入查询条件' });
   }
   try {
+    await startTransaction();
+    // 使用共享锁
     const sql = "SELECT u.user_id, u.username as user_name, r.RoleName as role_name FROM users u LEFT JOIN roles r ON u.role = r.RoleID WHERE u.username LIKE ? OR r.RoleName LIKE ?";
     const users = await db.async.all(sql, [query, query]);
+    await commitTransaction();
     res.json(users.rows); 
   } catch (error) {
+    await rollbackTransaction();
     console.error(error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
@@ -79,12 +111,32 @@ router.get('/queryByUsernameOrRole', async (req, res) => {
 // 获取所有用户
 router.get('/all', async (req, res) => {
   try {
-    const sql = "SELECT u.user_id, u.username as user_name, r.RoleName as role_name FROM users u LEFT JOIN roles r ON u.role = r.RoleID";
+    await startTransaction();
+    // 使用共享锁
+    const sql = "SELECT u.user_id, u.username as user_name, r.RoleName as role_name FROM users u LEFT JOIN roles r ON u.role = r.RoleID ";
     const users = await db.async.all(sql, []);
+    await commitTransaction();
     res.json(users.rows);
   } catch (error) {
+    await rollbackTransaction();
     console.error(error);
     res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// 获取 role 为 2 的用户列表
+router.get("/role2-users", async (req, res) => {
+  try {
+    await startTransaction();
+    // 使用共享锁
+    const sql = "SELECT user_id as id, username as name FROM users WHERE role = 2 ";
+    const { rows } = await db.async.all(sql, []);
+    await commitTransaction();
+    res.json(rows);
+  } catch (error) {
+    await rollbackTransaction();
+    console.error("获取用户列表时出错:", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
@@ -95,6 +147,11 @@ router.put('/update', async (req, res) => {
     return res.status(400).json({ error: '请提供用户 ID' });
   }
   try {
+    await startTransaction();
+    // 使用排他锁
+    const selectSql = "SELECT * FROM users WHERE user_id = ?  ";
+    await db.async.all(selectSql, [userId]);
+
     let sql = "UPDATE users SET ";
     const params = [];
     if (userName) {
@@ -128,8 +185,10 @@ router.put('/update', async (req, res) => {
     sql += " WHERE user_id = ?";
     params.push(userId);
     await db.async.run(sql, params);
+    await commitTransaction();
     res.json({ message: '用户信息修改成功' });
   } catch (error) {
+    await rollbackTransaction();
     console.error(error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
@@ -143,20 +202,27 @@ router.post('/updateRole', async (req, res) => {
   }
   
   try {
-    // 检查角色是否存在
+    await startTransaction();
+    // 检查角色是否存在，使用共享锁
     const checkRoleSql = "SELECT * FROM roles WHERE RoleID = ?";
     const roleResult = await db.async.all(checkRoleSql, [roleId]);
     
     if (roleResult.rows.length === 0) {
+      await rollbackTransaction();
       return res.status(400).json({ error: '指定的角色不存在' });
     }
+
+    // 使用排他锁
+    const selectUserSql = "SELECT * FROM users WHERE user_id = ?  ";
+    await db.async.all(selectUserSql, [userId]);
     
     // 更新用户角色
     const updateSql = "UPDATE users SET role = ? WHERE user_id = ?";
     await db.async.run(updateSql, [roleId, userId]);
-    
+    await commitTransaction();
     res.json({ message: '角色更新成功' });
   } catch (error) {
+    await rollbackTransaction();
     console.error(error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
@@ -169,10 +235,17 @@ router.delete('/delete', async (req, res) => {
     return res.status(400).json({ error: '请提供用户 ID' });
   }
   try {
+    await startTransaction();
+    // 使用排他锁
+    const selectSql = "SELECT * FROM users WHERE user_id = ?  ";
+    await db.async.all(selectSql, [userId]);
+
     const sql = "DELETE FROM users WHERE user_id = ?";
     await db.async.run(sql, [userId]);
+    await commitTransaction();
     res.json({ message: '用户删除成功' });
   } catch (error) {
+    await rollbackTransaction();
     console.error(error);
     res.status(500).json({ error: 'Internal Server Error' });
   }

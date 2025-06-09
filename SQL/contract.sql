@@ -81,19 +81,28 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `contractassignment`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `contractassignment` (
-  `AssignmentID` int(11) NOT NULL AUTO_INCREMENT,
-  `ContractID` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `SignerID` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `AssignmentDate` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `comment` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `AssignmentID` INT(11) NOT NULL AUTO_INCREMENT COMMENT '分配记录唯一标识',
+  `ContractID` VARCHAR(10) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '合同编号（关联contract表ContractID，对应需求中合同编号）',
+  `RoleType` VARCHAR(20) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '分配角色：会签人、审批人、签订人（对应需求中的三类流程角色）',
+  `AssigneeUserID` INT(10) UNSIGNED NOT NULL COMMENT '被分配用户ID（关联users表user_id，需为合同操作员或管理员）',
+  `OperatorUserID` INT(10) UNSIGNED NOT NULL COMMENT '操作人用户ID（关联users表user_id，需为管理员角色）',
+  `AssignmentDate` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '分配时间（自动填充当前时间）',
+  `AssignmentComment` VARCHAR(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '分配备注（如特殊流程说明）',
   PRIMARY KEY (`AssignmentID`),
-  KEY `ContractID` (`ContractID`),
-  CONSTRAINT `contractassignment_ibfk_1` FOREIGN KEY (`ContractID`) REFERENCES `contract` (`ContractID`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+  -- 外键约束：关联合同表
+  KEY `fk_contractassignment_contract` (`ContractID`),
+  CONSTRAINT `fk_contractassignment_contract` FOREIGN KEY (`ContractID`) REFERENCES `contract` (`ContractID`) ON DELETE CASCADE,
+  -- 外键约束：关联被分配用户（合同操作员/管理员）
+  KEY `fk_contractassignment_assignee` (`AssigneeUserID`),
+  CONSTRAINT `fk_contractassignment_assignee` FOREIGN KEY (`AssigneeUserID`) REFERENCES `users` (`user_id`),
+  -- 外键约束：关联操作人（管理员）
+  KEY `fk_contractassignment_operator` (`OperatorUserID`),
+  CONSTRAINT `fk_contractassignment_operator` FOREIGN KEY (`OperatorUserID`) REFERENCES `users` (`user_id`),
+  -- 检查角色类型合法性（基于需求中的三类角色）
+  CHECK (`RoleType` IN ('会签人', '审批人', '签订人'))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='合同分配记录表（记录会签、审批、签订人员分配信息）';
 
 --
 -- Dumping data for table `contractassignment`
@@ -261,7 +270,6 @@ CREATE TABLE `functions` (
   `FunctionName` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
   `FunctionDescription` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `ParentID` int(11) DEFAULT NULL,
-  `FunctionRoute` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT '',
   `CreatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`FunctionID`),
   UNIQUE KEY `FunctionName` (`FunctionName`),
@@ -276,8 +284,119 @@ CREATE TABLE `functions` (
 
 LOCK TABLES `functions` WRITE;
 /*!40000 ALTER TABLE `functions` DISABLE KEYS */;
-INSERT INTO `functions` VALUES (1,'合同管理','合同全生命周期管理',NULL,'/HomePage','2025-06-07 01:40:33'),(2,'流程管理','合同流程配置与执行',NULL,'','2025-06-07 01:40:33'),(3,'用户管理','系统用户配置与维护',NULL,'/user','2025-06-07 01:40:33'),(4,'角色管理','系统角色配置与维护',NULL,'/role','2025-06-07 01:40:33'),(5,'功能操作','系统功能配置与维护',NULL,'/function','2025-06-07 01:40:33'),(6,'权限管理','系统权限分配与管理',NULL,'/permission','2025-06-07 01:40:33'),(7,'客户管理','客户信息维护与管理',NULL,'/customerInfo','2025-06-07 01:40:33'),(8,'起草合同','创建新合同文档',1,'/DraftContract','2025-06-07 01:40:33'),(9,'定稿合同','完成合同定稿流程',1,'/FinalizeContract','2025-06-07 01:40:33'),(10,'查询合同','查询和浏览合同文档',1,'/query','2025-06-07 01:40:33'),(11,'删除合同','删除不需要的合同',1,'','2025-06-07 01:40:33'),(12,'会签合同','执行合同会签流程',2,'/CoSignContract','2025-06-07 01:40:33'),(13,'审批合同','执行合同审批流程',2,'/approval','2025-06-07 01:40:33'),(14,'签订合同','执行合同签订流程',2,'/SignContractList','2025-06-07 01:40:33'),(15,'分配会签','分配会签人员和顺序',2,'/PendingContractList','2025-06-07 01:40:33'),(16,'分配审批','分配审批人员和顺序',2,'','2025-06-07 01:40:33'),(17,'分配签订','分配签订人员和顺序',2,'','2025-06-07 01:40:33'),(18,'流程查询','查询和跟踪流程状态',2,'','2025-06-07 01:40:33'),(19,'新增用户','创建新系统用户',3,'/user/add','2025-06-07 01:40:33'),(20,'编辑用户','修改现有用户信息',3,'/user/modify/:userId','2025-06-07 01:40:33'),(21,'查询用户','查询和浏览用户信息',3,'/user','2025-06-07 01:40:33'),(22,'删除用户','删除系统用户',3,'/user','2025-06-07 01:40:33'),(23,'新增角色','创建新系统角色',4,'/role/add','2025-06-07 01:40:33'),(24,'编辑角色','修改现有角色信息',4,'/role/modify/:roleId','2025-06-07 01:40:33'),(25,'查询角色','查询和浏览角色信息',4,'/role','2025-06-07 01:40:33'),(26,'删除角色','删除系统角色',4,'/role','2025-06-07 01:40:33'),(27,'新增功能','创建新系统功能',5,'/function/add','2025-06-07 01:40:33'),(28,'编辑功能','修改现有功能信息',5,'','2025-06-07 01:40:33'),(29,'查询功能','查询和浏览功能信息',5,'/function/query','2025-06-07 01:40:33'),(30,'删除功能','删除系统功能',5,'/function/delete','2025-06-07 01:40:33'),(31,'配置权限','分配角色和用户权限',6,'/permission/assign/:userId','2025-06-07 01:40:33'),(32,'新增客户','创建新客户信息',7,'','2025-06-07 01:40:33'),(33,'编辑客户','修改现有客户信息',7,'','2025-06-07 01:40:33'),(34,'查询客户','查询和浏览客户信息',7,'','2025-06-07 01:40:33'),(35,'删除客户','删除客户信息',7,'','2025-06-07 01:40:33');
+INSERT INTO `functions` (`FunctionID`, `FunctionName`, `FunctionDescription`, `ParentID`, `CreatedAt`) VALUES 
+(1,'合同管理','合同全生命周期管理',NULL,'2025-06-07 01:40:33'),
+(2,'流程管理','合同流程配置与执行',NULL,'2025-06-07 01:40:33'),
+(3,'用户管理','系统用户配置与维护',NULL,'2025-06-07 01:40:33'),
+(4,'角色管理','系统角色配置与维护',NULL,'2025-06-07 01:40:33'),
+(5,'功能操作','系统功能配置与维护',NULL,'2025-06-07 01:40:33'),
+(6,'权限管理','系统权限分配与管理',NULL,'2025-06-07 01:40:33'),
+(7,'客户管理','客户信息维护与管理',NULL,'2025-06-07 01:40:33'),
+(8,'起草合同','创建新合同文档',1,'2025-06-07 01:40:33'),
+(9,'定稿合同','完成合同定稿流程',1,'2025-06-07 01:40:33'),
+(10,'查询合同','查询和浏览合同文档',1,'2025-06-07 01:40:33'),
+(11,'删除合同','删除不需要的合同',1,'2025-06-07 01:40:33'),
+(12,'会签合同','执行合同会签流程',2,'2025-06-07 01:40:33'),
+(13,'审批合同','执行合同审批流程',2,'2025-06-07 01:40:33'),
+(14,'签订合同','执行合同签订流程',2,'2025-06-07 01:40:33'),
+(15,'分配会签','分配会签人员和顺序',2,'2025-06-07 01:40:33'),
+(16,'分配审批','分配审批人员和顺序',2,'2025-06-07 01:40:33'),
+(17,'分配签订','分配签订人员和顺序',2,'2025-06-07 01:40:33'),
+(18,'流程查询','查询和跟踪流程状态',2,'2025-06-07 01:40:33'),
+(19,'新增用户','创建新系统用户',3,'2025-06-07 01:40:33'),
+(20,'编辑用户','修改现有用户信息',3,'2025-06-07 01:40:33'),
+(21,'查询用户','查询和浏览用户信息',3,'2025-06-07 01:40:33'),
+(22,'删除用户','删除系统用户',3,'2025-06-07 01:40:33'),
+(23,'新增角色','创建新系统角色',4,'2025-06-07 01:40:33'),
+(24,'编辑角色','修改现有角色信息',4,'2025-06-07 01:40:33'),
+(25,'查询角色','查询和浏览角色信息',4,'2025-06-07 01:40:33'),
+(26,'删除角色','删除系统角色',4,'2025-06-07 01:40:33'),
+(27,'新增功能','创建新系统功能',5,'2025-06-07 01:40:33'),
+(28,'编辑功能','修改现有功能信息',5,'2025-06-07 01:40:33'),
+(29,'查询功能','查询和浏览功能信息',5,'2025-06-07 01:40:33'),
+(30,'删除功能','删除系统功能',5,'2025-06-07 01:40:33'),
+(31,'配置权限','分配角色和用户权限',6,'2025-06-07 01:40:33'),
+(32,'新增客户','创建新客户信息',7,'2025-06-07 01:40:33'),
+(33,'编辑客户','修改现有客户信息',7,'2025-06-07 01:40:33'),
+(34,'查询客户','查询和浏览客户信息',7,'2025-06-07 01:40:33'),
+(35,'删除客户','删除客户信息',7,'2025-06-07 01:40:33');
 /*!40000 ALTER TABLE `functions` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `functionroutes`
+--
+DROP TABLE IF EXISTS `functionroutes`;
+CREATE TABLE `functionroutes` (
+  `FunctionID` int(11) NOT NULL,
+  `Route` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT '',
+  `CreatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`FunctionID`, `Route`),
+  FOREIGN KEY (`FunctionID`) REFERENCES `functions` (`FunctionID`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `functionroutes`
+--
+
+LOCK TABLES `functionroutes` WRITE;
+INSERT INTO `functionroutes` (`FunctionID`, `Route`, `CreatedAt`) VALUES
+(1, '', '2025-06-07 01:40:33'),
+(2, '', '2025-06-07 01:40:33'),
+(3, '', '2025-06-07 01:40:33'),
+(4, '', '2025-06-07 01:40:33'),
+(5, '', '2025-06-07 01:40:33'),
+(6, '', '2025-06-07 01:40:33'),
+(7, '', '2025-06-07 01:40:33'),
+(8, '/DraftContract', '2025-06-07 01:40:33'),
+(8, '/DraftContractList', '2025-06-07 01:40:33'),
+(9, '/FinalizeContract', '2025-06-07 01:40:33'),
+(9, '/FinalizeContractList', '2025-06-07 01:40:33'),
+(9, '/FinalizeContract/[^/]{1,10}', '2025-06-07 01:40:33'),
+(10, '/my-contract-module', '2025-06-07 01:40:33'),
+(10, '/my-contract-module/query', '2025-06-07 01:40:33'),
+(10, '/my-contract-module/query/detail/[^/]{1,10}', '2025-06-07 01:40:33'),
+(10, '/my-contract-module/statistics', '2025-06-07 01:40:33'),
+(11, '', '2025-06-07 01:40:33'),
+(12, '/CoSignContract', '2025-06-07 01:40:33'),
+(12, '/CoSignContract/[^/]{1,10}', '2025-06-07 01:40:33'),
+(12, '/CoSignContractList', '2025-06-07 01:40:33'),
+(13, '/approveList', '2025-06-07 01:40:33'),
+(13, '/approval', '2025-06-07 01:40:33'),
+(13, '/approve/content', '2025-06-07 01:40:33'),
+(14, '/SignContractList', '2025-06-07 01:40:33'),
+(14, '/sign/content', '2025-06-07 01:40:33'),
+(15, '/PendingContractList', '2025-06-07 01:40:33'),
+(15, '/allocate/[^/]{1,10}', '2025-06-07 01:40:33'),
+(16, '/PendingContractList', '2025-06-07 01:40:33'),
+(16, '/allocate/[^/]{1,10}', '2025-06-07 01:40:33'),
+(17, '/PendingContractList', '2025-06-07 01:40:33'),
+(17, '/allocate/[^/]{1,10}', '2025-06-07 01:40:33'),
+(18, '', '2025-06-07 01:40:33'),
+(19, '/user', '2025-06-07 01:40:33'),
+(19, '/user/add', '2025-06-07 01:40:33'),
+(20, '/user', '2025-06-07 01:40:33'),
+(20, '/user/modify/\\d+', '2025-06-07 01:40:33'),
+(21, '/user', '2025-06-07 01:40:33'),
+(22, '/user', '2025-06-07 01:40:33'),
+(23, '/role', '2025-06-07 01:40:33'),
+(23, '/role/add', '2025-06-07 01:40:33'),
+(24, '/role', '2025-06-07 01:40:33'),
+(24, '/role/modify/\\d+', '2025-06-07 01:40:33'),
+(25, '/role', '2025-06-07 01:40:33'),
+(26, '/role', '2025-06-07 01:40:33'),
+(27, '/function', '2025-06-07 01:40:33'),
+(27, '/function/add', '2025-06-07 01:40:33'),
+(28, '/function', '2025-06-07 01:40:33'),
+(28, '/function/modify/\\d+', '2025-06-07 01:40:33'),
+(29, '/function', '2025-06-07 01:40:33'),
+(30, '/function', '2025-06-07 01:40:33'),
+(31, '/permission', '2025-06-07 01:40:33'),
+(31, '/permission/assign/\\d+', '2025-06-07 01:40:33'),
+(32, '', '2025-06-07 01:40:33'),
+(33, '', '2025-06-07 01:40:33'),
+(34, '', '2025-06-07 01:40:33'),
+(35, '', '2025-06-07 01:40:33');
 UNLOCK TABLES;
 
 --
@@ -396,5 +515,3 @@ UNLOCK TABLES;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
-
--- Dump completed on 2025-06-07  9:47:31

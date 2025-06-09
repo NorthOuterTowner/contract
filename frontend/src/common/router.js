@@ -1,13 +1,12 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
-
-//import test from '../views/test.vue';
+import axios from "axios";
 import { useAuthStore } from './auth'; 
+import { createDiscreteApi } from 'naive-ui';
+
 import FirstPage from '../views/FirstPage.vue';
 import Login from '../views/Login.vue';
 import Register from '../views/Register.vue';
 import HomePage from '../views/HomePage.vue';
-
-// 导入其他页面组件
 import approveList from '../views/approveList.vue';
 import approval from '../views/approval.vue';
 import DraftContract from '../views/DraftContract.vue';
@@ -27,6 +26,7 @@ import AddRole from '../views/AddRole.vue';
 import ModifyRole from '../views/ModifyRole.vue';
 import FunctionManagement from '../views/FunctionManagement.vue';
 import AddFunction from '../views/AddFunction.vue';
+import ModifyFunction from '../views/ModifyFunction.vue';
 import PermissionManagement from '../views/PermissionManagement.vue';
 import AssignPermissions from '../views/AssignPermission.vue'; 
 import SignContract from '../views/SignContract.vue';
@@ -34,14 +34,13 @@ import SignContent from '../views/signContent.vue';
 
 import CustomerInfo from '../views/CustomerInfo.vue';
 import ContractInfo from '../views/ContractInfo.vue';
-
 // 统计和查询 (Naive UI 版本)
 import QueryContractList from '../views/QueryContractList.vue'; 
 import QueryContract from '../views/QueryContract.vue';       
 import ContractStatisticsPage from '../views/ContractStatisticsPage.vue'; 
-
 // 统计和查询——布局组件
 import ContractManagementLayout from '../layouts/ContractManagementLayout.vue'; 
+
 
 let routes = [
     { path:'/',redirect:'/FirstPage'},
@@ -115,16 +114,29 @@ let routes = [
     }
 ];
 
-
-    // 客户信息路由
-    {path: '/customerInfo', name: 'CustomerInfo', component: CustomerInfo },
-    {path: '/contractInfo', name: 'ContractInfo', component: ContractInfo }
-
-]
 const router = createRouter({
     history: createWebHashHistory(), 
     routes
 });
+
+// 创建 message 实例
+const { message } = createDiscreteApi(["message"]);
+
+// 获取用户所有可访问的路由
+const getUserAccessibleRoutes = async (userId) => {
+  try {
+    const response = await axios.get("/permission/checkPermission", {
+      params: {
+        userId,
+        route: '*' // 表示获取所有可访问路由
+      }
+    });
+    return response.data.allowedRoutes || [];
+  } catch (error) {
+    console.error("获取用户可访问路由失败:", error);
+    return [];
+  }
+};
 
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
@@ -132,54 +144,55 @@ router.beforeEach(async (to, from, next) => {
   await authStore.initAuth();
 
   // 公开路由列表（无需登录）
-  const publicRoutes = ['/login', '/register', '/FirstPage'];
+  const publicRoutes = ['/login', '/register', '/FirstPage', '/', '/HomePage','/customerInfo',];
   const isPublic = publicRoutes.includes(to.path);
-  
-  // 判断路由是否需要认证
-  const requiresAuth = to.meta.requiresAuth;
-  
+
+  // 如果是公开路由，直接放行
+  if (isPublic) {
+    console.log(`访问公开路由 ${to.path}，直接放行`);
+    next();
+    return;
+  }
+
   // 未登录且访问非公开路由，重定向到登录页
   if (!isPublic && !authStore.isLoggedIn) {
-    next('/login');//未登陆时跳转登录页
-  } else {
-    // 获取用户的角色和权限
-    const userRole = authStore.userRole;
-    const userPermissions = await getPermissionsByRole(userRole);
+    next('/login'); // 未登录时跳转登录页
+    return;
+  }
 
-    // 获取目标路由对应的功能
-    const targetFunction = await getFunctionByRoute(to.path);
-
-    // 检查用户是否有访问该功能的权限
-    if (targetFunction && !userPermissions.includes(targetFunction.FunctionID)) {
-      next('/403'); // 无权限访问，重定向到 403 页面
-    } else {
-      next();
+  const userId = authStore.user?.id;
+  console.log('userId:', userId);
+  if (userId) {
+    try {
+      const accessibleRoutes = await getUserAccessibleRoutes(userId);
+      const hasPermission = accessibleRoutes.some(allowedRoute => {
+        // 将路由转换为正则表达式
+        const regexRoute = allowedRoute        
+        .replace(/:userId/g, '\\d+')
+        .replace(/:contractId/g, '[^/]{1,10}') // 匹配不超过 10 个非斜杠字符
+        .replace(/:roleId/g, '\\d+')
+        .replace(/:functionId/g, '\\d+');
+              
+        const routeRegex = new RegExp(`^${regexRoute}$`);
+        return routeRegex.test(to.path);
+      });
+      console.log('hasPermission:', hasPermission);
+      if (hasPermission) {
+        next();
+      } else {
+        // 没有权限，弹框提示
+        message.error('您没有权限访问该页面');
+        next(false); // 阻止路由跳转
+      }
+    } catch (error) {
+      console.error("检查权限失败:", error);
+      message.error('检查权限失败，请稍后重试');
+      next(false); // 阻止路由跳转
     }
+  } else {
+    // 如果 userId 为空，重定向到登录页
+    next('/login');
   }
 });
 
-// 获取用户角色对应的权限
-const getPermissionsByRole = async (roleId) => {
-  try {
-    const response = await axios.get(`/role/permissions?roleId=${roleId}`);
-    return response.data.map(item => item.FunctionID);
-  } catch (error) {
-    console.error('获取角色权限失败:', error);
-    return [];
-  }
-};
-
-// 根据路由获取对应的功能
-const getFunctionByRoute = async (route) => {
-  try {
-    const response = await axios.get(`/function/query?functionRoute=${route}`);
-    return response.data.length > 0 ? response.data[0] : null;
-  } catch (error) {
-    console.error('获取功能信息失败:', error);
-    return null;
-  }
-};
-
 export { router, routes };
-
-

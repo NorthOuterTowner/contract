@@ -4,7 +4,7 @@
     <h2>功能管理</h2>
     <button @click="goToAddFunction" class="add-function-btn">添加功能</button>
     <div class="search-bar">
-      <input v-model="functionName" placeholder="输入功能名称查询" />
+      <input v-model="query" placeholder="输入功能 ID 或功能名称查询" />
       <button @click="searchFunctions">查询</button>
     </div>
     <div v-if="loading" class="loading">加载中...</div>
@@ -26,17 +26,33 @@
           <td>{{ systemFunction.ParentID || '无' }}</td>
           <td>
             <button @click="viewFunction(systemFunction.FunctionID)" class="action-btn view-btn">查看</button>
-            <button @click="deleteFunction(systemFunction.FunctionID)" class="action-btn delete-btn">删除</button>
+            <button @click="showDeleteConfirm(systemFunction.FunctionID)" class="action-btn delete-btn">删除</button>
           </td>
         </tr>
       </tbody>
     </table>
-    <div v-else-if="!loading && functionName" class="no-data">未找到匹配的功能</div>
+    <div v-else-if="!loading && query" class="no-data">未找到匹配的功能</div>
     <!-- 分页组件 -->
     <div v-if="functions.length > 0" class="pagination">
       <button @click="prevPage" :disabled="currentPage === 1">上一页</button>
       <span>{{ currentPage }} / {{ totalPages }}</span>
       <button @click="nextPage" :disabled="currentPage === totalPages">下一页</button>
+    </div>
+
+    <!-- 确认删除模态框 -->
+    <div v-if="isDeleteConfirmVisible" class="modal-overlay">
+      <div class="modal">
+        <div class="modal-header">
+          <h3>确认删除</h3>
+        </div>
+        <div class="modal-content">
+          <p>确定要删除此功能吗？</p>
+        </div>
+        <div class="modal-footer">
+          <button @click="cancelDelete" class="action-btn secondary">取消</button>
+          <button @click="confirmDelete" class="action-btn primary">确认</button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -50,7 +66,7 @@ import SystemManagementSidebar from '../components/SystemManagementSidebar.vue';
 const router = useRouter();
 const message = inject('message');
 
-const functionName = ref('');
+const query = ref('');
 const functions = ref([]);
 const loading = ref(false);
 const currentPage = ref(1);
@@ -72,7 +88,14 @@ const goToAddFunction = () => {
 const searchFunctions = async () => {
   loading.value = true;
   try {
-    const response = await axios.get(`/function/query?functionName=${functionName.value}`);
+    let response;
+    if (/^\d+$/.test(query.value)) {
+      // 如果输入是纯数字，按功能 ID 查询
+      response = await axios.get(`/function/query?functionId=${query.value}`);
+    } else {
+      // 否则按功能名称查询
+      response = await axios.get(`/function/query?functionName=${query.value}`);
+    }
     functions.value = response.data;
 
     if (response.data.length === 0) {
@@ -90,28 +113,32 @@ const searchFunctions = async () => {
 };
 
 const viewFunction = (functionId) => {
-  // 这里可以实现查看功能详情的逻辑，例如跳转到功能详情页面
-  console.log(`查看功能 ${functionId} 的详情`);
+  router.push(`/function/modify/${functionId}`);
 };
 
-const deleteFunction = async (functionId) => {
-  const confirm = await inject('dialog').confirm({
-    title: '确认删除',
-    content: '确定要删除此功能吗？',
-    positiveText: '确认',
-    negativeText: '取消'
-  });
+const isDeleteConfirmVisible = ref(false);
+const functionIdToDelete = ref('');
 
-  if (!confirm) return;
+const showDeleteConfirm = (functionId) => {
+  functionIdToDelete.value = functionId;
+  isDeleteConfirmVisible.value = true;
+};
 
+const cancelDelete = () => {
+  isDeleteConfirmVisible.value = false;
+};
+
+const confirmDelete = async () => {
   try {
-    await axios.delete(`/function/delete?functionId=${functionId}`);
+    await axios.delete(`/function/delete?functionId=${functionIdToDelete.value}`);
     message.success('删除成功！');
-    searchFunctions(); // 刷新列表
+    // 重新获取功能列表
+    await searchFunctions();
   } catch (error) {
     message.error('删除失败！');
-    console.error(error);
+    console.error('删除功能错误:', error);
   }
+  isDeleteConfirmVisible.value = false;
 };
 
 const prevPage = () => {
@@ -256,5 +283,46 @@ h2 {
 .pagination button:disabled {
   background-color: #ccc;
   cursor: not-allowed;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal {
+  background-color: white;
+  border-radius: 4px;
+  padding: 20px;
+  width: 300px;
+}
+
+.modal-header {
+  margin-bottom: 10px;
+}
+
+.modal-content {
+  margin-bottom: 20px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.action-btn.secondary {
+  background-color: #6c757d;
+  margin-right: 10px;
+}
+
+.action-btn.primary {
+  background-color: #007bff;
 }
 </style>

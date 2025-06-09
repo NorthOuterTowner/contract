@@ -4,7 +4,8 @@
     <h2>角色管理</h2>
     <button @click="goToAddRole" class="add-role-btn">添加角色</button>
     <div class="search-bar">
-      <input v-model="query" placeholder="输入角色名称查询" />
+      <!-- 修改提示信息 -->
+      <input v-model="query" placeholder="输入角色 ID 或角色名称查询" />
       <button @click="searchRoles">查询</button>
     </div>
     <div v-if="loading" class="loading">加载中...</div>
@@ -90,8 +91,14 @@ const searchRoles = async () => {
   
   loading.value = true;
   try {
-    // 修复：使用roleName参数而不是query
-    const response = await axios.get(`/role/query?roleName=${query.value}`);
+    let url = '/role/query?';
+    // 判断输入是否为数字，如果是则按角色 ID 查询，否则按角色名查询
+    if (!isNaN(query.value)) {
+      url += `roleID=${query.value}`;
+    } else {
+      url += `roleName=${query.value}`;
+    }
+    const response = await axios.get(url);
     roles.value = response.data;
     
     if (response.data.length === 0) {
@@ -171,6 +178,7 @@ getAllRoles();
 </script>
 
 <style scoped>
+/* 样式部分保持不变 */
 .role-management {
   max-width: 1000px;
   margin: 40px auto;

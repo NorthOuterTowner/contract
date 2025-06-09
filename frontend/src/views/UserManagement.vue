@@ -8,7 +8,7 @@
       <button @click="searchUsers">查询</button>
     </div>
     <div v-if="loading" class="loading">加载中...</div>
-    
+
     <!-- 用户表格 -->
     <table v-if="currentPageUsers.length > 0" class="user-table">
       <thead>
@@ -24,13 +24,13 @@
           <td>{{ user.user_name }}</td>
           <td>
             <button @click="viewUser(user.user_id)" class="action-btn view-btn">查看</button>
-            <button @click="deleteUser(user.user_id)" class="action-btn delete-btn">删除</button>
+            <button @click="showDeleteConfirm(user)" class="action-btn delete-btn">删除</button>
           </td>
         </tr>
       </tbody>
     </table>
     <div v-else-if="!loading && query" class="no-data">未找到匹配的用户</div>
-    
+
     <!-- 分页组件 -->
     <div v-if="users.length > 0" class="pagination">
       <button @click="prevPage" :disabled="currentPage === 1">上一页</button>
@@ -39,7 +39,7 @@
     </div>
 
     <!-- 确认删除模态框 -->
-    <div v-if="isDeleteModalVisible" class="modal-overlay">
+    <div v-if="isDeleteConfirmVisible" class="modal-overlay">
       <div class="modal">
         <div class="modal-header">
           <h3>确认删除</h3>
@@ -67,6 +67,7 @@ import { ref, inject, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 import SystemManagementSidebar from '../components/SystemManagementSidebar.vue';
+import { useAuthStore } from '../common/auth';
 
 const router = useRouter();
 const message = inject('message');
@@ -79,7 +80,7 @@ const currentPage = ref(1);
 const itemsPerPage = ref(10);
 
 // 删除相关状态
-const isDeleteModalVisible = ref(false);
+const isDeleteConfirmVisible = ref(false);
 const currentDeletingUser = ref({});
 const isDeleting = ref(false);
 
@@ -100,12 +101,12 @@ const searchUsers = async () => {
   if (!query.value.trim()) {
     return message.warning('请输入查询内容');
   }
-  
+
   loading.value = true;
   try {
     const response = await axios.get(`/user/query?query=${query.value}`);
     users.value = response.data;
-    
+
     if (response.data.length === 0) {
       message.info('未找到匹配的用户');
     } else {
@@ -125,29 +126,26 @@ const viewUser = (userId) => {
   router.push(`/user/modify/${userId}`);
 };
 
-// 删除用户
-const deleteUser = (userId) => {
-  const userToDelete = users.value.find(user => user.user_id === userId);
-  if (userToDelete) {
-    currentDeletingUser.value = userToDelete;
-    isDeleteModalVisible.value = true;
-  }
+// 显示删除确认模态框
+const showDeleteConfirm = (user) => {
+  currentDeletingUser.value = user;
+  isDeleteConfirmVisible.value = true;
 };
 
 // 确认删除
 const confirmDelete = async () => {
   if (!currentDeletingUser.value.user_id) return;
-  
+
   isDeleting.value = true;
   try {
     await axios.delete(`/user/delete?userId=${currentDeletingUser.value.user_id}`);
     message.success('删除成功！');
-    
+
     // 从本地列表中移除已删除用户（优化体验）
     users.value = users.value.filter(
       user => user.user_id !== currentDeletingUser.value.user_id
     );
-    
+
     // 如果当前页没有数据了，跳转到上一页
     if (currentPageUsers.value.length === 0 && currentPage.value > 1) {
       currentPage.value--;
@@ -157,13 +155,13 @@ const confirmDelete = async () => {
     console.error(error);
   } finally {
     isDeleting.value = false;
-    isDeleteModalVisible.value = false;
+    isDeleteConfirmVisible.value = false;
   }
 };
 
 // 取消删除
 const cancelDelete = () => {
-  isDeleteModalVisible.value = false;
+  isDeleteConfirmVisible.value = false;
 };
 
 // 分页方法
@@ -190,12 +188,13 @@ const getAllUsers = async () => {
   }
 };
 
-onMounted(() => {
-  getAllUsers();
+onMounted(async () => {
+  await getAllUsers();
 });
 </script>
 
 <style scoped>
+/* 样式部分保持不变 */
 .user-management {
   max-width: 1000px;
   margin: 40px auto;

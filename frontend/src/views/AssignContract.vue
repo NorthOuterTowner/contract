@@ -1,316 +1,567 @@
 <template>
-  <div class="flex">
-    <Sidebar />
-    <div class="contract-allocate">
-      <div class="back-link">
-        <router-link to="/PendingContractList">← 返回待分配合同列表</router-link>
+  <div class="contract-allocate-management">
+    <!-- 返回按钮 -->
+    <div class="back-link">
+      <router-link to="/PendingContractList" class="back-button">← 返回待分配合同列表</router-link>
+    </div>
+    <!-- 合同信息标题和分割线 -->
+    <h2>合同信息</h2>
+    <hr />
+    <!-- 合同详细信息 -->
+    <div class="contract-info">
+      <div class="info-item">
+        <label>合同ID:</label>
+        <input type="text" v-model="contractId" readonly>
       </div>
+      <div class="info-item">
+        <label>合同名称:</label>
+        <input type="text" v-model="contractTitle" readonly>
+      </div>
+      <div class="info-item">
+        <label>合同状态:</label>
+        <input type="text" v-model="contractStatus" readonly>
+      </div>
+      <div class="info-item">
+        <label>起草时间:</label>
+        <input type="text" v-model="formattedCreationDate" readonly>
+      </div>
+    </div>
+    <!-- 分配合同相关人员标题 -->
+    <h2>分配合同相关人员</h2>
+    <hr />
 
-      <!-- 分配会签人部分 -->
-      <div class="allocate-section">
-        <h2 class="section-title">分配会签人</h2>
-        <div class="list-container">
-          <div class="list">
-            <p class="list-label">待分配人员列表：</p>
-            <ul class="person-list">
-              <li v-for="person in availableCoSigners" :key="person.id" @click="selectPerson(person, 'left', 'coSigners')">{{ person.name }}</li>
-            </ul>
-          </div>
-          <div class="buttons">
-            <button class="move-button" @click="moveToRight('coSigners')">>> </button>
-            <button class="move-button" @click="moveToLeft('coSigners')"><< </button>
-          </div>
-          <div class="list">
-            <p class="list-label">已分配人员列表：</p>
-            <ul class="person-list">
-              <li v-for="person in assignedCoSigners" :key="person.id" @click="selectPerson(person, 'right', 'coSigners')">{{ person.name }}</li>
-            </ul>
-          </div>
-        </div>
+    <!-- 分配会签人部分 -->
+    <h3>分配会签人</h3>
+    <div class="search-bar">
+      <!-- 这里如果需要搜索功能可以添加输入框和按钮 -->
+    </div>
+    <div class="list-container">
+      <div class="list">
+        <p class="list-label">待分配人员列表：</p>
+        <ul class="person-list">
+          <li
+            v-for="person in availableCoSigners"
+            :key="person.id"
+            @click="canEditCoSigners ? selectPerson(person, 'left', 'coSigners') : null"
+            :class="{ 'selected-person': isPersonSelected(person, 'left', 'coSigners') }"
+            :style="{ cursor: canEditCoSigners ? 'pointer' : 'not-allowed' }"
+            :disabled="!canEditCoSigners"
+          >
+            {{ person.name }}
+          </li>
+        </ul>
       </div>
+      <div class="buttons">
+        <button class="move-button" @click="canEditCoSigners ? moveToRight('coSigners') : null" :disabled="!canEditCoSigners">>> </button>
+        <button class="move-button" @click="canEditCoSigners ? moveToLeft('coSigners') : null" :disabled="!canEditCoSigners"><< </button>
+      </div>
+      <div class="list">
+        <p class="list-label">已分配人员列表：</p>
+        <ul class="person-list">
+          <li
+            v-for="person in assignedCoSigners"
+            :key="person.id"
+            @click="canEditCoSigners ? selectPerson(person, 'right', 'coSigners') : null"
+            :class="{ 'selected-person': isPersonSelected(person, 'right', 'coSigners') }"
+            :style="{ cursor: canEditCoSigners ? 'pointer' : 'not-allowed' }"
+            :disabled="!canEditCoSigners"
+          >
+            {{ person.name }}
+          </li>
+        </ul>
+      </div>
+    </div>
+    <p v-if="assignedCoSigners.length < 2" class="error-message">会签人数必须大于等于 2</p>
 
-      <!-- 分配审批人部分 -->
-      <div class="allocate-section">
-        <h2 class="section-title">分配审批人</h2>
-        <div class="list-container">
-          <div class="list">
-            <p class="list-label">待分配人员列表：</p>
-            <ul class="person-list">
-              <li v-for="person in availableApprovers" :key="person.id" @click="selectPerson(person, 'left', 'approvers')">{{ person.name }}</li>
-            </ul>
-          </div>
-          <div class="buttons">
-            <button class="move-button" @click="moveToRight('approvers')">>> </button>
-            <button class="move-button" @click="moveToLeft('approvers')"><< </button>
-          </div>
-          <div class="list">
-            <p class="list-label">已分配人员列表：</p>
-            <ul class="person-list">
-              <li v-for="person in assignedApprovers" :key="person.id" @click="selectPerson(person, 'right', 'approvers')">{{ person.name }}</li>
-            </ul>
-          </div>
-        </div>
+    <!-- 分配审批人部分 -->
+    <h3>分配审批人</h3>
+    <div class="list-container">
+      <div class="list">
+        <p class="list-label">待分配人员列表：</p>
+        <ul class="person-list">
+          <li
+            v-for="person in availableApprovers"
+            :key="person.id"
+            @click="canEditApprovers ? selectPerson(person, 'left', 'approvers') : null"
+            :class="{ 'selected-person': isPersonSelected(person, 'left', 'approvers') }"
+            :style="{ cursor: canEditApprovers ? 'pointer' : 'not-allowed' }"
+            :disabled="!canEditApprovers"
+          >
+            {{ person.name }}
+          </li>
+        </ul>
       </div>
+      <div class="buttons">
+        <button class="move-button" @click="canEditApprovers ? moveToRight('approvers') : null" :disabled="!canEditApprovers">>> </button>
+        <button class="move-button" @click="canEditApprovers ? moveToLeft('approvers') : null" :disabled="!canEditApprovers"><< </button>
+      </div>
+      <div class="list">
+        <p class="list-label">已分配人员列表：</p>
+        <ul class="person-list">
+          <li
+            v-for="person in assignedApprovers"
+            :key="person.id"
+            @click="canEditApprovers ? selectPerson(person, 'right', 'approvers') : null"
+            :class="{ 'selected-person': isPersonSelected(person, 'right', 'approvers') }"
+            :style="{ cursor: canEditApprovers ? 'pointer' : 'not-allowed' }"
+            :disabled="!canEditApprovers"
+          >
+            {{ person.name }}
+          </li>
+        </ul>
+      </div>
+    </div>
+    <p v-if="assignedApprovers.length !== 1" class="error-message">审批人只能为 1 人</p>
 
-      <!-- 分配签订人部分 -->
-      <div class="allocate-section">
-        <h2 class="section-title">分配签订人</h2>
-        <div class="list-container">
-          <div class="list">
-            <p class="list-label">待分配人员列表：</p>
-            <ul class="person-list">
-              <li v-for="person in availableSigners" :key="person.id" @click="selectPerson(person, 'left', 'signers')">{{ person.name }}</li>
-            </ul>
-          </div>
-          <div class="buttons">
-            <button class="move-button" @click="moveToRight('signers')">>> </button>
-            <button class="move-button" @click="moveToLeft('signers')"><< </button>
-          </div>
-          <div class="list">
-            <p class="list-label">已分配人员列表：</p>
-            <ul class="person-list">
-              <li v-for="person in assignedSigners" :key="person.id" @click="selectPerson(person, 'right', 'signers')">{{ person.name }}</li>
-            </ul>
-          </div>
-        </div>
+    <!-- 分配签订人部分 -->
+    <h3>分配签订人</h3>
+    <div class="list-container">
+      <div class="list">
+        <p class="list-label">待分配人员列表：</p>
+        <ul class="person-list">
+          <li
+            v-for="person in availableSigners"
+            :key="person.id"
+            @click="selectPerson(person, 'left', 'signers')"
+            :class="{ 'selected-person': isPersonSelected(person, 'left', 'signers') }"
+          >
+            {{ person.name }}
+          </li>
+        </ul>
       </div>
+      <div class="buttons">
+        <button class="move-button" @click="moveToRight('signers')">>> </button>
+        <button class="move-button" @click="moveToLeft('signers')"><< </button>
+      </div>
+      <div class="list">
+        <p class="list-label">已分配人员列表：</p>
+        <ul class="person-list">
+          <li
+            v-for="person in assignedSigners"
+            :key="person.id"
+            @click="selectPerson(person, 'right', 'signers')"
+            :class="{ 'selected-person': isPersonSelected(person, 'right', 'signers') }"
+          >
+            {{ person.name }}
+          </li>
+        </ul>
+      </div>
+    </div>
+    <p v-if="assignedSigners.length !== 1" class="error-message">签订人只能为 1 人</p>
 
-      <div class="form-actions">
-        <button class="submit-button" @click="submitAllocation">提交分配</button>
-      </div>
+    <div class="form-actions">
+      <button class="submit-button" @click="submitAllocation" :disabled="!isAllocationValid">提交分配</button>
+      <button class="reset-button" @click="resetAllocation">重置分配</button>
     </div>
   </div>
 </template>
 
-<script>
-import Sidebar from '../components/sidebar.vue';
+<script setup>
+import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import axios from 'axios';
+import { useAuthStore } from '../common/auth'; // 引入认证状态管理
 
-export default {
-  components: {
-    Sidebar
-  },
-  data() {
-    return {
-      // 会签人相关数据
-      availableCoSigners: [
-        { id: 1, name: '会签人1' },
-        { id: 2, name: '会签人2' },
-        { id: 3, name: '会签人3' },
-        { id: 4, name: '会签人4' },
-        { id: 5, name: '会签人5' }
-      ],
-      assignedCoSigners: [],
-      // 审批人相关数据
-      availableApprovers: [
-        { id: 6, name: '审批人1' },
-        { id: 7, name: '审批人2' },
-        { id: 8, name: '审批人3' },
-        { id: 9, name: '审批人4' },
-        { id: 10, name: '审批人5' }
-      ],
-      assignedApprovers: [],
-      // 签订人相关数据
-      availableSigners: [
-        { id: 11, name: '签订人1' },
-        { id: 12, name: '签订人2' },
-        { id: 13, name: '签订人3' },
-        { id: 14, name: '签订人4' },
-        { id: 15, name: '签订人5' }
-      ],
-      assignedSigners: [],
-      selectedPerson: null,
-      selectedList: null,
-      selectedType: null
-    };
-  },
-  methods: {
-    selectPerson(person, list, type) {
-      this.selectedPerson = person;
-      this.selectedList = list;
-      this.selectedType = type;
-    },
-    moveToRight(type) {
-      let availableList, assignedList;
-      if (type === 'coSigners') {
-        availableList = this.availableCoSigners;
-        assignedList = this.assignedCoSigners;
-      } else if (type === 'approvers') {
-        availableList = this.availableApprovers;
-        assignedList = this.assignedApprovers;
-      } else if (type === 'signers') {
-        availableList = this.availableSigners;
-        assignedList = this.assignedSigners;
-      }
+const router = useRouter();
+const authStore = useAuthStore(); // 使用认证状态管理
 
-      if (this.selectedList === 'left' && this.selectedPerson) {
-        const index = availableList.indexOf(this.selectedPerson);
-        if (index > -1) {
-          availableList.splice(index, 1);
-          assignedList.push(this.selectedPerson);
-        }
-        this.selectedPerson = null;
-        this.selectedList = null;
-        this.selectedType = null;
-      }
-    },
-    moveToLeft(type) {
-      let availableList, assignedList;
-      if (type === 'coSigners') {
-        availableList = this.availableCoSigners;
-        assignedList = this.assignedCoSigners;
-      } else if (type === 'approvers') {
-        availableList = this.availableApprovers;
-        assignedList = this.assignedApprovers;
-      } else if (type === 'signers') {
-        availableList = this.availableSigners;
-        assignedList = this.assignedSigners;
-      }
+// 合同信息
+const contractId = ref('');
+const contractTitle = ref('');
+const contractStatus = ref('');
+const contractCreationDate = ref('');
+const formattedCreationDate = computed(() => {
+  if (contractCreationDate.value) {
+    const date = new Date(contractCreationDate.value);
+    return new Intl.DateTimeFormat('zh-CN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    }).format(date);
+  }
+  return '';
+});
 
-      if (this.selectedList === 'right' && this.selectedPerson) {
-        const index = assignedList.indexOf(this.selectedPerson);
-        if (index > -1) {
-          assignedList.splice(index, 1);
-          availableList.push(this.selectedPerson);
-        }
-        this.selectedPerson = null;
-        this.selectedList = null;
-        this.selectedType = null;
-      }
-    },
-    submitAllocation() {
-      // 这里应该是API调用，提交分配结果
-      console.log('提交分配:', {
-        contractId: this.$route.params.contractId,
-        assignedCoSigners: this.assignedCoSigners.map(person => person.id),
-        assignedApprovers: this.assignedApprovers.map(person => person.id),
-        assignedSigners: this.assignedSigners.map(person => person.id)
-      });
-      alert('分配提交成功');
-      this.$router.push('/admin');
-    }
+// 会签人相关数据
+const availableCoSigners = ref([]);
+const assignedCoSigners = ref([]);
+// 审批人相关数据
+const availableApprovers = ref([]);
+const assignedApprovers = ref([]);
+// 签订人相关数据
+const availableSigners = ref([]);
+const assignedSigners = ref([]);
+
+const selectedPerson = ref(null);
+const selectedList = ref(null);
+const selectedType = ref(null);
+
+// 根据合同状态判断是否可编辑
+const canEditCoSigners = computed(() => {
+  return contractStatus.value === '会签处理中';
+});
+
+const canEditApprovers = computed(() => {
+  return ['会签处理中', '待审批'].includes(contractStatus.value);
+});
+
+const fetchUsers = async () => {
+  try {
+    const response = await axios.get("/user/role2-users");
+    const users = response.data;
+    availableCoSigners.value = [...users];
+    availableApprovers.value = [...users];
+    availableSigners.value = [...users];
+  } catch (error) {
+    console.error("获取用户列表失败:", error);
   }
 };
+
+const fetchContractInfo = async () => {
+  const contractIdParam = router.currentRoute.value.params.contractId;
+  try {
+    const response = await axios.get(`/assign/contract/${contractIdParam}`);
+    const contract = response.data;
+    contractId.value = contract.ContractID;
+    contractTitle.value = contract.Title;
+    contractStatus.value = contract.Status;
+    contractCreationDate.value = contract.CreationDate;
+
+    const { coSigners, approvers, signers } = contract.assignmentInfo;
+
+    // 初始化会签人分配信息
+    assignedCoSigners.value = availableCoSigners.value.filter(user => coSigners.includes(user.id));
+    availableCoSigners.value = availableCoSigners.value.filter(user => !coSigners.includes(user.id));
+
+    // 初始化审批人分配信息
+    assignedApprovers.value = availableApprovers.value.filter(user => approvers.includes(user.id));
+    availableApprovers.value = availableApprovers.value.filter(user => !approvers.includes(user.id));
+
+    // 初始化签订人分配信息
+    assignedSigners.value = availableSigners.value.filter(user => signers.includes(user.id));
+    availableSigners.value = availableSigners.value.filter(user => !signers.includes(user.id));
+
+  } catch (error) {
+    console.error("获取合同信息失败:", error);
+  }
+};
+
+const selectPerson = (person, list, type) => {
+  selectedPerson.value = person;
+  selectedList.value = list;
+  selectedType.value = type;
+};
+
+const isPersonSelected = (person, list, type) => {
+  return (
+    selectedPerson.value === person &&
+    selectedList.value === list &&
+    selectedType.value === type
+  );
+};
+
+const moveToRight = (type) => {
+  let available, assigned;
+  if (type === 'coSigners') {
+    available = availableCoSigners.value;
+    assigned = assignedCoSigners.value;
+  } else if (type === 'approvers') {
+    available = availableApprovers.value;
+    assigned = assignedApprovers.value;
+    // 如果审批人已经有一个，将其移回左侧
+    if (assigned.length === 1) {
+      const prevApprover = assigned.pop();
+      available.push(prevApprover);
+    }
+  } else if (type === 'signers') {
+    available = availableSigners.value;
+    assigned = assignedSigners.value;
+    // 如果签订人已经有一个，将其移回左侧
+    if (assigned.length === 1) {
+      const prevSigner = assigned.pop();
+      available.push(prevSigner);
+    }
+  }
+
+  if (selectedList.value === 'left' && selectedPerson.value) {
+    const index = available.indexOf(selectedPerson.value);
+    if (index > -1) {
+      available.splice(index, 1);
+      assigned.push(selectedPerson.value);
+    }
+    selectedPerson.value = null;
+    selectedList.value = null;
+    selectedType.value = null;
+  }
+};
+
+const moveToLeft = (type) => {
+  let available, assigned;
+  if (type === 'coSigners') {
+    available = availableCoSigners.value;
+    assigned = assignedCoSigners.value;
+  } else if (type === 'approvers') {
+    available = availableApprovers.value;
+    assigned = assignedApprovers.value;
+  } else if (type === 'signers') {
+    available = availableSigners.value;
+    assigned = assignedSigners.value;
+  }
+
+  if (selectedList.value === 'right' && selectedPerson.value) {
+    const index = assigned.indexOf(selectedPerson.value);
+    if (index > -1) {
+      assigned.splice(index, 1);
+      available.push(selectedPerson.value);
+    }
+    selectedPerson.value = null;
+    selectedList.value = null;
+    selectedType.value = null;
+  }
+};
+
+// 验证分配是否有效
+const isAllocationValid = computed(() => {
+  return assignedCoSigners.value.length >= 2 && assignedApprovers.value.length === 1 && assignedSigners.value.length === 1;
+});
+
+const submitAllocation = async () => {
+  if (!isAllocationValid.value) {
+    alert('会签人数必须大于等于 2，审批人只能为 1 人，签订人只能为 1 人，请检查分配信息。');
+    return;
+  }
+  try {
+    const operatorUserId = authStore.user?.id; // 获取操作员 ID
+    if (!operatorUserId) {
+      console.error('未获取到操作员 ID');
+      alert('未获取到操作员 ID，请重新登录');
+      return;
+    }
+    const response = await axios.post("/assign/contract-assignment", {
+      contractId: router.currentRoute.value.params.contractId,
+      signerId: assignedSigners.value[0]?.id,
+      approverId: assignedApprovers.value[0]?.id,
+      executorId: assignedCoSigners.value.map(person => person.id).join(','),
+      operatorUserId // 添加操作员 ID 到请求体
+    });
+    alert(response.data.message);
+    router.push('/PendingContractList');
+  } catch (error) {
+    console.error("提交分配失败:", error);
+    alert("提交分配失败，请稍后重试");
+  }
+};
+
+const resetAllocation = () => {
+  const initialUsers = [...availableCoSigners.value, ...assignedCoSigners.value];
+  availableCoSigners.value = initialUsers;
+  assignedCoSigners.value = [];
+  availableApprovers.value = initialUsers;
+  assignedApprovers.value = [];
+  availableSigners.value = initialUsers;
+  assignedSigners.value = [];
+  selectedPerson.value = null;
+  selectedList.value = null;
+  selectedType.value = null;
+};
+
+onMounted(() => {
+  fetchUsers();
+  fetchContractInfo();
+});
 </script>
 
 <style scoped>
-.flex {
-  display: flex;
-}
-
-.contract-allocate {
-  margin-top: 20px;
-  margin-left: 200px; /* 给 sidebar 腾出空间 */
-  padding: 20px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+.contract-allocate-management {
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 0 20px;
+    font-family: "Helvetica Neue", Arial, sans-serif;
 }
 
 .back-link {
-  margin-bottom: 20px;
+    margin-bottom: 20px;
 }
 
-.back-link a {
-  color: #007BFF;
-  text-decoration: none;
+.back-button {
+    background-color: #6c757d; /* 灰色背景 */
+    color: white; /* 白色文字 */
+    padding: 8px 16px;
+    border-radius: 4px;
+    text-decoration: none;
+    display: inline-block;
 }
 
-.back-link a:hover {
-  text-decoration: underline;
+.back-button:hover {
+    background-color: #5a6268;
+    text-decoration: none;
 }
 
-.allocate-section {
-  margin-bottom: 30px;
-  background-color: #f9f9f9;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+.contract-info {
+    margin-bottom: 20px;
 }
 
-.section-title {
-  font-size: 20px;
-  font-weight: 600;
-  margin-bottom: 15px;
-  color: #333;
+.info-item {
+    margin-bottom: 10px;
+}
+
+.info-item label {
+    display: inline-block;
+    width: 100px;
+}
+
+.info-item input {
+    padding: 6px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    width: 200px;
+}
+
+h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+h3 {
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+.search-bar {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 10px;
+}
+
+.search-bar input {
+    padding: 6px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    flex-grow: 1;
+}
+
+.search-bar button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.search-bar button:hover {
+    background-color: #45a049;
 }
 
 .list-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
 }
 
 .list {
-  width: 300px; /* 增加宽度 */
-  height: 200px; /* 降低高度 */
-  border: 1px solid #ddd;
-  padding: 15px;
-  margin: 10px;
-  border-radius: 6px;
-  background-color: #fff;
-  overflow-y: auto; /* 增加垂直滚动条 */
+    width: 300px;
+    height: 200px;
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin: 10px;
+    border-radius: 6px;
+    background-color: #fff;
+    overflow-y: auto;
 }
 
 .list-label {
-  font-size: 14px;
-  font-weight: 500;
-  margin-bottom: 8px;
-  color: #666;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: #666;
 }
 
 .person-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
 .person-list li {
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 4px;
-  transition: background-color 0.2s ease;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
 }
 
 .person-list li:hover {
-  background-color: #f1f1f1;
+    background-color: #f1f1f1;
+}
+
+.person-list li.selected-person {
+    background-color: #d4edda; /* 选中状态的背景颜色 */
+    color: #155724; /* 选中状态的文字颜色 */
 }
 
 .buttons {
-  display: flex;
-  flex-direction: column;
-  margin: 0 15px;
+    display: flex;
+    flex-direction: column;
+    margin: 0 15px;
 }
 
 .move-button {
-  background-color: #007BFF;
-  color: white;
-  border: none;
-  padding: 10px 15px;
-  border-radius: 4px;
-  cursor: pointer;
-  margin: 5px 0;
-  transition: background-color 0.2s ease;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin: 5px 0;
+    transition: background-color 0.2s ease;
 }
 
 .move-button:hover {
-  background-color: #0056b3;
+    background-color: #0056b3;
 }
 
 .form-actions {
-  margin-top: 20px;
-  text-align: center;
+    margin-top: 20px;
+    text-align: center;
 }
 
 .submit-button {
-  background-color: #28a745;
-  color: white;
-  border: none;
-  padding: 12px 20px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-  font-size: 16px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    font-size: 16px;
+    margin-right: 10px;
 }
 
 .submit-button:hover {
-  background-color: #218838;
+    background-color: #218838;
+}
+
+.reset-button {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    font-size: 16px;
+}
+
+.reset-button:hover {
+    background-color: #c82333;
+}
+
+.error-message {
+    color: red;
+    margin-top: 10px;
 }
 </style>
