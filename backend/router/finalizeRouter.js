@@ -217,4 +217,50 @@ router.get("/get", async (req, res) => {
     }
 });
 
+
+// 获取会签意见
+// 获取会签意见
+router.get('/cosign', async (req, res) => {
+  try {
+    const { contractId } = req.query;
+    
+    if (!contractId) {
+      return res.status(400).json({ 
+        code: 400, 
+        msg: '合同ID不能为空' 
+      });
+    }
+
+    // 使用 db.async.all 查询数据库
+    const { err, rows } = await db.async.all(
+      `SELECT SignerID, SignDate, comment 
+       FROM contractsigning 
+       WHERE ContractID = ?`,
+      [contractId]
+    );
+
+    if (err) {
+      console.error('数据库查询错误:', err);
+      return res.status(500).json({ 
+        code: 500, 
+        msg: '数据库查询失败' 
+      });
+    }
+
+    // 返回查询结果
+    return res.json({
+      code: 200,
+      msg: '获取会签意见成功',
+      data: rows
+    });
+    
+  } catch (error) {
+    console.error('获取会签意见失败:', error);
+    return res.status(500).json({ 
+      code: 500, 
+      msg: '服务器内部错误' 
+    });
+  }
+});
+
 module.exports = router;
