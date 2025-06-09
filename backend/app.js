@@ -40,6 +40,13 @@ app.use(session({
   }
 }));
 
+
+// app.js
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`); // 打印所有请求
+  next();
+});
+
 // 引入并使用新创建的查询路由
 
 app.use("/login",require("./router/loginRouter"));
@@ -58,6 +65,7 @@ app.use("/download",require("./router/fileDownload"));
 app.use("/draft",require("./router/draftRouter"));
 app.use("/finalize",require("./router/finalizeRouter"));
 app.use("/permission", require("./router/permissionRouter"));
+app.use("/customer", require("./router/customerRouter"));
 
 app.listen(PORT, () => {
   console.log(`Backend server running on http://localhost:${PORT}`);
