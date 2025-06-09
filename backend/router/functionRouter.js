@@ -21,7 +21,7 @@ const rollbackTransaction = async () => {
 router.get("/getNextId", async (req, res) => {
     try {
         await startTransaction();
-        const sql = "SELECT IFNULL(MAX(FunctionID), 0) + 1 as nextId FROM Functions FOR SHARE";
+        const sql = "SELECT IFNULL(MAX(FunctionID), 0) + 1 as nextId FROM Functions  ";
         const result = await db.async.all(sql, []);
         await commitTransaction();
         res.json({ nextId: result.rows[0].nextId });
@@ -84,7 +84,7 @@ router.get("/query", async (req, res) => {
             sql += " WHERE FunctionName LIKE ?";
             params.push(`%${functionName}%`);
         }
-         sql += " FOR SHARE ";
+         sql += "   ";
         const functions = await db.async.all(sql, params);
         await commitTransaction();
         res.json(functions.rows);
@@ -127,14 +127,14 @@ router.put("/update", async (req, res) => {
         }
 
         updateFunctionSql += fieldsToUpdate.join(", ");
-        updateFunctionSql += " WHERE FunctionID = ? FOR UPDATE";
+        updateFunctionSql += " WHERE FunctionID = ?  ";
         updateFunctionParams.push(functionId);
 
         // 更新功能信息
         await db.async.run(updateFunctionSql, updateFunctionParams);
 
         // 先删除原有的功能路由
-        await db.async.run("DELETE FROM functionroutes WHERE FunctionID = ? FOR UPDATE", [functionId]);
+        await db.async.run("DELETE FROM functionroutes WHERE FunctionID = ?  ", [functionId]);
 
         // 插入新的功能路由信息
         if (functionRoutes && functionRoutes.length > 0) {
@@ -162,19 +162,19 @@ router.delete("/delete", async (req, res) => {
         await startTransaction();
         // 先删除关联权限
         await db.async.run(
-            "DELETE FROM RolePermissions WHERE FunctionID = ? FOR UPDATE",
+            "DELETE FROM RolePermissions WHERE FunctionID = ?  ",
             [functionId]
         );
 
         // 删除功能路由
         await db.async.run(
-            "DELETE FROM functionroutes WHERE FunctionID = ? FOR UPDATE",
+            "DELETE FROM functionroutes WHERE FunctionID = ?  ",
             [functionId]
         );
 
         // 删除功能
         await db.async.run(
-            "DELETE FROM Functions WHERE FunctionID = ? FOR UPDATE",
+            "DELETE FROM Functions WHERE FunctionID = ?  ",
             [functionId]
         );
 
@@ -191,7 +191,7 @@ router.delete("/delete", async (req, res) => {
 router.get("/all", async (req, res) => {
     try {
         await startTransaction();
-        const functions = await db.async.all("SELECT * FROM Functions FOR SHARE", []);
+        const functions = await db.async.all("SELECT * FROM Functions  ", []);
         await commitTransaction();
         res.json(functions.rows);
     } catch (error) {
@@ -227,7 +227,7 @@ router.get("/queryRoutes/:functionId", async (req, res) => {
 
     try {
         await startTransaction();
-        const sql = "SELECT * FROM functionroutes WHERE FunctionID = ? FOR SHARE";
+        const sql = "SELECT * FROM functionroutes WHERE FunctionID = ?  ";
         const routes = await db.async.all(sql, [functionId]);
         await commitTransaction();
         res.json(routes.rows);
@@ -247,7 +247,7 @@ router.delete("/deleteRoute", async (req, res) => {
 
     try {
         await startTransaction();
-        const sql = "DELETE FROM functionroutes WHERE FunctionID = ? AND Route = ? FOR UPDATE";
+        const sql = "DELETE FROM functionroutes WHERE FunctionID = ? AND Route = ?  ";
         await db.async.run(sql, [functionId, route]);
         await commitTransaction();
         res.json({ message: "功能路由删除成功" });

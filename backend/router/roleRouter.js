@@ -22,7 +22,7 @@ router.get("/getNextId", async (req, res) => {
     try {
         await startTransaction();
         // 使用共享锁，防止其他事务在当前事务期间修改 Roles 表
-        const sql = "SELECT IFNULL(MAX(RoleID), 0) + 1 as nextId FROM Roles FOR SHARE";
+        const sql = "SELECT IFNULL(MAX(RoleID), 0) + 1 as nextId FROM Roles  ";
         const result = await db.async.all(sql, []);
         const nextId = result.rows.length > 0 ? result.rows[0].nextId : 1;
         await commitTransaction();
@@ -44,7 +44,7 @@ router.post("/add", async (req, res) => {
     try {
         await startTransaction();
         // 使用共享锁检查角色名是否已存在
-        const checkSql = "SELECT COUNT(*) as count FROM Roles WHERE roleName = ? FOR SHARE";
+        const checkSql = "SELECT COUNT(*) as count FROM Roles WHERE roleName = ?  ";
         const checkResult = await db.async.all(checkSql, [roleName]);
         if (checkResult.rows[0].count > 0) {
             await rollbackTransaction();
@@ -93,7 +93,7 @@ router.get("/query", async (req, res) => {
         }
 
         // 使用共享锁，防止其他事务在当前事务期间修改查询结果
-        sql += " FOR SHARE";
+        sql += "  ";
         const roles = await db.async.all(sql, params);
         await commitTransaction();
         res.json(roles.rows);
@@ -113,7 +113,7 @@ router.delete("/delete", async (req, res) => {
         await startTransaction();
         // 使用排他锁，防止其他事务在当前事务期间访问该角色的权限信息
         await db.async.run(
-            "SELECT * FROM RolePermissions WHERE roleID = ? FOR UPDATE",
+            "SELECT * FROM RolePermissions WHERE roleID = ?  ",
             [roleId]
         );
         // 先删除关联权限
@@ -124,7 +124,7 @@ router.delete("/delete", async (req, res) => {
 
         // 使用排他锁，防止其他事务在当前事务期间访问该角色信息
         await db.async.run(
-            "SELECT * FROM Roles WHERE roleID = ? FOR UPDATE",
+            "SELECT * FROM Roles WHERE roleID = ?  ",
             [roleId]
         );
         // 删除角色
@@ -147,7 +147,7 @@ router.get("/all", async (req, res) => {
     try {
         await startTransaction();
         // 使用共享锁，防止其他事务在当前事务期间修改 Roles 表
-        const sql = "SELECT * FROM Roles FOR SHARE";
+        const sql = "SELECT * FROM Roles  ";
         const roles = await db.async.all(sql, []);
         await commitTransaction();
         res.json(roles.rows);
@@ -186,7 +186,7 @@ router.get("/checkName", async (req, res) => {
             params.push(roleID);
         }
         // 使用共享锁，防止其他事务在当前事务期间修改 Roles 表
-        sql += " FOR SHARE";
+        sql += "  ";
         const result = await db.async.all(sql, params);
         const exists = result.rows[0].count > 0;
         await commitTransaction();
@@ -204,7 +204,7 @@ router.get("/permissions", async (req, res) => {
     try {
         await startTransaction();
         // 使用共享锁，防止其他事务在当前事务期间修改 RolePermissions 表
-        const sql = "SELECT * FROM RolePermissions WHERE RoleID = ? FOR SHARE";
+        const sql = "SELECT * FROM RolePermissions WHERE RoleID = ?  ";
         const result = await db.async.all(sql, [roleId]);
         await commitTransaction();
         res.json(result.rows);
@@ -225,7 +225,7 @@ router.put("/update", async (req, res) => {
         await startTransaction();
         // 使用排他锁，防止其他事务在当前事务期间访问该角色信息
         await db.async.run(
-            "SELECT * FROM Roles WHERE roleID = ? FOR UPDATE",
+            "SELECT * FROM Roles WHERE roleID = ?  ",
             [roleID]
         );
         // 更新角色基本信息
@@ -236,7 +236,7 @@ router.put("/update", async (req, res) => {
 
         // 使用排他锁，防止其他事务在当前事务期间访问该角色的权限信息
         await db.async.run(
-            "SELECT * FROM RolePermissions WHERE roleID = ? FOR UPDATE",
+            "SELECT * FROM RolePermissions WHERE roleID = ?  ",
             [roleID]
         );
         // 先删除原有的角色权限

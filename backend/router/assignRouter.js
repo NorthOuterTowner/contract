@@ -22,7 +22,7 @@ router.get('/all', async (req, res) => {
     try {
         await startTransaction();
         // 修改 SQL 查询语句，使用 IN 关键字筛选状态，并添加共享锁
-        const sql = "SELECT * FROM `contract` WHERE `Status` IN ('会签处理中', '待审批', '待签订') FOR SHARE";
+        const sql = "SELECT * FROM `contract` WHERE `Status` IN ('会签处理中', '待审批', '待签订')  ";
         const { rows } = await db.async.all(sql, []);
         await commitTransaction();
         // console.log('查询到的合同列表:', rows); // 打印查询结果，方便调试
@@ -40,7 +40,7 @@ router.get('/contract/:contractId', async (req, res) => {
     try {
         await startTransaction();
         // 获取合同信息，并添加共享锁
-        const contractSql = "SELECT * FROM `contract` WHERE `ContractID` = ? FOR SHARE";
+        const contractSql = "SELECT * FROM `contract` WHERE `ContractID` = ?  ";
         const { rows: contractRows } = await db.async.all(contractSql, [contractId]);
         if (contractRows.length === 0) {
             await rollbackTransaction();
@@ -49,7 +49,7 @@ router.get('/contract/:contractId', async (req, res) => {
         const contract = contractRows[0];
 
         // 获取合同分配信息，并添加共享锁
-        const assignmentSql = "SELECT RoleType, AssigneeUserID FROM contractassignment WHERE ContractID = ? FOR SHARE";
+        const assignmentSql = "SELECT RoleType, AssigneeUserID FROM contractassignment WHERE ContractID = ?  ";
         const { rows: assignmentRows } = await db.async.all(assignmentSql, [contractId]);
 
         const assignmentInfo = {
@@ -92,7 +92,7 @@ router.post('/contract-assignment', async (req, res) => {
     try {
         await startTransaction();
         // 先删除该合同的所有分配信息，并添加排他锁
-        const deleteSql = "DELETE FROM contractassignment WHERE ContractID = ? FOR UPDATE";
+        const deleteSql = "DELETE FROM contractassignment WHERE ContractID = ?  ";
         await db.async.run(deleteSql, [contractId]);
 
         for (const [roleType, ids] of Object.entries(assigneeIds)) {
@@ -135,7 +135,7 @@ router.get('/search', async (req, res) => {
     }
 
     // 添加共享锁
-    sql += " FOR SHARE";
+    sql += "  ";
 
     try {
         await startTransaction();

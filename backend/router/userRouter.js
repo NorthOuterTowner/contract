@@ -43,7 +43,7 @@ router.post('/add', async (req, res) => {
   try {
     await startTransaction();
     // 检查 ID 和用户名是否重复，使用排他锁
-    const checkSql = "SELECT * FROM users WHERE username = ? OR user_id = ? FOR UPDATE";
+    const checkSql = "SELECT * FROM users WHERE username = ? OR user_id = ?  ";
     const existingUser = await db.async.all(checkSql, [userId, userId]);
     if (existingUser.rows.length > 0) {
       await rollbackTransaction();
@@ -149,7 +149,7 @@ router.put('/update', async (req, res) => {
   try {
     await startTransaction();
     // 使用排他锁
-    const selectSql = "SELECT * FROM users WHERE user_id = ? FOR UPDATE";
+    const selectSql = "SELECT * FROM users WHERE user_id = ?  ";
     await db.async.all(selectSql, [userId]);
 
     let sql = "UPDATE users SET ";
@@ -213,7 +213,7 @@ router.post('/updateRole', async (req, res) => {
     }
 
     // 使用排他锁
-    const selectUserSql = "SELECT * FROM users WHERE user_id = ? FOR UPDATE";
+    const selectUserSql = "SELECT * FROM users WHERE user_id = ?  ";
     await db.async.all(selectUserSql, [userId]);
     
     // 更新用户角色
@@ -237,7 +237,7 @@ router.delete('/delete', async (req, res) => {
   try {
     await startTransaction();
     // 使用排他锁
-    const selectSql = "SELECT * FROM users WHERE user_id = ? FOR UPDATE";
+    const selectSql = "SELECT * FROM users WHERE user_id = ?  ";
     await db.async.all(selectSql, [userId]);
 
     const sql = "DELETE FROM users WHERE user_id = ?";

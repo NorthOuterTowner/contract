@@ -23,7 +23,7 @@ router.get("/checkPermission", async (req, res) => {
     try {
         await startTransaction();
         // 查询用户角色，添加共享锁
-        const userRoleSql = "SELECT role FROM users WHERE user_id = ? FOR SHARE";
+        const userRoleSql = "SELECT role FROM users WHERE user_id = ?  ";
         const userRoleResult = await db.async.all(userRoleSql, [userId]);
         //console.log('userRoleResult:', userRoleResult); // 添加调试信息
         if (userRoleResult.rows.length === 0) {
@@ -38,7 +38,7 @@ router.get("/checkPermission", async (req, res) => {
             SELECT fr.Route 
             FROM RolePermissions rp
             JOIN functionroutes fr ON rp.FunctionID = fr.FunctionID
-            WHERE rp.RoleID = ? FOR SHARE
+            WHERE rp.RoleID = ?  
         `;
         const rolePermissionsResult = await db.async.all(rolePermissionsSql, [roleId]);
         //console.log('rolePermissionsResult:', rolePermissionsResult); // 添加调试信息

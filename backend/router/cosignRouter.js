@@ -96,7 +96,7 @@ router.post("/submit", upload.none(), async (req, res) => {
 
         // 1. 验证合同存在且状态正确
         const { err: checkErr, rows: checkRows } = await db.async.all(
-            "SELECT `Status` FROM `contract` WHERE `ContractID` = ? FOR UPDATE",
+            "SELECT `Status` FROM `contract` WHERE `ContractID` = ?  ",
             [contractId]
         );
 
