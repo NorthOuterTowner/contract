@@ -391,35 +391,39 @@ const deleteCustomer = async (id) => {
 //   }
 // }
 
+// 批量删除（逐条调用单条删除接口）
 const deleteSelectedCustomers = async () => {
   if (selectedCustomerIds.value.length === 0) {
     alert('请选择要删除的客户');
     return;
   }
-  
-  // 确保所有 ID 都是数字类型
-  const numericIds = selectedCustomerIds.value.map(id => Number(id));
-  console.log('[批量删除] 数字数组:', numericIds);
 
-  if (confirm(`确定要删除选中的 ${numericIds.length} 条客户信息吗？`)) {
-    try {
-      const response = await axios.delete('/customer/customers/batch', {
-        data: numericIds // 传递纯数字数组
-      });
-      
-      console.log('[批量删除] 响应:', response.data);
-      fetchCustomers();
-      selectedCustomerIds.value = [];
-      selectAll.value = false;
-      alert('批量删除成功');
-    } catch (error) {
-      console.error('[ERROR] 批量删除失败:', error);
-      
-      if (error.response) {
-        alert(`删除失败: ${error.response.data.message}`);
-      } else {
-        alert('网络错误，请重试');
+  if (confirm(`确定要删除选中的 ${selectedCustomerIds.value.length} 条客户信息吗？`)) {
+    let successCount = 0;
+    let failedIds = [];
+    
+    // 逐条删除客户（修改点1：使用for循环替代批量接口）
+    for (const id of selectedCustomerIds.value) {
+      try {
+        // 调用单条删除接口（修改点2：使用单条删除API）
+        await axios.delete(`/customer/customers/${id}`);
+        successCount++;
+      } catch (error) {
+        console.error(`删除客户ID ${id} 失败:`, error);
+        failedIds.push(id);
       }
+    }
+    
+    // 刷新客户列表（修改点3：删除后统一刷新列表）
+    fetchCustomers();
+    selectedCustomerIds.value = [];
+    selectAll.value = false;
+    
+    // 显示结果（修改点4：优化结果提示）
+    if (failedIds.length === 0) {
+      alert(`批量删除成功，共删除 ${successCount} 条记录`);
+    } else {
+      alert(`部分删除成功，共删除 ${successCount} 条记录，${failedIds.length} 条失败`);
     }
   }
 };
