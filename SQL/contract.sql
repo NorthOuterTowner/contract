@@ -42,7 +42,7 @@ CREATE TABLE `contract` (
 
 LOCK TABLES `contract` WRITE;
 /*!40000 ALTER TABLE `contract` DISABLE KEYS */;
-INSERT INTO `contract` VALUES ('AI001','Resnet结构图','图为renet的模块结构','ResNet.png','已签订','2025-06-02 10:51:47','2025-06-02 11:07:06',NULL,NULL),('SAD001','软件系统分析与设计Logo','软件系统分析与设计的Logo图标。','SADLogo.png','待签订','2025-06-02 10:53:08','2025-06-02 10:59:19',NULL,NULL);
+INSERT INTO `contract` VALUES ('AI001','Resnet结构图','图为renet的模块结构','ResNet.png','已签订','2025-06-02 10:51:47','2025-06-02 11:07:06',NULL,NULL),('CON3566','合同审批功能测试','合同审批功能测试','图算法.pdf','待签订','2025-06-11 14:28:32','2025-06-11 22:42:02','2025-06-11','2025-06-29'),('CON4734','合同','描述','图算法.pdf','待审批','2025-06-11 03:43:52','2025-06-11 22:50:48','2025-06-12','2025-07-06'),('CON7797','A','描述1','附件2：大创项目管理系统项目立项操作指南 (1).docx','待定稿','2025-06-11 03:42:34','2025-06-11 11:42:58','2025-06-12','2025-07-06'),('CON7878','合同B','1',NULL,'待审批','2025-06-11 14:51:48','2025-06-11 22:52:53','2025-06-13','2025-06-28'),('CON7887','测试合同2','测试','图算法.pdf','待定稿','2025-06-11 14:07:09','2025-06-11 22:09:03','2025-06-16','2025-07-06'),('CON8557','合同A','无',NULL,'会签处理中','2025-06-11 14:39:39','2025-06-11 22:45:37','2025-06-13','2025-09-28'),('SAD001','软件系统分析与设计Logo','软件系统分析与设计的Logo图标。','SADLogo.png','待签订','2025-06-02 10:53:08','2025-06-02 10:59:19',NULL,NULL);
 /*!40000 ALTER TABLE `contract` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -63,7 +63,7 @@ CREATE TABLE `contractapproval` (
   PRIMARY KEY (`ApprovalID`),
   KEY `ContractID` (`ContractID`),
   CONSTRAINT `contractapproval_ibfk_1` FOREIGN KEY (`ContractID`) REFERENCES `contract` (`ContractID`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -72,7 +72,7 @@ CREATE TABLE `contractapproval` (
 
 LOCK TABLES `contractapproval` WRITE;
 /*!40000 ALTER TABLE `contractapproval` DISABLE KEYS */;
-INSERT INTO `contractapproval` VALUES (15,'AI001','userA','审批通过','2025-06-02 03:04:13','通过'),(16,'AI001','userA','审批通过','2025-06-02 03:05:43','通过'),(17,'AI001','userA','审批通过','2025-06-02 03:06:10','好的');
+INSERT INTO `contractapproval` VALUES (15,'AI001','userA','审批通过','2025-06-02 03:04:13','通过'),(16,'AI001','userA','审批通过','2025-06-02 03:05:43','通过'),(17,'AI001','userA','审批通过','2025-06-02 03:06:10','好的'),(18,'CON3566','userA','审批通过','2025-06-11 14:42:02','通过');
 /*!40000 ALTER TABLE `contractapproval` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -81,28 +81,25 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `contractassignment`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `contractassignment` (
-  `AssignmentID` INT(11) NOT NULL AUTO_INCREMENT COMMENT '分配记录唯一标识',
-  `ContractID` VARCHAR(10) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '合同编号（关联contract表ContractID，对应需求中合同编号）',
-  `RoleType` VARCHAR(20) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '分配角色：会签人、审批人、签订人（对应需求中的三类流程角色）',
-  `AssigneeUserID` INT(10) UNSIGNED NOT NULL COMMENT '被分配用户ID（关联users表user_id，需为合同操作员或管理员）',
-  `OperatorUserID` INT(10) UNSIGNED NOT NULL COMMENT '操作人用户ID（关联users表user_id，需为管理员角色）',
-  `AssignmentDate` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '分配时间（自动填充当前时间）',
-  `AssignmentComment` VARCHAR(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '分配备注（如特殊流程说明）',
+  `AssignmentID` int(11) NOT NULL AUTO_INCREMENT COMMENT '分配记录唯一标识',
+  `ContractID` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '合同编号（关联contract表ContractID，对应需求中合同编号）',
+  `RoleType` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '分配角色：会签人、审批人、签订人（对应需求中的三类流程角色）',
+  `AssigneeUserID` int(10) unsigned NOT NULL COMMENT '被分配用户ID（关联users表user_id，需为合同操作员或管理员）',
+  `OperatorUserID` int(10) unsigned NOT NULL COMMENT '操作人用户ID（关联users表user_id，需为管理员角色）',
+  `AssignmentDate` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '分配时间（自动填充当前时间）',
+  `AssignmentComment` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '分配备注（如特殊流程说明）',
   PRIMARY KEY (`AssignmentID`),
-  -- 外键约束：关联合同表
   KEY `fk_contractassignment_contract` (`ContractID`),
-  CONSTRAINT `fk_contractassignment_contract` FOREIGN KEY (`ContractID`) REFERENCES `contract` (`ContractID`) ON DELETE CASCADE,
-  -- 外键约束：关联被分配用户（合同操作员/管理员）
   KEY `fk_contractassignment_assignee` (`AssigneeUserID`),
-  CONSTRAINT `fk_contractassignment_assignee` FOREIGN KEY (`AssigneeUserID`) REFERENCES `users` (`user_id`),
-  -- 外键约束：关联操作人（管理员）
   KEY `fk_contractassignment_operator` (`OperatorUserID`),
-  CONSTRAINT `fk_contractassignment_operator` FOREIGN KEY (`OperatorUserID`) REFERENCES `users` (`user_id`),
-  -- 检查角色类型合法性（基于需求中的三类角色）
-  CHECK (`RoleType` IN ('会签人', '审批人', '签订人'))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='合同分配记录表（记录会签、审批、签订人员分配信息）';
+  CONSTRAINT `fk_contractassignment_assignee` FOREIGN KEY (`AssigneeUserID`) REFERENCES `users` (`user_id`),
+  CONSTRAINT `fk_contractassignment_contract` FOREIGN KEY (`ContractID`) REFERENCES `contract` (`ContractID`) ON DELETE CASCADE,
+  CONSTRAINT `fk_contractassignment_operator` FOREIGN KEY (`OperatorUserID`) REFERENCES `users` (`user_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='合同分配记录表（记录会签、审批、签订人员分配信息）';
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `contractassignment`
@@ -110,6 +107,7 @@ CREATE TABLE `contractassignment` (
 
 LOCK TABLES `contractassignment` WRITE;
 /*!40000 ALTER TABLE `contractassignment` DISABLE KEYS */;
+INSERT INTO `contractassignment` VALUES (1,'CON7887','会签人',3,1,'2025-06-11 22:08:39',NULL),(2,'CON7887','会签人',2,1,'2025-06-11 22:08:39',NULL),(3,'CON7887','审批人',2,1,'2025-06-11 22:08:39',NULL),(4,'CON7887','签订人',2,1,'2025-06-11 22:08:40',NULL),(5,'CON3566','会签人',2,1,'2025-06-11 22:29:30',NULL),(6,'CON3566','会签人',3,1,'2025-06-11 22:29:30',NULL),(7,'CON3566','审批人',2,1,'2025-06-11 22:29:30',NULL),(8,'CON3566','签订人',2,1,'2025-06-11 22:29:30',NULL),(9,'CON8557','会签人',3,1,'2025-06-11 22:40:37',NULL),(10,'CON8557','会签人',2,1,'2025-06-11 22:40:37',NULL),(11,'CON8557','审批人',2,1,'2025-06-11 22:40:37',NULL),(12,'CON8557','签订人',3,1,'2025-06-11 22:40:37',NULL),(13,'CON7878','会签人',2,1,'2025-06-11 22:52:38',NULL),(14,'CON7878','会签人',3,1,'2025-06-11 22:52:38',NULL),(15,'CON7878','审批人',2,1,'2025-06-11 22:52:38',NULL),(16,'CON7878','签订人',2,1,'2025-06-11 22:52:38',NULL);
 /*!40000 ALTER TABLE `contractassignment` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -130,7 +128,7 @@ CREATE TABLE `contractdraft` (
   PRIMARY KEY (`DraftID`),
   KEY `ContractID` (`ContractID`),
   CONSTRAINT `contractdraft_ibfk_1` FOREIGN KEY (`ContractID`) REFERENCES `contract` (`ContractID`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -139,6 +137,7 @@ CREATE TABLE `contractdraft` (
 
 LOCK TABLES `contractdraft` WRITE;
 /*!40000 ALTER TABLE `contractdraft` DISABLE KEYS */;
+INSERT INTO `contractdraft` VALUES (1,'CON7797','A','描述1','lrz','2025-06-11 11:42:51'),(2,'CON4734','合同','描述','lrz','2025-06-11 11:44:16'),(3,'CON7887','测试合同2','测试','lrz','2025-06-11 22:07:30'),(4,'CON3566','合同审批功能测试','合同审批功能测试','lrz','2025-06-11 22:28:47'),(5,'CON8557','合同A','无','operator2','2025-06-11 22:39:55'),(6,'CON7878','合同B','1','operator1','2025-06-11 22:52:02');
 /*!40000 ALTER TABLE `contractdraft` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -187,7 +186,7 @@ CREATE TABLE `contractfinalization` (
   PRIMARY KEY (`FinalizationID`),
   KEY `ContractID` (`ContractID`),
   CONSTRAINT `contractfinalization_ibfk_1` FOREIGN KEY (`ContractID`) REFERENCES `contract` (`ContractID`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -196,6 +195,7 @@ CREATE TABLE `contractfinalization` (
 
 LOCK TABLES `contractfinalization` WRITE;
 /*!40000 ALTER TABLE `contractfinalization` DISABLE KEYS */;
+INSERT INTO `contractfinalization` VALUES (1,'CON3566','图算法.pdf','lrz','2025-06-11 22:30:51'),(2,'CON4734','图算法.pdf','lrz','2025-06-11 22:50:48');
 /*!40000 ALTER TABLE `contractfinalization` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -215,7 +215,7 @@ CREATE TABLE `contractsigning` (
   PRIMARY KEY (`SignID`),
   KEY `ContractID` (`ContractID`),
   CONSTRAINT `contractsigning_ibfk_1` FOREIGN KEY (`ContractID`) REFERENCES `contract` (`ContractID`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -224,9 +224,51 @@ CREATE TABLE `contractsigning` (
 
 LOCK TABLES `contractsigning` WRITE;
 /*!40000 ALTER TABLE `contractsigning` DISABLE KEYS */;
-INSERT INTO `contractsigning` VALUES (2,'AI001','userA','2025-06-02 03:07:06','完成'),(3,'AI001','userA','2025-06-02 03:09:00','同意');
+INSERT INTO `contractsigning` VALUES (2,'AI001','userA','2025-06-02 03:07:06','完成'),(3,'AI001','userA','2025-06-02 03:09:00','同意'),(4,'CON7797','lrz','2025-06-11 11:42:58','请输入会签修改意见'),(5,'CON4734','lrz','2025-06-11 11:44:23','请输入会签修改意见'),(6,'CON7887','lrz','2025-06-11 22:09:03','无意见'),(7,'CON3566','lrz','2025-06-11 22:29:51','请输入会签修改意见'),(8,'CON8557','lrz','2025-06-11 22:41:01','无意间'),(9,'CON8557','lrz','2025-06-11 22:41:20','请输入会签修改意见'),(10,'CON8557','lrz','2025-06-11 22:42:50','请输入会签修改意见'),(11,'CON8557','lrz','2025-06-11 22:43:04','无意见'),(12,'CON8557','lrz','2025-06-11 22:45:16','请输入会签修改意见'),(13,'CON8557','lrz','2025-06-11 22:45:37','请输入会签修改意见');
 /*!40000 ALTER TABLE `contractsigning` ENABLE KEYS */;
 UNLOCK TABLES;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_general_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER after_contractsigning_insert
+AFTER INSERT ON contractsigning
+FOR EACH ROW
+BEGIN
+    DECLARE n INT DEFAULT 0; -- 会签记录总数
+    DECLARE m INT DEFAULT 0; -- 分配的会签人总数
+
+    -- 获取该 ContractID 的所有会签记录数
+    SELECT COUNT(*)
+    INTO n
+    FROM contractsigning
+    WHERE ContractID = NEW.ContractID;
+
+    -- 获取该 ContractID 的所有分配的会签人总数
+    SELECT COUNT(*)
+    INTO m
+    FROM contractassignment
+    WHERE ContractID = NEW.ContractID
+      AND RoleType = '会签人';
+
+    -- 如果会签记录数等于分配的会签人总数
+    IF n = m THEN
+        -- 更新 contract 表中的 Status 为 '待定稿'
+        UPDATE contract
+        SET Status = '待定稿'
+        WHERE ContractID = NEW.ContractID;
+    END IF;
+END */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 
 --
 -- Table structure for table `customer`
@@ -259,6 +301,32 @@ LOCK TABLES `customer` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `functionroutes`
+--
+
+DROP TABLE IF EXISTS `functionroutes`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `functionroutes` (
+  `FunctionID` int(11) NOT NULL,
+  `Route` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `CreatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`FunctionID`,`Route`),
+  CONSTRAINT `functionroutes_ibfk_1` FOREIGN KEY (`FunctionID`) REFERENCES `functions` (`FunctionID`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `functionroutes`
+--
+
+LOCK TABLES `functionroutes` WRITE;
+/*!40000 ALTER TABLE `functionroutes` DISABLE KEYS */;
+INSERT INTO `functionroutes` VALUES (1,'','2025-06-07 01:40:33'),(2,'','2025-06-07 01:40:33'),(3,'','2025-06-07 01:40:33'),(4,'','2025-06-07 01:40:33'),(5,'','2025-06-07 01:40:33'),(6,'','2025-06-07 01:40:33'),(7,'','2025-06-07 01:40:33'),(8,'/DraftContract','2025-06-07 01:40:33'),(8,'/DraftContractList','2025-06-07 01:40:33'),(9,'/FinalizeContract','2025-06-07 01:40:33'),(9,'/FinalizeContract/[^/]{1,10}','2025-06-07 01:40:33'),(9,'/FinalizeContractList','2025-06-07 01:40:33'),(10,'/my-contract-module','2025-06-07 01:40:33'),(10,'/my-contract-module/query','2025-06-07 01:40:33'),(10,'/my-contract-module/query/detail/[^/]{1,10}','2025-06-07 01:40:33'),(10,'/my-contract-module/statistics','2025-06-07 01:40:33'),(11,'','2025-06-07 01:40:33'),(12,'/CoSignContract','2025-06-07 01:40:33'),(12,'/CoSignContract/[^/]{1,10}','2025-06-07 01:40:33'),(12,'/CoSignContractList','2025-06-07 01:40:33'),(13,'/approval','2025-06-07 01:40:33'),(13,'/approve/content','2025-06-07 01:40:33'),(13,'/approveList','2025-06-07 01:40:33'),(14,'/sign/content','2025-06-07 01:40:33'),(14,'/SignContractList','2025-06-07 01:40:33'),(15,'/allocate/[^/]{1,10}','2025-06-07 01:40:33'),(15,'/PendingContractList','2025-06-07 01:40:33'),(16,'/allocate/[^/]{1,10}','2025-06-07 01:40:33'),(16,'/PendingContractList','2025-06-07 01:40:33'),(17,'/allocate/[^/]{1,10}','2025-06-07 01:40:33'),(17,'/PendingContractList','2025-06-07 01:40:33'),(18,'','2025-06-07 01:40:33'),(19,'/user','2025-06-07 01:40:33'),(19,'/user/add','2025-06-07 01:40:33'),(20,'/user','2025-06-07 01:40:33'),(20,'/user/modify/\\d+','2025-06-07 01:40:33'),(21,'/user','2025-06-07 01:40:33'),(22,'/user','2025-06-07 01:40:33'),(23,'/role','2025-06-07 01:40:33'),(23,'/role/add','2025-06-07 01:40:33'),(24,'/role','2025-06-07 01:40:33'),(24,'/role/modify/\\d+','2025-06-07 01:40:33'),(25,'/role','2025-06-07 01:40:33'),(26,'/role','2025-06-07 01:40:33'),(27,'/function','2025-06-07 01:40:33'),(27,'/function/add','2025-06-07 01:40:33'),(28,'/function','2025-06-07 01:40:33'),(28,'/function/modify/\\d+','2025-06-07 01:40:33'),(29,'/function','2025-06-07 01:40:33'),(30,'/function','2025-06-07 01:40:33'),(31,'/permission','2025-06-07 01:40:33'),(31,'/permission/assign/\\d+','2025-06-07 01:40:33'),(32,'','2025-06-07 01:40:33'),(33,'','2025-06-07 01:40:33'),(34,'','2025-06-07 01:40:33'),(35,'','2025-06-07 01:40:33');
+/*!40000 ALTER TABLE `functionroutes` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `functions`
 --
 
@@ -284,119 +352,8 @@ CREATE TABLE `functions` (
 
 LOCK TABLES `functions` WRITE;
 /*!40000 ALTER TABLE `functions` DISABLE KEYS */;
-INSERT INTO `functions` (`FunctionID`, `FunctionName`, `FunctionDescription`, `ParentID`, `CreatedAt`) VALUES 
-(1,'合同管理','合同全生命周期管理',NULL,'2025-06-07 01:40:33'),
-(2,'流程管理','合同流程配置与执行',NULL,'2025-06-07 01:40:33'),
-(3,'用户管理','系统用户配置与维护',NULL,'2025-06-07 01:40:33'),
-(4,'角色管理','系统角色配置与维护',NULL,'2025-06-07 01:40:33'),
-(5,'功能操作','系统功能配置与维护',NULL,'2025-06-07 01:40:33'),
-(6,'权限管理','系统权限分配与管理',NULL,'2025-06-07 01:40:33'),
-(7,'客户管理','客户信息维护与管理',NULL,'2025-06-07 01:40:33'),
-(8,'起草合同','创建新合同文档',1,'2025-06-07 01:40:33'),
-(9,'定稿合同','完成合同定稿流程',1,'2025-06-07 01:40:33'),
-(10,'查询合同','查询和浏览合同文档',1,'2025-06-07 01:40:33'),
-(11,'删除合同','删除不需要的合同',1,'2025-06-07 01:40:33'),
-(12,'会签合同','执行合同会签流程',2,'2025-06-07 01:40:33'),
-(13,'审批合同','执行合同审批流程',2,'2025-06-07 01:40:33'),
-(14,'签订合同','执行合同签订流程',2,'2025-06-07 01:40:33'),
-(15,'分配会签','分配会签人员和顺序',2,'2025-06-07 01:40:33'),
-(16,'分配审批','分配审批人员和顺序',2,'2025-06-07 01:40:33'),
-(17,'分配签订','分配签订人员和顺序',2,'2025-06-07 01:40:33'),
-(18,'流程查询','查询和跟踪流程状态',2,'2025-06-07 01:40:33'),
-(19,'新增用户','创建新系统用户',3,'2025-06-07 01:40:33'),
-(20,'编辑用户','修改现有用户信息',3,'2025-06-07 01:40:33'),
-(21,'查询用户','查询和浏览用户信息',3,'2025-06-07 01:40:33'),
-(22,'删除用户','删除系统用户',3,'2025-06-07 01:40:33'),
-(23,'新增角色','创建新系统角色',4,'2025-06-07 01:40:33'),
-(24,'编辑角色','修改现有角色信息',4,'2025-06-07 01:40:33'),
-(25,'查询角色','查询和浏览角色信息',4,'2025-06-07 01:40:33'),
-(26,'删除角色','删除系统角色',4,'2025-06-07 01:40:33'),
-(27,'新增功能','创建新系统功能',5,'2025-06-07 01:40:33'),
-(28,'编辑功能','修改现有功能信息',5,'2025-06-07 01:40:33'),
-(29,'查询功能','查询和浏览功能信息',5,'2025-06-07 01:40:33'),
-(30,'删除功能','删除系统功能',5,'2025-06-07 01:40:33'),
-(31,'配置权限','分配角色和用户权限',6,'2025-06-07 01:40:33'),
-(32,'新增客户','创建新客户信息',7,'2025-06-07 01:40:33'),
-(33,'编辑客户','修改现有客户信息',7,'2025-06-07 01:40:33'),
-(34,'查询客户','查询和浏览客户信息',7,'2025-06-07 01:40:33'),
-(35,'删除客户','删除客户信息',7,'2025-06-07 01:40:33');
+INSERT INTO `functions` VALUES (1,'合同管理','合同全生命周期管理',NULL,'2025-06-07 01:40:33'),(2,'流程管理','合同流程配置与执行',NULL,'2025-06-07 01:40:33'),(3,'用户管理','系统用户配置与维护',NULL,'2025-06-07 01:40:33'),(4,'角色管理','系统角色配置与维护',NULL,'2025-06-07 01:40:33'),(5,'功能操作','系统功能配置与维护',NULL,'2025-06-07 01:40:33'),(6,'权限管理','系统权限分配与管理',NULL,'2025-06-07 01:40:33'),(7,'客户管理','客户信息维护与管理',NULL,'2025-06-07 01:40:33'),(8,'起草合同','创建新合同文档',1,'2025-06-07 01:40:33'),(9,'定稿合同','完成合同定稿流程',1,'2025-06-07 01:40:33'),(10,'查询合同','查询和浏览合同文档',1,'2025-06-07 01:40:33'),(11,'删除合同','删除不需要的合同',1,'2025-06-07 01:40:33'),(12,'会签合同','执行合同会签流程',2,'2025-06-07 01:40:33'),(13,'审批合同','执行合同审批流程',2,'2025-06-07 01:40:33'),(14,'签订合同','执行合同签订流程',2,'2025-06-07 01:40:33'),(15,'分配会签','分配会签人员和顺序',2,'2025-06-07 01:40:33'),(16,'分配审批','分配审批人员和顺序',2,'2025-06-07 01:40:33'),(17,'分配签订','分配签订人员和顺序',2,'2025-06-07 01:40:33'),(18,'流程查询','查询和跟踪流程状态',2,'2025-06-07 01:40:33'),(19,'新增用户','创建新系统用户',3,'2025-06-07 01:40:33'),(20,'编辑用户','修改现有用户信息',3,'2025-06-07 01:40:33'),(21,'查询用户','查询和浏览用户信息',3,'2025-06-07 01:40:33'),(22,'删除用户','删除系统用户',3,'2025-06-07 01:40:33'),(23,'新增角色','创建新系统角色',4,'2025-06-07 01:40:33'),(24,'编辑角色','修改现有角色信息',4,'2025-06-07 01:40:33'),(25,'查询角色','查询和浏览角色信息',4,'2025-06-07 01:40:33'),(26,'删除角色','删除系统角色',4,'2025-06-07 01:40:33'),(27,'新增功能','创建新系统功能',5,'2025-06-07 01:40:33'),(28,'编辑功能','修改现有功能信息',5,'2025-06-07 01:40:33'),(29,'查询功能','查询和浏览功能信息',5,'2025-06-07 01:40:33'),(30,'删除功能','删除系统功能',5,'2025-06-07 01:40:33'),(31,'配置权限','分配角色和用户权限',6,'2025-06-07 01:40:33'),(32,'新增客户','创建新客户信息',7,'2025-06-07 01:40:33'),(33,'编辑客户','修改现有客户信息',7,'2025-06-07 01:40:33'),(34,'查询客户','查询和浏览客户信息',7,'2025-06-07 01:40:33'),(35,'删除客户','删除客户信息',7,'2025-06-07 01:40:33');
 /*!40000 ALTER TABLE `functions` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `functionroutes`
---
-DROP TABLE IF EXISTS `functionroutes`;
-CREATE TABLE `functionroutes` (
-  `FunctionID` int(11) NOT NULL,
-  `Route` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT '',
-  `CreatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`FunctionID`, `Route`),
-  FOREIGN KEY (`FunctionID`) REFERENCES `functions` (`FunctionID`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `functionroutes`
---
-
-LOCK TABLES `functionroutes` WRITE;
-INSERT INTO `functionroutes` (`FunctionID`, `Route`, `CreatedAt`) VALUES
-(1, '', '2025-06-07 01:40:33'),
-(2, '', '2025-06-07 01:40:33'),
-(3, '', '2025-06-07 01:40:33'),
-(4, '', '2025-06-07 01:40:33'),
-(5, '', '2025-06-07 01:40:33'),
-(6, '', '2025-06-07 01:40:33'),
-(7, '', '2025-06-07 01:40:33'),
-(8, '/DraftContract', '2025-06-07 01:40:33'),
-(8, '/DraftContractList', '2025-06-07 01:40:33'),
-(9, '/FinalizeContract', '2025-06-07 01:40:33'),
-(9, '/FinalizeContractList', '2025-06-07 01:40:33'),
-(9, '/FinalizeContract/[^/]{1,10}', '2025-06-07 01:40:33'),
-(10, '/my-contract-module', '2025-06-07 01:40:33'),
-(10, '/my-contract-module/query', '2025-06-07 01:40:33'),
-(10, '/my-contract-module/query/detail/[^/]{1,10}', '2025-06-07 01:40:33'),
-(10, '/my-contract-module/statistics', '2025-06-07 01:40:33'),
-(11, '', '2025-06-07 01:40:33'),
-(12, '/CoSignContract', '2025-06-07 01:40:33'),
-(12, '/CoSignContract/[^/]{1,10}', '2025-06-07 01:40:33'),
-(12, '/CoSignContractList', '2025-06-07 01:40:33'),
-(13, '/approveList', '2025-06-07 01:40:33'),
-(13, '/approval', '2025-06-07 01:40:33'),
-(13, '/approve/content', '2025-06-07 01:40:33'),
-(14, '/SignContractList', '2025-06-07 01:40:33'),
-(14, '/sign/content', '2025-06-07 01:40:33'),
-(15, '/PendingContractList', '2025-06-07 01:40:33'),
-(15, '/allocate/[^/]{1,10}', '2025-06-07 01:40:33'),
-(16, '/PendingContractList', '2025-06-07 01:40:33'),
-(16, '/allocate/[^/]{1,10}', '2025-06-07 01:40:33'),
-(17, '/PendingContractList', '2025-06-07 01:40:33'),
-(17, '/allocate/[^/]{1,10}', '2025-06-07 01:40:33'),
-(18, '', '2025-06-07 01:40:33'),
-(19, '/user', '2025-06-07 01:40:33'),
-(19, '/user/add', '2025-06-07 01:40:33'),
-(20, '/user', '2025-06-07 01:40:33'),
-(20, '/user/modify/\\d+', '2025-06-07 01:40:33'),
-(21, '/user', '2025-06-07 01:40:33'),
-(22, '/user', '2025-06-07 01:40:33'),
-(23, '/role', '2025-06-07 01:40:33'),
-(23, '/role/add', '2025-06-07 01:40:33'),
-(24, '/role', '2025-06-07 01:40:33'),
-(24, '/role/modify/\\d+', '2025-06-07 01:40:33'),
-(25, '/role', '2025-06-07 01:40:33'),
-(26, '/role', '2025-06-07 01:40:33'),
-(27, '/function', '2025-06-07 01:40:33'),
-(27, '/function/add', '2025-06-07 01:40:33'),
-(28, '/function', '2025-06-07 01:40:33'),
-(28, '/function/modify/\\d+', '2025-06-07 01:40:33'),
-(29, '/function', '2025-06-07 01:40:33'),
-(30, '/function', '2025-06-07 01:40:33'),
-(31, '/permission', '2025-06-07 01:40:33'),
-(31, '/permission/assign/\\d+', '2025-06-07 01:40:33'),
-(32, '', '2025-06-07 01:40:33'),
-(33, '', '2025-06-07 01:40:33'),
-(34, '', '2025-06-07 01:40:33'),
-(35, '', '2025-06-07 01:40:33');
 UNLOCK TABLES;
 
 --
@@ -475,6 +432,7 @@ CREATE TABLE `sessions` (
 
 LOCK TABLES `sessions` WRITE;
 /*!40000 ALTER TABLE `sessions` DISABLE KEYS */;
+INSERT INTO `sessions` VALUES ('Oed0Sk98lhSmt4GZf0XUFjFBWdIpR6QF',1749739999,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2025-06-12T14:53:04.728Z\",\"secure\":false,\"httpOnly\":true,\"path\":\"/\"},\"user\":{\"id\":2,\"username\":\"operator1\",\"role\":2}}');
 /*!40000 ALTER TABLE `sessions` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -495,7 +453,7 @@ CREATE TABLE `users` (
   UNIQUE KEY `username` (`username`),
   KEY `fk_users_roles` (`role`),
   CONSTRAINT `fk_users_roles` FOREIGN KEY (`role`) REFERENCES `roles` (`RoleID`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户表';
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户表';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -504,6 +462,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
+INSERT INTO `users` VALUES (1,'admin','$2b$10$aKQPqcp36H/vdd.MiCgc2OChiVrlJtEH49AiIs4czSFXFpgig46My',1,'2025-06-11 03:39:35'),(2,'operator1','$2b$10$4h45Rwp.C2VOBzsapK.5RO7wVtrVKkSyZglRashd1sWYxrbp5pGYK',2,'2025-06-11 03:42:04'),(3,'operator2','$2b$10$fvTZgRdZMcBRcr62I0aNdOZEFpRAKP0HbQ3EzkeFGHh0pU10cn5K2',2,'2025-06-11 14:08:22');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -515,3 +474,5 @@ UNLOCK TABLES;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2025-06-12  7:29:27
