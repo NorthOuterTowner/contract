@@ -41,78 +41,77 @@ import ContractStatisticsPage from '../views/ContractStatisticsPage.vue';
 // 统计和查询——布局组件
 import ContractManagementLayout from '../layouts/ContractManagementLayout.vue'; 
 
-let routes= [
-  // 公共路由
-  { path:'/', redirect: '/FirstPage' },
-  { path:'/FirstPage', component: FirstPage },
-  { path:'/login', component: Login },
-  { path:'/register', component: Register },
-  { path: '/HomePage', component: HomePage },
-  // 审批合同
-  { path: "/approveList", component: approveList },
-  { path: '/approval', component: approval },
-  { path: "/approve/content", component: content },
-  // 起草合同
-  { path: "/DraftContract", component: DraftContract },
-  { path: "/DraftContractList", component: DraftContractList },
-  // 会签合同
-  { path: "/CoSignContract", component: CoSignContract },
-  { path: "/CoSignContract/:contractId", component: CoSignContract },
-  { path: "/CoSignContractList", component: CoSignContractList },
-  // 定稿合同
-  { path: "/FinalizeContract", component: FinalizeContract },
-  { path: "/FinalizeContract/:contractId", component: FinalizeContract },
-  { path: "/FinalizeContractList", component: FinalizeContractList },
-  // 分配合同
-  { path: '/PendingContractList', component: PendingContractList },
-  { path: '/allocate/:contractId', component: AssignContract },
-  // 用户管理
-  { path: '/user', component: UserManagement },
-  { path: '/user/add', component: AddUser },
-  { path: '/user/modify/:userId', component: ModifyUser },
-  // 角色管理
-  { path: '/role', component: RoleManagement },
-  { path: '/role/add', component: AddRole },
-  { path: '/role/modify/:roleId', component: ModifyRole },
-  // 功能管理
-  { path: '/function', component: FunctionManagement },
-  { path: '/function/add', component: AddFunction },
-  { path: '/function/modify/:functionId', component: ModifyFunction },
-  // 权限分配
-  { path: '/permission', component: PermissionManagement },
-  { path: '/permission/assign/:userId', component: AssignPermissions },
-  // 签订合同
-  { path: "/SignContractList", component: SignContract },
-  { path: "/sign/content", component: SignContent },
-  // 合同查询
-  { 
-      path: '/my-contract-module', // 顶级路径
-      component: ContractManagementLayout, // 专用布局
-      children: [
-          { 
-              path: 'query', // 合同查询列表页 (完整路径: /my-contract-module/query)
-              name: 'MyModuleContractQueryList', 
-              component: QueryContractList, 
-          },
-          { 
-              path: 'query/detail/:id', // 合同查询详情页 (完整路径: /my-contract-module/query/detail/:id)
-              name: 'MyModuleContractQueryDetail', 
-              component: QueryContract, 
-          },
-          {
-              path: 'statistics', // 合同统计页 (完整路径: /my-contract-module/statistics)
-              name: 'MyModuleContractStatistics',
-              component: ContractStatisticsPage, 
-          },
-          // 其他子路由（如按名称、按状态、高级查询），也添加到这里并更新路径。目前暂时弃用
-          { path: 'query/name', component: QueryContractList }, 
-          { path: 'query/status', component: QueryContractList },
-          { path: 'query/advanced', component: QueryContractList }
-      ]
-  },
-  // 客户信息
-  { path: '/customerInfo', component: CustomerInfo },
-  { path: '/contractInfo', component: ContractInfo },
+
+let routes = [
+    { path:'/',redirect:'/FirstPage'},
+    { path:'/FirstPage',component : FirstPage},
+    { path:'/login',component:Login},
+    { path:'/register',component:Register},
+
+    //{ path: '/', redirect: '/HomePage'},
+    { path: '/HomePage', component :HomePage},
+    { path: "/approveList", component:approveList },
+    { path: '/approval', component:approval },
+    { path: "/DraftContract", component: DraftContract },
+    { path: "/DraftContractList", component: DraftContractList },
+    { path: "/CoSignContract", component: CoSignContract },
+    { path: "/CoSignContract/:contractId", component: CoSignContract },
+    { path: "/CoSignContractList", component: CoSignContractList },
+    { path: "/FinalizeContract", component: FinalizeContract },
+    { path: "/FinalizeContractList", component: FinalizeContractList },
+    { path: '/PendingContractList',component: PendingContractList },
+    { path: '/allocate/:contractId',component: AssignContract },
+    { path: "/approve/content",component:content },
+    //用户管理子路由
+    { path: '/user', component: UserManagement },
+    { path: '/user/add', component: AddUser },
+    //角色管理子路由
+    { path: '/user/modify/:userId', component: ModifyUser },
+    { path: '/role', component: RoleManagement },
+    { path: '/role/add', component: AddRole},
+    { path: '/role/modify/:roleId', component: ModifyRole},
+    //功能管理子路由
+    { path: '/function', component: FunctionManagement },
+    { path: '/function/add', component: AddFunction },
+    //权限分配子路由
+    { path: '/permission', component: PermissionManagement },
+    { path: '/permission/assign/:userId', component: AssignPermissions },
+    { path: "/SignContractList", component: SignContract},
+    { path: "/sign/content", component: SignContent },
+
+    // 查询和统计——移除旧的 /query 路由。
+    // { path: '/query', name: 'QueryContractList', component: QueryContractList },
+    // { path: '/query/detail/:id', name: 'QueryContract', component: QueryContract },
+    // { path: '/query/name', component: QueryContractList },
+    // { path: '/query/status', component: QueryContractList },
+    // { path: '/query/advanced', component: QueryContractList }
+
+    // 查询和统计——新的顶级路由和子路由)
+    { 
+        path: '/my-contract-module', // 顶级路径
+        component: ContractManagementLayout, // 专用布局
+        children: [
+            { 
+                path: 'query', // 合同查询列表页 (完整路径: /my-contract-module/query)
+                name: 'MyModuleContractQueryList', 
+                component: QueryContractList, 
+            },
+            { 
+                path: 'query/detail/:id', // 合同查询详情页 (完整路径: /my-contract-module/query/detail/:id)
+                name: 'MyModuleContractQueryDetail', 
+                component: QueryContract, 
+            },
+            {
+                path: 'statistics', // 合同统计页 (完整路径: /my-contract-module/statistics)
+                name: 'MyModuleContractStatistics',
+                component: ContractStatisticsPage, 
+            },
+            // 其他子路由（如按名称、按状态、高级查询），也添加到这里并更新路径。目前暂时弃用
+            //{ path: 'query/name', component: QueryContractList }, 
+            //{ path: 'query/status', component: QueryContractList },
+            //{ path: 'query/advanced', component: QueryContractList }
+        ]
+    }
 ];
 
 const router = createRouter({
