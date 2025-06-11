@@ -9,18 +9,45 @@ router.get("/",async(req,res)=>{
     });
 });
 
-router.get("/list",async(req,res)=>{
-    let {err,rows} = await db.async.all("SELECT * FROM `contract` WHERE `status`='待审批'",[]);
-    if(err == null && rows.length >= 0){
+router.get("/list", async (req, res) => {
+    let user = req.query.user;
+    
+    // First get the userID from username
+    let { err: userErr, rows: userRows } = await db.async.all(
+        "SELECT user_id FROM users WHERE username = ?", 
+        [user]
+    );
+
+    if (userErr || !userRows.length) {
+        return res.send({
+            code: 404,
+            msg: "用户不存在"
+        });
+    }
+
+    const userID = userRows[0].user_id;
+
+    // Then find contracts this user needs to approve
+    let { err, rows } = await db.async.all(`
+        SELECT c.* 
+        FROM contract c
+        JOIN contractAssignment ca ON c.contractID = ca.contractID
+        WHERE c.status = '待审批'
+        AND ca.AssigneeUserID = ?
+        AND ca.RoleType = '审批人'
+    `, [userID]);
+
+    if (err == null) {
         res.send({
-            code:200,
-            rows
-        })
-    }else{
+            code: 200,
+            rows: rows || []  // Ensure rows is always an array
+        });
+    } else {
         res.send({
-            code:500,
-            msg:"数据库访问失败"
-        })
+            code: 500,
+            msg: "数据库访问失败",
+            error: err  // Include error for debugging
+        });
     }
 });
 
@@ -36,7 +63,7 @@ router.get("/content", async (req, res) => {
         return;
     }
 
-    let { err, rows } = await db.async.all("SELECT * FROM `contract` WHERE `ContractID` = ?", [contractId]);
+    let { err, rows } = await db.async.all("SELECT * FROM `contract` WHERE `ContractID` = ? ", [contractId]);
 
     if (err) {
         res.send({

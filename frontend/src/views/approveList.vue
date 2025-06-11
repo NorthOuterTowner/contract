@@ -42,16 +42,18 @@
 <script>
 import axios from 'axios';
 import Sidebar from '../components/sidebar.vue';
+import { useAuthStore } from '../common/auth'; // 导入 Pinia store
+
 export default {
-  components:{
+  components: {
     Sidebar
   },
   data() {
     return {
       contracts: [],
       loading: true,
-      searchQuery:''
-    }
+      searchQuery: ''
+    };
   },
   created() {
     this.fetchPendingContracts();
@@ -59,50 +61,65 @@ export default {
   methods: {
     async fetchPendingContracts() {
       try {
-        const res = await axios.get("/approve/list"); 
+        const authStore = useAuthStore(); // 获取 auth store
+        const currentUser = authStore.user; // 获取当前用户
+
+        if (!currentUser) {
+          console.error('用户未登录');
+          this.loading = false;
+          return;
+        }
+
+        // 直接使用当前用户信息（不需要重新登录）
+        const res = await axios.get("/approve/list", {
+          params: {
+            user: currentUser.username // 使用当前用户的 username
+          }
+        });
+
         this.contracts = res.data.rows;
-        this.contracts.approver = res.data.rowsApprover;
         this.loading = false;
       } catch (error) {
         console.error('获取合同列表失败:', error);
         this.loading = false;
       }
     },
-    
+
     viewContract(contractId) {
-      this.$router.push(
-        {path:`/approve/content`,query:{id:contractId}}
-      );
+      this.$router.push({
+        path: `/approve/content`,
+        query: { id: contractId }
+      });
     },
+
     formatDate(dateString) {
       return new Date(dateString).toLocaleDateString();
     },
-    async searchContracts(){
+
+    async searchContracts() {
       try {
-        const res = await axios.get("/approve/search",{
-          params:{
-            keyWord:this.searchQuery
+        const res = await axios.get("/approve/search", {
+          params: {
+            keyWord: this.searchQuery
           }
-        }); 
+        });
+
         console.log(res);
-        if(res.data.code==200){
-          if(res.data.msg=="无对应合同"){
-            this.contracts.length = 0;
-            this.loading = false;
-          }else{
+        if (res.data.code == 200) {
+          if (res.data.msg == "无对应合同") {
+            this.contracts = []; // 清空数组
+          } else {
             this.contracts = res.data.rows;
-            this.contracts.length = res.data.length;
-            this.loading = false;
           }
         }
-
+        this.loading = false;
       } catch (error) {
-        console.error('获取合同列表失败:', error);
+        console.error('搜索合同失败:', error);
         this.loading = false;
       }
     }
   }
-}
+};
 </script>
 
 <style scoped>
