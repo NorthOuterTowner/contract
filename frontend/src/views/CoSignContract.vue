@@ -73,6 +73,7 @@ import { ref } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import axios from 'axios';
 import { inject } from 'vue';
+import { useAuthStore } from '../common/auth';
 
 export default {
   setup() {
@@ -182,8 +183,11 @@ export default {
   
   try {
     const formData = new FormData();
+    const authStore = useAuthStore();
+    const username = authStore.currentUser.username;
     formData.append('contractId', contract.value.ContractID);
     formData.append('description', description.value);
+    formData.append('createdBy', username);
 
     const res = await axios.post('/cosign/submit', formData, {
       headers: {
