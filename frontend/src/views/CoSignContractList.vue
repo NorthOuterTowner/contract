@@ -5,7 +5,7 @@
     <div class="contract-list">
       <h2>合同会签列表</h2>
       <div class="tab-buttons">
-        
+        <!-- 可以在这里添加标签按钮 -->
       </div>
       
       <!-- 搜索栏 -->
@@ -70,7 +70,6 @@
         <div v-if="activeTab === 'pending' && filteredPendingContracts.length === 0" class="no-data">
           {{ searchQuery ? '没有找到匹配的合同' : '暂无待会签合同' }}
         </div>
-        
       </div>
     </div>
   </div>
@@ -78,6 +77,7 @@
 
 <script>
 import Sidebar from '../components/sidebar.vue';
+import { useAuthStore } from '../common/auth';
 import axios from 'axios';
 
 export default {
@@ -118,15 +118,21 @@ export default {
     async fetchContracts() {
       try {
         this.loading = true;
+        const authStore = useAuthStore(); // 获取 authStore
+        const username = authStore.currentUser.username; // 从 authStore 获取用户名
+
         // Fetch pending contracts (awaiting countersign)
-        const pendingRes = await axios.get("/cosign/list"); 
+        const pendingRes = await axios.get("/cosign/list", {
+          params: {
+            username: username // 将用户名作为请求参数传递
+          }
+        });
+
         this.pendingContracts = pendingRes.data.rows;
         this.pendingContracts.forEach(contract => {
           contract.approver = pendingRes.data.rowsApprover;
         });
-        
-    
-        
+
         this.loading = false;
       } catch (error) {
         console.error('获取合同列表失败:', error);

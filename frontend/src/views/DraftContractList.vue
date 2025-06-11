@@ -28,7 +28,7 @@
               <th>合同编号</th>
               <th>合同名称</th>
               <th>申请日期</th>
-              <th>操作</th>
+              
             </tr>
           </thead>
           <tbody>
@@ -36,9 +36,7 @@
       <td>{{ contract.ContractID }}</td>
       <td>{{ contract.Title }}</td>
       <td>{{ formatDate(contract.LastModifiedDate) }}</td>
-      <td>
-        <button @click="viewContract(contract.ContractID)">查看</button>
-      </td>
+      
     </tr>
   </tbody>
         </table>

@@ -46,7 +46,7 @@ router.post('/savedraft', upload.single('content'), async (req, res) => {
   } : null);
 
   try {
-    const { contractID, title, description, creationDate, startDate, endDate } = req.body;
+    const { contractID, title, description, creationDate, startDate, endDate , createdBy} = req.body;
     
     // 处理文件名编码
     const contentFileName = req.file 
@@ -170,7 +170,7 @@ const formattedEndDate = formatDateForSQL(endDate);
       contractID,
       title,
       description || null,
-      'lrz',
+      createdBy,
       formattedStartDate,
       formattedEndDate
     ]);
