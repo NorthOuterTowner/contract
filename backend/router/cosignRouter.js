@@ -21,19 +21,32 @@ router.get("/length",async(req,res)=>{
 });
 
 // 获取会签处理中的合同列表
-router.get("/list",async(req,res)=>{
-    let {err,rows} = await db.async.all("SELECT * FROM `contract` WHERE `Status` = '会签处理中' AND `ContractID` IN (SELECT `ContractID` FROM `contractdraft`);",[]);
-    if(err == null && rows.length >= 0){
-        res.send({
-            code:200,
-            rows
-        })
-    }else{
-        res.send({
-            code:500,
-            msg:"数据库访问失败"
-        })
-    }
+router.get("/list", async (req, res) => {
+  const { username } = req.query; // 获取请求参数中的用户名
+
+  // 构造 SQL 查询语句，加入用户名作为过滤条件
+  let query = `
+    SELECT  c.*
+    FROM \`contract\` AS c
+    JOIN \`contractassignment\` AS ca ON c.\`ContractID\` = ca.\`ContractID\`
+    JOIN \`users\` AS u ON ca.\`AssigneeUserID\` = u.\`user_id\`
+    WHERE c.\`Status\` = '会签处理中' AND ca.\`RoleType\`='会签人' AND u.\`username\` = ? 
+  `;
+
+  // 执行查询
+  let { err, rows } = await db.async.all(query, [username]);
+
+  if (err == null && rows.length >= 0) {
+    res.send({
+      code: 200,
+      rows
+    });
+  } else {
+    res.send({
+      code: 500,
+      msg: "数据库访问失败"
+    });
+  }
 });
 
 // 获取单个合同详情
@@ -123,7 +136,7 @@ router.post("/submit", upload.none(), async (req, res) => {
 
         // 2. 更新合同状态
         const { err: updateErr, changes } = await db.async.run(
-            "UPDATE `contract` SET `Status` = '待定稿', `LastModifiedDate` = CURRENT_TIMESTAMP WHERE `ContractID` = ?",
+            "UPDATE `contract` SET `LastModifiedDate` = CURRENT_TIMESTAMP WHERE `ContractID` = ?",
             [contractId]
         );
 

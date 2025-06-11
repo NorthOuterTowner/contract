@@ -139,6 +139,9 @@ import axios from 'axios';
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 
+import { useAuthStore } from '../common/auth';
+
+
 export default {
   setup() {
     const router = useRouter();
@@ -284,6 +287,9 @@ export default {
       savingDraft.value = true;
       
       try {
+        
+        const authStore = useAuthStore();
+        const username = authStore.currentUser.username;
         const formData = new FormData();
         formData.append('contractID', contract.value.contractID);
         formData.append('title', draft.value.draftTitle);
@@ -292,6 +298,7 @@ export default {
         formData.append('startDate', contract.value.startDate);
         formData.append('endDate', contract.value.endDate);
         formData.append('status', '待起草');
+        formData.append('createdBy', username);
         
         if (fileInput.value.files[0]) {
           formData.append('content', fileInput.value.files[0]);

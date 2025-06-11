@@ -5,7 +5,7 @@
     <div class="contract-list">
       <h2>合同定稿列表</h2>
       <div class="tab-buttons">
-        
+        <!-- 可以在这里添加标签按钮 -->
       </div>
       
       <!-- 搜索栏 -->
@@ -29,7 +29,6 @@
             <tr>
               <th>合同编号</th>
               <th>合同名称</th>
-              
               <th>申请日期</th>
               <th>操作</th>
             </tr>
@@ -38,7 +37,6 @@
             <tr v-for="contract in filteredDraftContracts" :key="contract.id">
               <td>{{ contract.ContractID }}</td>
               <td>{{ contract.Title }}</td>
-              
               <td>{{ formatDate(contract.LastModifiedDate) }}</td>
               <td>
                 <button @click="viewContract(contract.ContractID)">查看</button>
@@ -47,12 +45,9 @@
           </tbody>
         </table>
         
-      
-        
         <div v-if="activeTab === 'draft' && filteredDraftContracts.length === 0" class="no-data">
           {{ searchQuery ? '没有找到匹配的合同' : '暂无待定稿合同' }}
         </div>
-        
       </div>
     </div>
   </div>
@@ -60,6 +55,7 @@
 
 <script>
 import Sidebar from '../components/sidebar.vue';
+import { useAuthStore } from '../common/auth';
 import axios from 'axios';
 
 export default {
@@ -69,7 +65,6 @@ export default {
   data() {
     return {
       draftContracts: [],
-      completedContracts: [],
       loading: true,
       activeTab: 'draft', // 默认显示待定稿列表
       searchQuery: ''
@@ -81,11 +76,9 @@ export default {
       const query = this.searchQuery.toLowerCase();
       return this.draftContracts.filter(contract => 
         contract.ContractID.toLowerCase().includes(query) || 
-        contract.Title.toLowerCase().includes(query) 
-        
+        contract.Title.toLowerCase().includes(query)
       );
     }
-  
   },
   created() {
     this.fetchContracts();
@@ -94,16 +87,21 @@ export default {
     async fetchContracts() {
       try {
         this.loading = true;
-        
+        const authStore = useAuthStore(); // 获取 authStore
+        const username = authStore.currentUser.username; // 从 authStore 获取用户名
+
         // 获取待定稿合同
-        const draftRes = await axios.get("/finalize/list");
+        const draftRes = await axios.get("/finalize/list", {
+          params: {
+            username: username // 将用户名作为请求参数传递
+          }
+        });
+
         this.draftContracts = draftRes.data.rows;
         this.draftContracts.forEach(contract => {
           contract.approver = draftRes.data.rowsApprover;
         });
-        
-       
-        
+
         this.loading = false;
       } catch (error) {
         console.error('获取合同列表失败:', error);
