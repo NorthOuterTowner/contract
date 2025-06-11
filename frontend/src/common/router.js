@@ -57,6 +57,7 @@ let routes = [
     { path: "/CoSignContract", component: CoSignContract },
     { path: "/CoSignContract/:contractId", component: CoSignContract },
     { path: "/CoSignContractList", component: CoSignContractList },
+    { path: "/FinalizeContract/:contractId", component: FinalizeContract },
     { path: "/FinalizeContract", component: FinalizeContract },
     { path: "/FinalizeContractList", component: FinalizeContractList },
     { path: '/PendingContractList',component: PendingContractList },
