@@ -3,6 +3,8 @@ const router = express.Router();
 const { db } = require("../db/DBUtils");
 const multer = require("multer");
 const upload = multer();
+const app = express();
+
 
 // 获取会签处理中的合同数量
 router.get("/length",async(req,res)=>{
@@ -26,15 +28,25 @@ router.get("/list", async (req, res) => {
 
   // 构造 SQL 查询语句，加入用户名作为过滤条件
   let query = `
-    SELECT  c.*
-    FROM \`contract\` AS c
-    JOIN \`contractassignment\` AS ca ON c.\`ContractID\` = ca.\`ContractID\`
-    JOIN \`users\` AS u ON ca.\`AssigneeUserID\` = u.\`user_id\`
-    WHERE c.\`Status\` = '会签处理中' AND ca.\`RoleType\`='会签人' AND u.\`username\` = ? 
-  `;
+  SELECT c.*
+  FROM contract c
+  WHERE c.ContractID IN (
+      -- 找到分配给该用户的合同
+      SELECT ca.ContractID
+      FROM contractassignment ca
+      JOIN users u ON ca.AssigneeUserID = u.user_id
+      WHERE u.username = ?
+  )
+  AND c.ContractID NOT IN (
+      -- 排除该用户已经完成会签的合同
+      SELECT cs.ContractID
+      FROM contractsigning cs
+      WHERE cs.SignerID = ?
+  )
+`;
 
   // 执行查询
-  let { err, rows } = await db.async.all(query, [username]);
+  let { err, rows } = await db.async.all(query, [username,username]);
 
   if (err == null && rows.length >= 0) {
     res.send({
@@ -87,7 +99,7 @@ router.post("/submit", upload.none(), async (req, res) => {
     console.log("收到会签提交请求:", JSON.stringify(req.body, null, 2));
 
     try {
-        const { contractId, description } = req.body;
+        const { contractId, description,createdBy} = req.body;
 
         // 参数验证
         if (!contractId || !description) {
@@ -155,8 +167,8 @@ router.post("/submit", upload.none(), async (req, res) => {
 
         // 3. 创建会签记录
         const { err: insertErr } = await db.async.run(
-            "INSERT INTO `contractsigning` (`ContractID`, `SignerID`, `SignDate`, `Comment`) VALUES (?, 'lrz', CURRENT_TIMESTAMP, ?)",
-            [contractId, description]
+            "INSERT INTO `contractsigning` (`ContractID`, `SignerID`, `SignDate`, `Comment`) VALUES (?, ?, CURRENT_TIMESTAMP, ?)",
+            [contractId,createdBy, description]
         );
 
         if (insertErr) {
