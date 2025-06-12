@@ -145,7 +145,7 @@ router.beforeEach(async (to, from, next) => {
   await authStore.initAuth();
 
   // 公开路由列表（无需登录）
-  const publicRoutes = ['/login', '/register', '/FirstPage', '/', '/HomePage','/customerInfo',];
+  const publicRoutes = ['/login', '/register', '/FirstPage', '/', '/HomePage',];
   const isPublic = publicRoutes.includes(to.path);
 
   // 如果是公开路由，直接放行

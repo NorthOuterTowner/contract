@@ -12,7 +12,7 @@
 /*!40103 SET TIME_ZONE='+00:00' */;
 /*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
-/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_ZERO_DATE,NO_ZERO_IN_DATE' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
@@ -234,35 +234,62 @@ UNLOCK TABLES;
 /*!50003 SET character_set_results = utf8mb4 */ ;
 /*!50003 SET collation_connection  = utf8mb4_general_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_ZERO_DATE,NO_ZERO_IN_DATE,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER after_contractsigning_insert
-AFTER INSERT ON contractsigning
-FOR EACH ROW
-BEGIN
-    DECLARE n INT DEFAULT 0; -- 会签记录总数
-    DECLARE m INT DEFAULT 0; -- 分配的会签人总数
-
-    -- 获取该 ContractID 的所有会签记录数
-    SELECT COUNT(*)
-    INTO n
-    FROM contractsigning
-    WHERE ContractID = NEW.ContractID;
-
-    -- 获取该 ContractID 的所有分配的会签人总数
-    SELECT COUNT(*)
-    INTO m
-    FROM contractassignment
-    WHERE ContractID = NEW.ContractID
-      AND RoleType = '会签人';
-
-    -- 如果会签记录数等于分配的会签人总数
-    IF n = m THEN
-        -- 更新 contract 表中的 Status 为 '待定稿'
-        UPDATE contract
-        SET Status = '待定稿'
-        WHERE ContractID = NEW.ContractID;
-    END IF;
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER after_contractsigning_insert
+
+AFTER INSERT ON contractsigning
+
+FOR EACH ROW
+
+BEGIN
+
+    DECLARE n INT DEFAULT 0; -- 会签记录总数
+
+    DECLARE m INT DEFAULT 0; -- 分配的会签人总数
+
+
+
+    -- 获取该 ContractID 的所有会签记录数
+
+    SELECT COUNT(*)
+
+    INTO n
+
+    FROM contractsigning
+
+    WHERE ContractID = NEW.ContractID;
+
+
+
+    -- 获取该 ContractID 的所有分配的会签人总数
+
+    SELECT COUNT(*)
+
+    INTO m
+
+    FROM contractassignment
+
+    WHERE ContractID = NEW.ContractID
+
+      AND RoleType = '会签人';
+
+
+
+    -- 如果会签记录数等于分配的会签人总数
+
+    IF n = m THEN
+
+        -- 更新 contract 表中的 Status 为 '待定稿'
+
+        UPDATE contract
+
+        SET Status = '待定稿'
+
+        WHERE ContractID = NEW.ContractID;
+
+    END IF;
+
 END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -322,7 +349,22 @@ CREATE TABLE `functionroutes` (
 
 LOCK TABLES `functionroutes` WRITE;
 /*!40000 ALTER TABLE `functionroutes` DISABLE KEYS */;
-INSERT INTO `functionroutes` VALUES (1,'','2025-06-07 01:40:33'),(2,'','2025-06-07 01:40:33'),(3,'','2025-06-07 01:40:33'),(4,'','2025-06-07 01:40:33'),(5,'','2025-06-07 01:40:33'),(6,'','2025-06-07 01:40:33'),(7,'','2025-06-07 01:40:33'),(8,'/DraftContract','2025-06-07 01:40:33'),(8,'/DraftContractList','2025-06-07 01:40:33'),(9,'/FinalizeContract','2025-06-07 01:40:33'),(9,'/FinalizeContract/[^/]{1,10}','2025-06-07 01:40:33'),(9,'/FinalizeContractList','2025-06-07 01:40:33'),(10,'/my-contract-module','2025-06-07 01:40:33'),(10,'/my-contract-module/query','2025-06-07 01:40:33'),(10,'/my-contract-module/query/detail/[^/]{1,10}','2025-06-07 01:40:33'),(10,'/my-contract-module/statistics','2025-06-07 01:40:33'),(11,'','2025-06-07 01:40:33'),(12,'/CoSignContract','2025-06-07 01:40:33'),(12,'/CoSignContract/[^/]{1,10}','2025-06-07 01:40:33'),(12,'/CoSignContractList','2025-06-07 01:40:33'),(13,'/approval','2025-06-07 01:40:33'),(13,'/approve/content','2025-06-07 01:40:33'),(13,'/approveList','2025-06-07 01:40:33'),(14,'/sign/content','2025-06-07 01:40:33'),(14,'/SignContractList','2025-06-07 01:40:33'),(15,'/allocate/[^/]{1,10}','2025-06-07 01:40:33'),(15,'/PendingContractList','2025-06-07 01:40:33'),(16,'/allocate/[^/]{1,10}','2025-06-07 01:40:33'),(16,'/PendingContractList','2025-06-07 01:40:33'),(17,'/allocate/[^/]{1,10}','2025-06-07 01:40:33'),(17,'/PendingContractList','2025-06-07 01:40:33'),(18,'','2025-06-07 01:40:33'),(19,'/user','2025-06-07 01:40:33'),(19,'/user/add','2025-06-07 01:40:33'),(20,'/user','2025-06-07 01:40:33'),(20,'/user/modify/\\d+','2025-06-07 01:40:33'),(21,'/user','2025-06-07 01:40:33'),(22,'/user','2025-06-07 01:40:33'),(23,'/role','2025-06-07 01:40:33'),(23,'/role/add','2025-06-07 01:40:33'),(24,'/role','2025-06-07 01:40:33'),(24,'/role/modify/\\d+','2025-06-07 01:40:33'),(25,'/role','2025-06-07 01:40:33'),(26,'/role','2025-06-07 01:40:33'),(27,'/function','2025-06-07 01:40:33'),(27,'/function/add','2025-06-07 01:40:33'),(28,'/function','2025-06-07 01:40:33'),(28,'/function/modify/\\d+','2025-06-07 01:40:33'),(29,'/function','2025-06-07 01:40:33'),(30,'/function','2025-06-07 01:40:33'),(31,'/permission','2025-06-07 01:40:33'),(31,'/permission/assign/\\d+','2025-06-07 01:40:33'),(32,'','2025-06-07 01:40:33'),(33,'','2025-06-07 01:40:33'),(34,'','2025-06-07 01:40:33'),(35,'','2025-06-07 01:40:33');
+INSERT INTO `functionroutes` VALUES 
+(1,'','2025-06-07 01:40:33'),(2,'','2025-06-07 01:40:33'),(3,'','2025-06-07 01:40:33'),(4,'','2025-06-07 01:40:33'),(5,'','2025-06-07 01:40:33'),(6,'','2025-06-07 01:40:33'),(7,'','2025-06-07 01:40:33'),
+(8,'/DraftContract','2025-06-07 01:40:33'),(8,'/DraftContractList','2025-06-07 01:40:33'),(9,'/FinalizeContract','2025-06-07 01:40:33'),(9,'/FinalizeContract/[^/]{1,10}','2025-06-07 01:40:33'),(9,'/FinalizeContractList','2025-06-07 01:40:33'),
+(10,'/my-contract-module/query','2025-06-07 01:40:33'),(10,'/my-contract-module/query/detail/[^/]{1,10}','2025-06-07 01:40:33'),
+(11,'','2025-06-07 01:40:33'),(12,'/CoSignContract','2025-06-07 01:40:33'),(12,'/CoSignContract/[^/]{1,10}','2025-06-07 01:40:33'),(12,'/CoSignContractList','2025-06-07 01:40:33'),
+(13,'/approval','2025-06-07 01:40:33'),(13,'/approve/content','2025-06-07 01:40:33'),(13,'/approveList','2025-06-07 01:40:33'),
+(14,'/sign/content','2025-06-07 01:40:33'),(14,'/SignContractList','2025-06-07 01:40:33'),(15,'/allocate/[^/]{1,10}','2025-06-07 01:40:33'),
+(15,'/PendingContractList','2025-06-07 01:40:33'),(16,'/allocate/[^/]{1,10}','2025-06-07 01:40:33'),(16,'/PendingContractList','2025-06-07 01:40:33'),
+(17,'/allocate/[^/]{1,10}','2025-06-07 01:40:33'),(17,'/PendingContractList','2025-06-07 01:40:33'),
+(18,'/my-contract-module/query','2025-06-07 01:40:33'),(18,'/my-contract-module/statistics','2025-06-07 01:40:33'),
+(19,'/user','2025-06-07 01:40:33'),(19,'/user/add','2025-06-07 01:40:33'),
+(20,'/user','2025-06-07 01:40:33'),(20,'/user/modify/\\d+','2025-06-07 01:40:33'),(21,'/user','2025-06-07 01:40:33'),(22,'/user','2025-06-07 01:40:33'),
+(23,'/role','2025-06-07 01:40:33'),(23,'/role/add','2025-06-07 01:40:33'),(24,'/role','2025-06-07 01:40:33'),(24,'/role/modify/\\d+','2025-06-07 01:40:33'),(25,'/role','2025-06-07 01:40:33'),(26,'/role','2025-06-07 01:40:33'),
+(27,'/function','2025-06-07 01:40:33'),(27,'/function/add','2025-06-07 01:40:33'),(28,'/function','2025-06-07 01:40:33'),(28,'/function/modify/\\d+','2025-06-07 01:40:33'),(29,'/function','2025-06-07 01:40:33'),(30,'/function','2025-06-07 01:40:33'),
+(31,'/permission','2025-06-07 01:40:33'),(31,'/permission/assign/\\d+','2025-06-07 01:40:33'),
+(32,'/customerInfo','2025-06-07 01:40:33'),(33,'/customerInfo','2025-06-07 01:40:33'),(34,'/customerInfo','2025-06-07 01:40:33'),(35,'/customerInfo','2025-06-07 01:40:33');
 /*!40000 ALTER TABLE `functionroutes` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -380,7 +422,7 @@ CREATE TABLE `rolepermissions` (
 
 LOCK TABLES `rolepermissions` WRITE;
 /*!40000 ALTER TABLE `rolepermissions` DISABLE KEYS */;
-INSERT INTO `rolepermissions` VALUES (1,2,'2025-06-07 01:40:33'),(1,3,'2025-06-07 01:40:33'),(1,4,'2025-06-07 01:40:33'),(1,5,'2025-06-07 01:40:33'),(1,6,'2025-06-07 01:40:33'),(1,7,'2025-06-07 01:40:33'),(1,15,'2025-06-07 01:40:33'),(1,16,'2025-06-07 01:40:33'),(1,17,'2025-06-07 01:40:33'),(1,18,'2025-06-07 01:40:33'),(1,19,'2025-06-07 01:40:33'),(1,20,'2025-06-07 01:40:33'),(1,21,'2025-06-07 01:40:33'),(1,22,'2025-06-07 01:40:33'),(1,23,'2025-06-07 01:40:33'),(1,24,'2025-06-07 01:40:33'),(1,25,'2025-06-07 01:40:33'),(1,26,'2025-06-07 01:40:33'),(1,27,'2025-06-07 01:40:33'),(1,28,'2025-06-07 01:40:33'),(1,29,'2025-06-07 01:40:33'),(1,30,'2025-06-07 01:40:33'),(1,31,'2025-06-07 01:40:33'),(1,32,'2025-06-07 01:40:33'),(1,33,'2025-06-07 01:40:33'),(1,34,'2025-06-07 01:40:33'),(1,35,'2025-06-07 01:40:33'),(2,1,'2025-06-07 01:40:33'),(2,2,'2025-06-07 01:40:33'),(2,8,'2025-06-07 01:40:33'),(2,9,'2025-06-07 01:40:33'),(2,10,'2025-06-07 01:40:33'),(2,11,'2025-06-07 01:40:33'),(2,12,'2025-06-07 01:40:33'),(2,13,'2025-06-07 01:40:33'),(2,14,'2025-06-07 01:40:33'),(2,18,'2025-06-07 01:40:33');
+INSERT INTO `rolepermissions` VALUES (1,2,'2025-06-07 01:40:33'),(1,3,'2025-06-07 01:40:33'),(1,4,'2025-06-07 01:40:33'),(1,5,'2025-06-07 01:40:33'),(1,6,'2025-06-07 01:40:33'),(1,10,'2025-06-07 01:40:33'),(1,7,'2025-06-07 01:40:33'),(1,15,'2025-06-07 01:40:33'),(1,16,'2025-06-07 01:40:33'),(1,17,'2025-06-07 01:40:33'),(1,18,'2025-06-07 01:40:33'),(1,19,'2025-06-07 01:40:33'),(1,20,'2025-06-07 01:40:33'),(1,21,'2025-06-07 01:40:33'),(1,22,'2025-06-07 01:40:33'),(1,23,'2025-06-07 01:40:33'),(1,24,'2025-06-07 01:40:33'),(1,25,'2025-06-07 01:40:33'),(1,26,'2025-06-07 01:40:33'),(1,27,'2025-06-07 01:40:33'),(1,28,'2025-06-07 01:40:33'),(1,29,'2025-06-07 01:40:33'),(1,30,'2025-06-07 01:40:33'),(1,31,'2025-06-07 01:40:33'),(1,32,'2025-06-07 01:40:33'),(1,33,'2025-06-07 01:40:33'),(1,34,'2025-06-07 01:40:33'),(1,35,'2025-06-07 01:40:33'),(2,1,'2025-06-07 01:40:33'),(2,2,'2025-06-07 01:40:33'),(2,8,'2025-06-07 01:40:33'),(2,9,'2025-06-07 01:40:33'),(2,10,'2025-06-07 01:40:33'),(2,11,'2025-06-07 01:40:33'),(2,12,'2025-06-07 01:40:33'),(2,13,'2025-06-07 01:40:33'),(2,14,'2025-06-07 01:40:33'),(2,18,'2025-06-07 01:40:33');
 /*!40000 ALTER TABLE `rolepermissions` ENABLE KEYS */;
 UNLOCK TABLES;
 
