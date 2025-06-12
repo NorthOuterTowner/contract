@@ -37,11 +37,15 @@
 <script>
 import axios from 'axios';
 import Sidebar from '../components/sidebar.vue';
+import { useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 import { inject } from 'vue';
 export default {
   name: 'Content',
   inject: ['message'],
   setup(){
+    const router = useRouter();
+    const route = useRoute();
     const message = inject("message");
     return {message};
   },
@@ -100,6 +104,7 @@ export default {
         if (res.data.code === 200) {
           this.message.info("提交成功");
           this.resetForm();
+          this.$router.push('/SignContractList');
         } else {
           this.message.error("提交失败");
         }

@@ -43,11 +43,16 @@
 import axios from 'axios';
 import Sidebar from '../components/sidebar.vue';
 import { inject } from 'vue';
+import { useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
+
 export default {
   name: 'Content',
   inject: ['message'],
   setup(){
     const message = inject("message");
+    const router = useRouter();
+    const route = useRoute();
     return {message};
   },
   components: {
@@ -106,6 +111,7 @@ export default {
         if (res.data.code === 200) {
           this.message.info("审批提交成功");
           this.resetForm();
+          this.$router.push('/approveList');
         } else {
           this.message.error("审批提交失败");
         }
