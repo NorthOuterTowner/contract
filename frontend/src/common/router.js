@@ -74,18 +74,12 @@ let routes = [
     //功能管理子路由
     { path: '/function', component: FunctionManagement },
     { path: '/function/add', component: AddFunction },
+    { path: '/function/modify/:functionId', component: ModifyFunction },
     //权限分配子路由
     { path: '/permission', component: PermissionManagement },
     { path: '/permission/assign/:userId', component: AssignPermissions },
     { path: "/SignContractList", component: SignContract},
     { path: "/sign/content", component: SignContent },
-
-    // 查询和统计——移除旧的 /query 路由。
-    // { path: '/query', name: 'QueryContractList', component: QueryContractList },
-    // { path: '/query/detail/:id', name: 'QueryContract', component: QueryContract },
-    // { path: '/query/name', component: QueryContractList },
-    // { path: '/query/status', component: QueryContractList },
-    // { path: '/query/advanced', component: QueryContractList }
 
     // 查询和统计——新的顶级路由和子路由)
     { 
