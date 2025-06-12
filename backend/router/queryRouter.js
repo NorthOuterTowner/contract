@@ -212,15 +212,9 @@ router.get("/contract/statistics", async (req, res) => {
         const statusDistributionSql = `SELECT Status as status, COUNT(*) as count FROM contract ${dateFilterClause} GROUP BY Status`; 
         const { rows: statusDistributionResult } = await db.async.all(statusDistributionSql, dateFilterParams);
 
-        // 月度签署数量和金额趋势 (合同执行表 contractexecution)
-        const monthlySignTrendSql = `
-            SELECT 
-                MONTH(CE.ExecutionDate) as month, 
-                COUNT(*) as count 
-            FROM contractexecution ce
-            JOIN contract c ON ce.ContractID = c.ContractID 
-            WHERE ce.Status = '已签订' AND YEAR(ce.ExecutionDate) = ? 
-            GROUP BY MONTH(ce.ExecutionDate) ORDER BY month`;
+        // 月度签订数量趋势 (直接从 contract 表统计，已修正语法)
+        const monthlySignTrendSql = `SELECT MONTH(LastModifiedDate) as month, COUNT(*) as count FROM contract WHERE Status = '已签订' AND YEAR(LastModifiedDate) = ? GROUP BY MONTH(LastModifiedDate) ORDER BY month`;
+
         
         const { rows: monthlyTrendDataResult } = await db.async.all(monthlySignTrendSql, [year || new Date().getFullYear()]); 
 
