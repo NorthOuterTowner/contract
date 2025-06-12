@@ -6,7 +6,11 @@ require('dotenv').config(); // 加载 .env 文件
 const pool = mysql.createPool({
   host: "localhost", // MySQL 服务器地址
   user: "root",      // 数据库用户名
+<<<<<<< Updated upstream
   password: "123456", // 数据库密码
+=======
+  password: "Zxy_050713", // 数据库密码
+>>>>>>> Stashed changes
   database: "contract",  // 数据库名称
   waitForConnections: true, // 是否等待连接
   connectionLimit: 200,      // 连接池最大连接数
