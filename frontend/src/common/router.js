@@ -32,8 +32,12 @@ import AssignPermissions from '../views/AssignPermission.vue';
 import SignContract from '../views/SignContract.vue';
 import SignContent from '../views/signContent.vue';
 
+//信息管理
 import CustomerInfo from '../views/CustomerInfo.vue';
 import ContractInfo from '../views/ContractInfo.vue';
+import ContractDetails from '../views/ContractDetails.vue';
+
+
 // 统计和查询 (Naive UI 版本)
 import QueryContractList from '../views/QueryContractList.vue'; 
 import QueryContract from '../views/QueryContract.vue';       
@@ -80,6 +84,11 @@ let routes = [
     { path: '/permission/assign/:userId', component: AssignPermissions },
     { path: "/SignContractList", component: SignContract},
     { path: "/sign/content", component: SignContent },
+
+    //客户信息管理路由：
+      { path: '/customerInfo', component: CustomerInfo }, // 客户信息管理页
+      { path:'/contractInfo', component: ContractInfo}, // 合同信息管理页
+      { path: '/ContractDetails', component: ContractDetails },
 
     // 查询和统计——新的顶级路由和子路由)
     { 
@@ -139,7 +148,7 @@ router.beforeEach(async (to, from, next) => {
   await authStore.initAuth();
 
   // 公开路由列表（无需登录）
-  const publicRoutes = ['/login', '/register', '/FirstPage', '/', '/HomePage',];
+  const publicRoutes = ['/login', '/register', '/FirstPage', '/', '/HomePage','/contractInfo','/customerInfo','/ContractDetails'];
   const isPublic = publicRoutes.includes(to.path);
 
   // 如果是公开路由，直接放行
